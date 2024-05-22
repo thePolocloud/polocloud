@@ -16,7 +16,6 @@ public class CloudGroupPlatformService {
     private final Set<Platform> platforms = new HashSet<>();
 
     public CloudGroupPlatformService() {
-
         Files.createDirectoryIfNotExists(PLATFORM_FOLDER);
 
         this.platforms.add(new PaperMCPlatform("velocity"));
@@ -38,7 +37,7 @@ public class CloudGroupPlatformService {
 
     @SneakyThrows
     public void preparePlatform(LocalCloudService cloudService) {
-        String platformName = cloudService.group().platform();
+        var platformName = cloudService.group().platform();
         var platform = find(platformName);
 
         if (!isPlatformAvailableForRuntime(platformName)) {

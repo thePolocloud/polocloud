@@ -21,4 +21,5 @@ public interface CloudPlayer {
     String currentProxy();
 
     void connectToServer(String serverName);
+
 }
