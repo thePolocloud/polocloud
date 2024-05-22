@@ -88,7 +88,7 @@ public final class CloudTerminal implements LoggerHandler {
     public void print(Level level, String message, Throwable throwable, Object... objects) {
         terminal.puts(InfoCmp.Capability.carriage_return);
         if (level != Level.OFF) {
-            terminal.writer().println(includeColorCodes("&1" + dateFormat.format(Calendar.getInstance().getTime()) + " &2| &1" + level.getName() + "&2: &1" + message)
+            terminal.writer().println(includeColorCodes("&1" + dateFormat.format(Calendar.getInstance().getTime()) + " &2| &4" + level.getName() + "&2: &1" + message)
                     + Ansi.ansi().a(Ansi.Attribute.RESET).toString());
         } else {
             terminal.writer().write(message);

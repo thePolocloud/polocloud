@@ -19,7 +19,7 @@ public final class CloudServiceGroupProvider implements CloudGroupProvider {
 
     public CloudServiceGroupProvider() {
         this.groups = groupServiceTypeAdapter.readGroups();
-        CloudBase.instance().logger().info("Loading following groups: " + String.join(", ", groups.stream().map(CloudGroup::name).toList()));
+        CloudBase.instance().logger().info("Loading following groups&2: &1" + String.join(", ", groups.stream().map(CloudGroup::name).toList()));
     }
 
     @Override

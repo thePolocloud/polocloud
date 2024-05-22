@@ -14,7 +14,7 @@ public final class CloudTerminalThread extends Thread {
         this.terminal = terminal;
 
         setName("console-reading-thread");
-        this.prompt = this.terminal.includeColorCodes("&1cloud &2» &1");
+        this.prompt = this.terminal.includeColorCodes("&3cloud &2» &1");
 
         setContextClassLoader(Thread.currentThread().getContextClassLoader());
     }

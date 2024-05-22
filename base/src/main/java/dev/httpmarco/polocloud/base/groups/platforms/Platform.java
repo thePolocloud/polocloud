@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.base.groups.platforms;
 
+import dev.httpmarco.polocloud.base.services.LocalCloudService;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -14,4 +15,13 @@ public abstract class Platform {
 
     public abstract void download(String version);
 
+    public abstract void prepare(LocalCloudService localCloudService);
+
+    public String[] platformsEnvironment() {
+        return new String[0];
+    }
+
+    public String[] platformsArguments() {
+        return new String[0];
+    }
 }

@@ -1,7 +1,6 @@
 package dev.httpmarco.polocloud.base.groups;
 
 import dev.httpmarco.osgan.files.Files;
-import dev.httpmarco.polocloud.api.services.CloudService;
 import dev.httpmarco.polocloud.base.groups.platforms.PaperMCPlatform;
 import dev.httpmarco.polocloud.base.groups.platforms.Platform;
 import dev.httpmarco.polocloud.base.services.LocalCloudService;
@@ -29,7 +28,7 @@ public class CloudGroupPlatformService {
         return platforms.stream().anyMatch(it -> it.possibleVersions().stream().anyMatch(v -> v.equalsIgnoreCase(platform)));
     }
 
-    private Platform find(String platform) {
+    public Platform find(String platform) {
         return platforms.stream().filter(it -> it.possibleVersions().stream().anyMatch(v -> v.equalsIgnoreCase(platform))).findFirst().orElse(null);
     }
 
@@ -39,12 +38,15 @@ public class CloudGroupPlatformService {
 
     @SneakyThrows
     public void preparePlatform(LocalCloudService cloudService) {
-        var platform = cloudService.group().platform();
-        if (!isPlatformAvailableForRuntime(platform)) {
-            find(platform).download(platform);
+        String platformName = cloudService.group().platform();
+        var platform = find(platformName);
+
+        if (!isPlatformAvailableForRuntime(platformName)) {
+            platform.download(platformName);
         }
 
-        var platformFile = cloudService.group().platform() + ".jar";
-        java.nio.file.Files.copy(PLATFORM_FOLDER.resolve(cloudService.group().platform() + ".jar"), cloudService.runningFolder().resolve(platformFile));
+        var platformFile = platformName + ".jar";
+        java.nio.file.Files.copy(PLATFORM_FOLDER.resolve(platformName + ".jar"), cloudService.runningFolder().resolve(platformFile));
+        platform.prepare(cloudService);
     }
 }

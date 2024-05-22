@@ -12,8 +12,11 @@ import java.nio.file.Path;
 @Accessors(fluent = true)
 public final class CloudNodeService implements NodeService {
 
-    private final Document<NodeConfiguration> configuration = new JsonDocument<>(new NodeConfiguration(), Path.of("local/node.json"));
-    private final LocalNode localNode = configuration.value().localNode();
+    private final Document<NodeConfiguration> configuration;
+    private final LocalNode localNode;
 
-
+    public CloudNodeService() {
+        this.configuration = new JsonDocument<>(new NodeConfiguration(), Path.of("local/node.json"));
+        this.localNode = this.configuration.value().localNode();
+    }
 }

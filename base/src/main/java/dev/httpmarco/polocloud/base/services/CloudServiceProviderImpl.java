@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Accessors(fluent = true)
@@ -33,5 +34,10 @@ public final class CloudServiceProviderImpl implements CloudServiceProvider {
     @Override
     public List<CloudService> services(CloudGroup group) {
         return services.stream().filter(it -> it.group().equals(group)).toList();
+    }
+
+    @Override
+    public CloudService find(UUID id) {
+        return services.stream().filter(it -> it.id().equals(id)).findFirst().orElse(null);
     }
 }

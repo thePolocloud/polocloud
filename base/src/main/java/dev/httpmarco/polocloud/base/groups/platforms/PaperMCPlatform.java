@@ -1,10 +1,9 @@
 package dev.httpmarco.polocloud.base.groups.platforms;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.httpmarco.osgan.files.json.JsonUtils;
+import dev.httpmarco.polocloud.base.services.LocalCloudService;
 import lombok.SneakyThrows;
-
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,6 +30,16 @@ public final class PaperMCPlatform extends Platform {
     }
 
     @Override
+    public String[] platformsArguments() {
+        return new String[]{"nogui", "noconsole"};
+    }
+
+    @Override
+    public String[] platformsEnvironment() {
+        return new String[]{};
+    }
+
+    @Override
     @SneakyThrows
     public void download(String version) {
 
@@ -42,6 +51,13 @@ public final class PaperMCPlatform extends Platform {
 
         final var url = URI.create(DOWNLOAD_URL.formatted(product, orgVersion, buildIndex, version, buildIndex)).toURL();
         Files.copy(url.openConnection().getInputStream(), Path.of("local/platforms/" + version + ".jar"));
+    }
+
+    @Override
+    @SneakyThrows
+    public void prepare(LocalCloudService localCloudService) {
+        // accept eula without cringe logs
+        Files.writeString(localCloudService.runningFolder().resolve("eula.txt"), "eula=true");
     }
 
     @SneakyThrows

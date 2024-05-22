@@ -10,7 +10,7 @@ import java.util.UUID;
 public final class NodeConfiguration {
 
     private final LocalNode localNode;
-    private final ExternalNode[]  externalNodes;
+    private final ExternalNode[] externalNodes;
 
     public NodeConfiguration() {
         // todo if connect with external node -> warning if localhost
