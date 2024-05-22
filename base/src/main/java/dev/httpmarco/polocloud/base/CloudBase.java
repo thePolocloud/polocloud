@@ -1,14 +1,18 @@
 package dev.httpmarco.polocloud.base;
 
+import dev.httpmarco.osgan.files.Document;
+import dev.httpmarco.osgan.files.json.JsonDocument;
 import dev.httpmarco.polocloud.api.CloudAPI;
 import dev.httpmarco.polocloud.api.dependencies.Dependency;
 import dev.httpmarco.polocloud.api.groups.CloudGroupProvider;
 import dev.httpmarco.polocloud.api.node.NodeService;
 import dev.httpmarco.polocloud.api.services.CloudServiceProvider;
+import dev.httpmarco.polocloud.base.config.CloudConfiguration;
 import dev.httpmarco.polocloud.base.groups.CloudServiceGroupProvider;
 import dev.httpmarco.polocloud.base.logging.FileLoggerHandler;
 import dev.httpmarco.polocloud.base.logging.LoggerOutPutStream;
 import dev.httpmarco.polocloud.base.node.CloudNodeService;
+import dev.httpmarco.polocloud.base.node.NodeConfiguration;
 import dev.httpmarco.polocloud.base.services.CloudServiceProviderImpl;
 import dev.httpmarco.polocloud.base.terminal.CloudTerminal;
 import lombok.Getter;
@@ -16,6 +20,7 @@ import lombok.experimental.Accessors;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 @Getter
 @Accessors(fluent = true)
@@ -25,6 +30,8 @@ public final class CloudBase extends CloudAPI {
     private final NodeService nodeService;
     private final CloudGroupProvider groupProvider;
     private final CloudServiceProvider serviceProvider;
+
+    private CloudConfiguration configuration;
 
     private boolean running = true;
 
@@ -42,6 +49,7 @@ public final class CloudBase extends CloudAPI {
         dependencyService().load(new Dependency("org.jline", "jline", "3.26.1"));
         dependencyService().load(new Dependency("org.fusesource.jansi", "jansi", "2.4.1"));
 
+        this.configuration = new JsonDocument<>(new CloudConfiguration(), Path.of("config.json")).value();
 
         this.terminal = new CloudTerminal();
         // register logging layers (for general output)

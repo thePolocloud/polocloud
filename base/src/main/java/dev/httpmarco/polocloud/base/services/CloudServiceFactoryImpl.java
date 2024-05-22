@@ -15,7 +15,7 @@ import java.util.*;
 
 public final class CloudServiceFactoryImpl implements CloudServiceFactory {
 
-    private static final Path RUNNING_FOLDER = Path.of("running");
+    private static final Path RUNNING_FOLDER = Path.of(CloudBase.instance().configuration().runningDirectory());
 
     public CloudServiceFactoryImpl() {
         Files.createDirectoryIfNotExists(RUNNING_FOLDER);
@@ -37,7 +37,8 @@ public final class CloudServiceFactoryImpl implements CloudServiceFactory {
 
         var args = new LinkedList<>();
 
-        args.add("java");
+        var javaCommand = CloudBase.instance().configuration().javaCommand();
+        args.add(javaCommand);
         args.add("-javaagent:../../polocloud.jar");
         args.addAll(Arrays.stream(platformService.find(cloudGroup.platform()).platformsEnvironment()).toList());
         args.add("-jar");

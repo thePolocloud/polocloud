@@ -17,7 +17,7 @@ public class GroupCommand {
 
     @SubCommand(args = {"create"})
     public void create() {
+
         CloudAPI.instance().groupProvider().createGroup("lobby", "paper-1.20.6", 512, 5);
     }
-
 }

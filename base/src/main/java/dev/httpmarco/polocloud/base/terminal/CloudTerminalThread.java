@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.base.terminal;
 
+import dev.httpmarco.polocloud.base.CloudBase;
 import org.fusesource.jansi.Ansi;
 import org.jline.reader.UserInterruptException;
 
@@ -14,7 +15,8 @@ public final class CloudTerminalThread extends Thread {
         this.terminal = terminal;
 
         setName("console-reading-thread");
-        this.prompt = this.terminal.includeColorCodes("&3cloud &2» &1");
+        this.prompt = this.terminal.includeColorCodes(CloudBase.instance().configuration().promt()
+                .replace("%username%", System.getProperty("user.name")));
 
         setContextClassLoader(Thread.currentThread().getContextClassLoader());
     }
