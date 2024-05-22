@@ -23,7 +23,6 @@ public final class PaperMCPlatform extends Platform {
         }
     }
 
-
     @SneakyThrows
     private JsonObject readPaperInformation(String link) {
         return JsonUtils.getGson().fromJson(downloadStringContext(link), JsonObject.class);

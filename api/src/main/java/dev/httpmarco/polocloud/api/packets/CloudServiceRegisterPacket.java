@@ -2,7 +2,6 @@ package dev.httpmarco.polocloud.api.packets;
 
 import dev.httpmarco.osgan.networking.Packet;
 import dev.httpmarco.osgan.networking.codec.CodecBuffer;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;

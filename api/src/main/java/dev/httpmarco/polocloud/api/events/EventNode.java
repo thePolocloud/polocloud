@@ -5,16 +5,15 @@ import java.util.List;
 
 public class EventNode<T extends Event> {
 
-    private final List<EventNode<T>> children = new ArrayList<>();
     private final List<Listener<T>> listeners = new ArrayList<>();
+    private final List<EventNode<T>> children = new ArrayList<>();
 
     public void call(T event){
         listeners.stream()
-                .filter(listener -> listener.getEvent().equals(event.getClass()))
-                .forEach(listener -> listener.getRunnable().run(event));
+                .filter(listener -> listener.event().equals(event.getClass()))
+                .forEach(listener -> listener.runnable().run(event));
 
-        children.stream()
-                .forEach(children -> children.call(event));
+        children.stream().forEach(children -> children.call(event));
     }
 
     public void addListener(Class<? extends T> event, EventRunnable<T> runnable){

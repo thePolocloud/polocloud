@@ -22,7 +22,7 @@ public final class Dependency {
     private final String version;
     private final String subversion;
 
-    private File file;
+    private final File file;
 
     public Dependency(String groupId, String artifactoryId, String version) {
         this(groupId, artifactoryId, version, version, MAVEN_CENTRAL_REPO);
