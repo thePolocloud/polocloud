@@ -28,11 +28,12 @@ import java.util.List;
 @Getter
 @Accessors(fluent = true)
 @AllArgsConstructor
-public final class CloudServiceSwitchPlayerAmountEvent implements ServiceEvent{
+public final class CloudServiceSwitchPlayerAmountEvent implements ServiceEvent {
+
     private final CloudService cloudService;
     private final List<CloudPlayer> cloudPlayers;
 
-    public Integer getAmount(){
+    public Integer amount() {
         return cloudPlayers.size();
     }
 

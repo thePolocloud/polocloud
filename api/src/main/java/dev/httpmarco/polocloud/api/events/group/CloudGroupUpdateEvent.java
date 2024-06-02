@@ -20,10 +20,13 @@ import dev.httpmarco.osgan.networking.codec.CodecBuffer;
 import dev.httpmarco.polocloud.api.groups.CloudGroup;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 
 @Getter
+@Accessors(fluent = true)
 @AllArgsConstructor
 public final class CloudGroupUpdateEvent implements GroupEvent {
+
     private final CloudGroup cloudGroup;
 
     @Override

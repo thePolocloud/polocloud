@@ -35,7 +35,6 @@ public interface CloudServiceProvider {
 
     CompletableFuture<List<CloudService>> filterServiceAsync(ServiceFilter filter);
 
-
     List<CloudService> services(CloudGroup group);
 
     CloudService find(UUID id);

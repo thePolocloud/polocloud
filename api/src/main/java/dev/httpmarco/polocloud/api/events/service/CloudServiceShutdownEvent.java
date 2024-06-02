@@ -26,7 +26,8 @@ import lombok.experimental.Accessors;
 @Getter
 @Accessors(fluent = true)
 @AllArgsConstructor
-public final class CloudServiceShutdownEvent implements ServiceEvent{
+public final class CloudServiceShutdownEvent implements ServiceEvent {
+
     private CloudService cloudService;
 
     @Override

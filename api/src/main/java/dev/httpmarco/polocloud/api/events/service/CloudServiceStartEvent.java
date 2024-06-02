@@ -26,7 +26,7 @@ import lombok.experimental.Accessors;
 @Getter
 @Accessors(fluent = true)
 @AllArgsConstructor
-public final class CloudServiceStartEvent implements ServiceEvent{
+public final class CloudServiceStartEvent implements ServiceEvent {
 
     private CloudService cloudService;
 

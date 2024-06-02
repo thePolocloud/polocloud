@@ -24,6 +24,7 @@ import lombok.experimental.Accessors;
 @Getter
 @Accessors(fluent = true)
 public final class Listener<T extends Event> {
+
     private final Class<? extends T> event;
     private final EventRunnable<T> runnable;
 

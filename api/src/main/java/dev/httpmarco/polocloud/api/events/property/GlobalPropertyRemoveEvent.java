@@ -18,7 +18,7 @@ package dev.httpmarco.polocloud.api.events.property;
 
 import dev.httpmarco.osgan.networking.codec.CodecBuffer;
 
-public final class GlobalPropertyRemoveEvent implements PropertyEvent{
+public final class GlobalPropertyRemoveEvent implements PropertyEvent {
 
     @Override
     public void read(CodecBuffer buffer) {
