@@ -28,6 +28,8 @@ public class GroupProperties<T> extends Property<T> implements Serializable {
 
     public static GroupProperties<String> TEMPLATES = new GroupProperties<>("templates", String.class);
 
+    public static GroupProperties<Boolean> DEBUG_MODE = new GroupProperties<>("debugMode", Boolean.class);
+
     public static GroupProperties<Integer> PORT_RANGE = new GroupProperties<>("portRange", int.class);
 
     public static GroupProperties<Integer> MAX_SERVICES = new GroupProperties<>("maxOnlineServices", int.class);

@@ -50,7 +50,7 @@ public final class InstanceCloudPlayerProvider implements CloudPlayerProvider {
 
     @Override
     public void register(UUID id, String name) {
-        CloudInstance.instance().client().transmitter().sendPacket(new CloudPlayerRegisterPacket(id, name, CloudInstance.SERVICE_ID));
+        CloudInstance.instance().client().transmitter().sendPacket(new CloudPlayerRegisterPacket(id, name, CloudInstance.SELF_ID));
     }
 
     @Override

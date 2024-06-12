@@ -47,7 +47,7 @@ public final class InstanceGlobalEventNode implements EventNode {
         currentListeners.add(runnable);
         this.nodeListeners.put(event, currentListeners);
 
-        CloudInstance.instance().client().transmitter().sendPacket(new CloudEventRegitserPacket(CloudInstance.SERVICE_ID, event.getName()));
+        CloudInstance.instance().client().transmitter().sendPacket(new CloudEventRegitserPacket(CloudInstance.SELF_ID, event.getName()));
     }
 
     @Override

@@ -39,6 +39,8 @@ public interface CloudServiceProvider {
 
     CloudService find(UUID id);
 
+    CompletableFuture<CloudService> findAsync(UUID id);
+
     CloudService service(String name);
 
     CloudService fromPacket(CloudGroup parent, PacketBuffer buffer);

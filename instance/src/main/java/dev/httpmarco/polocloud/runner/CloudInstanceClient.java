@@ -29,9 +29,10 @@ public final class CloudInstanceClient {
     private final CommunicationClient transmitter;
 
     @SneakyThrows
-    public CloudInstanceClient(String hostname, int port) {
+    public CloudInstanceClient(String hostname, int port, Runnable startup) {
         this.transmitter = new CommunicationClient(hostname, port, channelTransmit -> {
-            channelTransmit.sendPacket(new CloudServiceRegisterPacket(CloudInstance.SERVICE_ID));
+            channelTransmit.sendPacket(new CloudServiceRegisterPacket(CloudInstance.SELF_ID));
+            startup.run();
         });
         this.transmitter.initialize();
     }

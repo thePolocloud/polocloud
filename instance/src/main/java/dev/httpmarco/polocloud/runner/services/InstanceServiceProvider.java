@@ -21,6 +21,7 @@ import dev.httpmarco.osgan.networking.packet.PacketBuffer;
 import dev.httpmarco.osgan.utils.executers.FutureResult;
 import dev.httpmarco.polocloud.api.groups.CloudGroup;
 import dev.httpmarco.polocloud.api.packets.service.CloudAllServicesPacket;
+import dev.httpmarco.polocloud.api.packets.service.CloudServicePacket;
 import dev.httpmarco.polocloud.api.services.*;
 import dev.httpmarco.polocloud.runner.CloudInstance;
 import lombok.SneakyThrows;
@@ -68,12 +69,21 @@ public final class InstanceServiceProvider implements CloudServiceProvider {
     }
 
     @Override
+    @SneakyThrows
     public CloudService find(UUID id) {
-        return this.services().stream().filter(it -> it.id().equals(id)).findFirst().orElse(null);
+        return findAsync(id).get(5, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public CompletableFuture<CloudService> findAsync(UUID id) {
+        var future = new FutureResult<CloudService>();
+        CloudInstance.instance().client().transmitter().request("service-find", new CommunicationProperty().set("uuid", id), CloudServicePacket.class, it -> future.complete(it.service()));
+        return future.toCompletableFuture();
     }
 
     @Override
     public CloudService service(String name) {
+        //todo
         return this.services().stream().filter(it -> it.name().equalsIgnoreCase(name)).findFirst().orElse(null);
     }
 

@@ -23,6 +23,7 @@ import dev.httpmarco.polocloud.api.events.service.CloudServiceOnlineEvent;
 import dev.httpmarco.polocloud.api.groups.CloudGroup;
 import dev.httpmarco.polocloud.api.groups.GroupProperties;
 import dev.httpmarco.polocloud.api.packets.service.CloudAllServicesPacket;
+import dev.httpmarco.polocloud.api.packets.service.CloudServicePacket;
 import dev.httpmarco.polocloud.api.packets.service.CloudServiceStateChangePacket;
 import dev.httpmarco.polocloud.api.services.CloudService;
 import dev.httpmarco.polocloud.api.services.CloudServiceFactory;
@@ -32,6 +33,7 @@ import dev.httpmarco.polocloud.base.CloudBase;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -62,9 +64,14 @@ public final class CloudServiceProviderImpl implements CloudServiceProvider {
             case PROXIES -> new CloudAllServicesPacket(services.stream().filter(this::isProxy).toList());
             case SERVERS -> new CloudAllServicesPacket(services.stream().filter(it -> !isProxy(it)).toList());
             // todo ordering with players
-            case LOWEST_FALLBACK ->
-                    new CloudAllServicesPacket(List.of(Objects.requireNonNull(services.stream().filter(it -> !isProxy(it) && it.group().properties().has(GroupProperties.FALLBACK)).findFirst().orElse(null))));
+            case LOWEST_FALLBACK -> {
+                var fallback = new ArrayList<CloudService>();
+                services.stream().filter(it -> !isProxy(it) && it.group().properties().has(GroupProperties.FALLBACK)).findFirst().ifPresent(fallback::add);
+                yield new CloudAllServicesPacket(fallback);
+            }
         });
+
+        transmitter.responder("service-find", (properties) -> new CloudServicePacket(find(properties.getUUID("uuid"))));
 
         transmitter.listen(CloudServiceStateChangePacket.class, (channel, packet) -> {
             var service = find(packet.id());
@@ -122,6 +129,12 @@ public final class CloudServiceProviderImpl implements CloudServiceProvider {
     @Override
     public CloudService find(UUID id) {
         return this.services.stream().filter(it -> it.id().equals(id)).findFirst().orElse(null);
+    }
+
+    @Override
+    public CompletableFuture<CloudService> findAsync(UUID id) {
+        //todo
+        return null;
     }
 
     @Override

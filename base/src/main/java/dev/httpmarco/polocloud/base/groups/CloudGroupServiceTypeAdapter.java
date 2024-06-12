@@ -84,11 +84,6 @@ public final class CloudGroupServiceTypeAdapter implements JsonSerializer<CloudG
         var minOnlineServices = elements.get("minOnlineCount").getAsInt();
         var properties = (PropertiesPool<GroupProperties<?>>) jsonDeserializationContext.deserialize(elements.get("properties"), PropertiesPool.class);
 
-
-        properties.properties().forEach((groupProperties, o) -> {
-            System.out.println("loading: " + groupProperties.id() + ":" + o.toString());
-        });
-
         var parentPlatform = platformService.find(platform).possibleVersions().stream().filter(it -> it.version().equals(platform)).findFirst().orElseThrow();
 
         return new CloudGroupImpl(name, parentPlatform, memory, minOnlineServices, (PropertiesPool<GroupProperties<?>>) properties);

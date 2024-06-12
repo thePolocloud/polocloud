@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package dev.httpmarco.polocloud;
+package dev.httpmarco.polocloud.runner.dependency;
 
-import dev.httpmarco.polocloud.api.packets.service.CloudServiceStateChangePacket;
-import dev.httpmarco.polocloud.api.services.ServiceState;
-import dev.httpmarco.polocloud.runner.CloudInstance;
+public final class DependencyService {
 
-import java.util.function.Function;
+     //todo move old service here
 
-public class RunningPlatform {
-
-    public void changeToOnline() {
-        CloudInstance.instance().client().transmitter().sendPacket(new CloudServiceStateChangePacket(CloudInstance.SELF_ID, ServiceState.ONLINE));
-    }
 }

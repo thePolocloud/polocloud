@@ -65,7 +65,11 @@ public final class CloudServiceFactoryImpl implements CloudServiceFactory {
 
         var processBuilder = new ProcessBuilder().directory(service.runningFolder().toFile()).command(args.toArray(String[]::new));
 
-        processBuilder.redirectError(new File(service.name()));
+        if (cloudGroup.properties().has(GroupProperties.DEBUG_MODE)) {
+            processBuilder.redirectError(new File(service.name() + "-error"));
+            processBuilder.redirectOutput(new File(service.name() + "-info"));
+        }
+
         processBuilder.environment().put("hostname", service.hostname());
         processBuilder.environment().put("port", String.valueOf(service.port()));
         processBuilder.environment().put("appendSearchClasspath", String.valueOf((platformService.find(service.group().platform().version()) instanceof BungeeCordPlatform)));
