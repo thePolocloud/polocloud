@@ -16,7 +16,7 @@ bungeeminimessage = "4.3.3"
 
 #platforms
 velocity = "3.3.0-SNAPSHOT"
-paper = "1.20.4-R0.1-SNAPSHOT"
+paper = "1.21-R0.1-SNAPSHOT"
 bungeecord = "1.20-R0.2"
 
 # publishing
