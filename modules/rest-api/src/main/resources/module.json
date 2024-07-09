@@ -1,0 +1,5 @@
+{
+  "name": "REST API",
+  "author": "RECHERGG",
+  "main": "dev.httpmarco.polocloud.rest.RestAPI"
+}

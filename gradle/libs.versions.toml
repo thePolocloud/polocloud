@@ -14,13 +14,18 @@ commons = "2.16.1"
 minimessage = "4.17.0"
 bungeeminimessage = "4.3.3"
 
-#platforms
+# platforms
 velocity = "3.3.0-SNAPSHOT"
 paper = "1.20.4-R0.1-SNAPSHOT"
 bungeecord = "1.20-R0.2"
 
 # publishing
 nexus-publish = "2.0.0"
+
+# rest module
+javalin = "6.1.6"
+logback = "1.4.11"
+slf4j = "2.0.8"
 
 [libraries]
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
@@ -35,7 +40,7 @@ toml = { group = "com.electronwill.night-config", name = "toml", version.ref = "
 
 commons = { group = "commons-io", name = "commons-io", version.ref = "commons" }
 
-#platforms
+# platforms
 velocity = { group = "com.velocitypowered", name = "velocity-api", version.ref = "velocity" }
 paper = { group = "io.papermc.paper", name = "paper-api", version.ref = "paper" }
 bungeecord = { group = "net.md-5", name = "bungeecord-api", version.ref = "bungeecord" }
@@ -48,9 +53,15 @@ bungeeminimessage = { group = "net.kyori", name = "adventure-platform-bungeecord
 jansi = { group = "org.fusesource.jansi", name = "jansi", version.ref = "jansi" }
 jline = { group = "org.jline", name = "jline", version.ref = "jline" }
 
+# rest module
+javalin = { group = "io.javalin", name = "javalin", version.ref = "javalin"}
+logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+
 [bundles]
 utils = ["lombok", "osgan-utils", "osgan-files", "annotations"]
 console = ["jline", "jansi", "annotations"]
+javalin = ["javalin", "logback-classic", "slf4j-api"]
 
 [plugins]
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish" }
