@@ -53,7 +53,7 @@ public final class Dependency {
         this.file = file.toFile();
 
         if (!Files.exists(file)) {
-            System.err.println("Downloading dependency: " + name + "...");
+            System.out.println("Downloading dependency: " + name + "...");
             if (download(dependencyLink)) {
                 System.out.println("Successfully downloading dependency " + name);
             } else {
