@@ -16,6 +16,7 @@
 
 package dev.httpmarco.polocloud.api.groups;
 
+import com.google.gson.JsonObject;
 import dev.httpmarco.polocloud.api.CloudAPI;
 import dev.httpmarco.polocloud.api.groups.platforms.PlatformVersion;
 import dev.httpmarco.polocloud.api.properties.PropertyPool;
@@ -47,5 +48,21 @@ public abstract class CloudGroup {
 
     public void update() {
         CloudAPI.instance().groupProvider().update(this);
+    }
+
+    public JsonObject toJsonObject() {
+        var jsonObject = new JsonObject();
+        var info = new JsonObject();
+        var platformInfo = new JsonObject();
+
+        platformInfo.addProperty("proxy", this.platform.proxy());
+
+        info.add("platform", platformInfo);
+        info.addProperty("memory", this.memory);
+        info.addProperty("minOnlineService", this.minOnlineService);
+
+        jsonObject.add(this.name, info);
+
+        return jsonObject;
     }
 }

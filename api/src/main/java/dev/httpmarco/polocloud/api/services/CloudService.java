@@ -16,6 +16,7 @@
 
 package dev.httpmarco.polocloud.api.services;
 
+import com.google.gson.JsonObject;
 import dev.httpmarco.polocloud.api.CloudAPI;
 import dev.httpmarco.polocloud.api.groups.CloudGroup;
 import dev.httpmarco.polocloud.api.player.CloudPlayer;
@@ -81,5 +82,7 @@ public interface CloudService extends Serializable {
     List<CloudPlayer> onlinePlayers();
 
     PropertyPool properties();
+
+    JsonObject toJsonObject();
 
 }

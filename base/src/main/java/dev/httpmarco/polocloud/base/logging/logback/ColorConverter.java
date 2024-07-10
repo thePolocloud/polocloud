@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.rest.logging;
+package dev.httpmarco.polocloud.base.logging.logback;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;

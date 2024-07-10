@@ -22,6 +22,9 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.toml)
     implementation(libs.commons)
+
+    // for logging (rest API)
+    implementation(libs.logback.classic)
 }
 
 tasks.jar {

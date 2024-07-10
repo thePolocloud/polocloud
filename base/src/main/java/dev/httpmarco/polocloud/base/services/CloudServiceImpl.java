@@ -16,6 +16,7 @@
 
 package dev.httpmarco.polocloud.base.services;
 
+import com.google.gson.JsonObject;
 import dev.httpmarco.polocloud.api.CloudAPI;
 import dev.httpmarco.polocloud.api.groups.CloudGroup;
 import dev.httpmarco.polocloud.api.packets.service.CloudServiceMaxPlayersUpdatePacket;
@@ -87,6 +88,20 @@ public class CloudServiceImpl implements CloudService {
     @Override
     public List<CloudPlayer> onlinePlayers() {
         return CloudAPI.instance().playerProvider().players().stream().filter(it -> (group.platform().proxy() ? it.currentProxyName() : it.currentServerName()).equalsIgnoreCase(this.name())).toList();
+    }
+
+    @Override
+    public JsonObject toJsonObject() {
+        var jsonObject = new JsonObject();
+        var info = new JsonObject();
+
+        info.addProperty("group", this.group.name());
+        info.addProperty("orderedId", this.orderedId);
+        info.addProperty("state", this.state.name());
+        info.addProperty("id", this.id.toString());
+        jsonObject.add(name(), info);
+
+        return jsonObject;
     }
 
     @Override

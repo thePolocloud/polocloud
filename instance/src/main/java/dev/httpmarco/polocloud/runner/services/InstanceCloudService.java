@@ -16,6 +16,7 @@
 
 package dev.httpmarco.polocloud.runner.services;
 
+import com.google.gson.JsonObject;
 import dev.httpmarco.osgan.networking.CommunicationProperty;
 import dev.httpmarco.polocloud.api.groups.CloudGroup;
 import dev.httpmarco.polocloud.api.packets.player.CloudPlayerCountPacket;
@@ -88,6 +89,20 @@ public final class InstanceCloudService implements CloudService {
     public List<CloudPlayer> onlinePlayers() {
         //todo
         return List.of();
+    }
+
+    @Override
+    public JsonObject toJsonObject() {
+        var jsonObject = new JsonObject();
+        var info = new JsonObject();
+
+        info.addProperty("group", this.group.name());
+        info.addProperty("orderedId", this.orderedId);
+        info.addProperty("state", this.state.name());
+        info.addProperty("id", this.id.toString());
+        jsonObject.add(name(), info);
+
+        return jsonObject;
     }
 
     @Override

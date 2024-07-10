@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.rest.logging;
+package dev.httpmarco.polocloud.base.logging.logback;
 
 public enum AnsiColor {
 
@@ -10,7 +10,8 @@ public enum AnsiColor {
     BLUE("\u001B[34m"),
     PURPLE("\u001B[35m"),
     CYAN("\u001B[36m"),
-    WHITE("\u001B[37m");
+    WHITE("\u001B[37m"),
+    BRIGHT_BLACK("\u001B[90m");
 
     public final String ansi;
 

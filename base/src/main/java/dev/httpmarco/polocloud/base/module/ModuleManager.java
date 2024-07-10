@@ -58,6 +58,11 @@ public class ModuleManager {
     private void loadModuleFileContent(File file) {
         var metadata = loadModuleMetadata(file);
         var cloudModule = loadModule(file, metadata.main());
+        if (cloudModule == null) {
+            CloudAPI.instance().logger().warn("Failed to load Module:\"" + metadata.name() + "\" by " + metadata.author());
+            return;
+        }
+
         var classLoader = (URLClassLoader) cloudModule.getClass().getClassLoader();
         var loadedModule = new LoadedModule(cloudModule, classLoader, metadata);
         loadedModules.add(loadedModule);
@@ -72,16 +77,19 @@ public class ModuleManager {
         }
     }
 
-    @SneakyThrows
     private CloudModule loadModule(File file, String mainClass) {
-        var jarUrl = file.toURI().toURL();
-        try (var classLoader = new URLClassLoader(new URL[]{jarUrl}, this.parentClassLoader)) {
-            Class<?> clazz = classLoader.loadClass(mainClass);
+        try {
+            var jarUrl = file.toURI().toURL();
+            var classLoader = new URLClassLoader(new URL[]{jarUrl}, this.parentClassLoader);
+            var clazz = classLoader.loadClass(mainClass);
+
             if (!CloudModule.class.isAssignableFrom(clazz)) {
                 throw new IllegalArgumentException("Class " + mainClass + " does not implement CloudModule");
             }
 
             return (CloudModule) clazz.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

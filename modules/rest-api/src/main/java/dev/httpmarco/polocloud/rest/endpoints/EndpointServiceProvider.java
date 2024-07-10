@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.rest.endpoints;
 
 import dev.httpmarco.polocloud.rest.RestAPI;
+import dev.httpmarco.polocloud.rest.endpoints.impl.v1.group.GroupEndpoint;
 import dev.httpmarco.polocloud.rest.endpoints.impl.v1.service.ServicesEndpoint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class EndpointServiceProvider implements EndpointService {
 
     @Override
     public void load() {
+        registerEndpoint(new GroupEndpoint(this.restAPI));
         registerEndpoint(new ServicesEndpoint(this.restAPI));
 
         var javalin = this.restAPI.javalin();

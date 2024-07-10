@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.rest.logging;
+package dev.httpmarco.polocloud.base.logging.logback;
 
 import ch.qos.logback.classic.pattern.ExtendedThrowableProxyConverter;
 import ch.qos.logback.classic.spi.IThrowableProxy;
