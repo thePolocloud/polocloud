@@ -24,12 +24,11 @@ import lombok.SneakyThrows;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@Getter
 public class ConfigManager {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path CONFIG_PATH = Path.of("./plugins/PoloCloud-HubCommand/config.json");
-
-    @Getter
     private MessagesConfiguration messagesConfiguration;
 
     @SneakyThrows
@@ -40,6 +39,8 @@ public class ConfigManager {
 
             save(messagesConfiguration);
         }
+
+        this.messagesConfiguration = load(MessagesConfiguration.class);
     }
 
     @SneakyThrows
