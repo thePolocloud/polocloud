@@ -20,6 +20,7 @@ import dev.httpmarco.polocloud.api.CloudAPI;
 import dev.httpmarco.polocloud.proxy.platform.bungeecord.BungeeCordPlatformPlugin;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class BungeeTablistHandler extends BungeeTablistProvider {
@@ -37,6 +38,8 @@ public class BungeeTablistHandler extends BungeeTablistProvider {
     public void update(ProxiedPlayer player) {
         var cloudPlayer = CloudAPI.instance().playerProvider().find(player.getUniqueId());
 
+        player.sendMessage(new TextComponent("current servername -> " + cloudPlayer.currentServerName()));
+
         var header = formatPlaceholders(getTablist().header(), cloudPlayer);
         var footer = formatPlaceholders(getTablist().footer(), cloudPlayer);
 
@@ -45,4 +48,3 @@ public class BungeeTablistHandler extends BungeeTablistProvider {
                 BungeeComponentSerializer.get().serialize(this.miniMessage.deserialize(footer)));
     }
 }
-
