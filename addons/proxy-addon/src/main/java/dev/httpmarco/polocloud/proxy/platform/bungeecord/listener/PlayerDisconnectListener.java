@@ -29,6 +29,6 @@ public class PlayerDisconnectListener implements Listener {
 
     @EventHandler
     public void onDisconnect(PlayerDisconnectEvent event) {
-        this.platform.getProxy().getPlayers().forEach(player -> this.platform.getBungeeTablistHandler().update(player));
+        this.platform.getProxy().getPlayers().stream().filter(player -> player != event.getPlayer()).forEach(player -> this.platform.getBungeeTablistHandler().update(player));
     }
 }
