@@ -26,6 +26,7 @@ nexus-publish = "2.0.0"
 javalin = "6.1.6"
 logback = "1.4.11"
 slf4j = "2.0.8"
+bcrypt = "0.10.2"
 
 [libraries]
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
@@ -58,6 +59,7 @@ javalin = { group = "io.javalin", name = "javalin", version.ref = "javalin"}
 logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
 logback-core = { group = "ch.qos.logback", name = "logback-core", version.ref = "logback" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+bcrypt = { group = "at.favre.lib", name = "bcrypt", version.ref = "bcrypt"}
 
 [bundles]
 utils = ["lombok", "osgan-utils", "osgan-files", "annotations"]

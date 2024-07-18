@@ -1,16 +1,15 @@
-package dev.httpmarco.polocloud.rest.endpoints.impl.v1.group;
+package dev.httpmarco.polocloud.rest.endpoints.impl.v1.node;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import dev.httpmarco.polocloud.api.CloudAPI;
 import dev.httpmarco.polocloud.rest.RestAPI;
 import dev.httpmarco.polocloud.rest.endpoints.Endpoint;
 import io.javalin.http.Context;
 
-public class GroupEndpoint extends Endpoint {
+public class NodeEndpoint extends Endpoint {
 
-    public GroupEndpoint(RestAPI restAPI) {
-        super("groups/", restAPI);
+    public NodeEndpoint(RestAPI restAPI) {
+        super("nodes", restAPI);
     }
 
     @Override
@@ -18,13 +17,13 @@ public class GroupEndpoint extends Endpoint {
         if (!tokenProvided(context)) return;
         var user = handelAuth(context, getToken(context));
         if (user == null) return;
-        if (!hasPermission(user, "polocloud.rest.endpoint.groups", context)) return;
+        if (!hasPermission(user, "polocloud.rest.endpoint.nodes", context)) return;
 
         var response = new JsonObject();
-        var groups = new JsonArray();
+        var nodes = new JsonArray();
 
-        CloudAPI.instance().groupProvider().groups().forEach(group -> groups.add(group.toJsonObject()));
-        response.add("groups", groups);
+        //CloudAPI.instance().nodeService().localNode()..forEach(group -> nodes.add(group.toJsonObject()));
+        response.add("nodes", nodes);
 
         context.status(200);
         context.json(response.toString());

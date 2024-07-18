@@ -46,7 +46,7 @@ public final class CommandService {
         this.registerCommand(new TemplateCommand());
     }
 
-    private void registerCommand(Object command) {
+    public void registerCommand(Object command) {
         this.commands.add(command);
     }
 

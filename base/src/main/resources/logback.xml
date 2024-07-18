@@ -17,9 +17,9 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID:- } --- [%15.15t] %-40.40logger{39} : %m%n</pattern>
             <charset>utf-8</charset>
         </encoder>
-        <file>./local/modules/Rest-Module/${LOG_FILE:-rest-api.log}</file>
+        <file>./local/modules/Rest-Module/logs/${LOG_FILE:-rest-api.log}</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN:-${LOG_FILE:-rest-api.log}.%d{yyyy-MM-dd}.%i.gz}</fileNamePattern>
+            <fileNamePattern>./local/modules/Rest-Module/logs/${LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN:-${LOG_FILE:-rest-api.log}.%d{yyyy-MM-dd}.%i.gz}</fileNamePattern>
             <cleanHistoryOnStart>${LOGBACK_ROLLINGPOLICY_CLEAN_HISTORY_ON_START:-false}</cleanHistoryOnStart>
             <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE:-10MB}</maxFileSize>
             <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP:-0}</totalSizeCap>

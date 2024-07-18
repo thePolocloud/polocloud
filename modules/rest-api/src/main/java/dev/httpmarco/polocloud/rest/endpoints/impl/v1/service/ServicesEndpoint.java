@@ -15,6 +15,11 @@ public class ServicesEndpoint extends Endpoint {
 
     @Override
     public void get(Context context) {
+        if (!tokenProvided(context)) return;
+        var user = handelAuth(context, getToken(context));
+        if (user == null) return;
+        if (!hasPermission(user, "polocloud.rest.endpoint.services", context)) return;
+
         var response = new JsonObject();
         var services = new JsonArray();
 
