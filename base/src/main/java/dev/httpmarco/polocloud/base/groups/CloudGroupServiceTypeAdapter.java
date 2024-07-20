@@ -58,8 +58,8 @@ public final class CloudGroupServiceTypeAdapter implements JsonSerializer<CloudG
     }
 
     @SneakyThrows
-    public CopyOnWriteArrayList readGroups() {
-        var groups = new CopyOnWriteArrayList<>();
+    public CopyOnWriteArrayList<CloudGroup> readGroups() {
+        var groups = new CopyOnWriteArrayList<CloudGroup>();
         for (var file : Objects.requireNonNull(GROUP_FOLDER.toFile().listFiles())) {
 
             if (!(file.isFile() && file.getName().endsWith(".json"))) {
