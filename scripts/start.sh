@@ -1,0 +1,1 @@
+screen -S polocloud-node java -jar polocloud.jar
