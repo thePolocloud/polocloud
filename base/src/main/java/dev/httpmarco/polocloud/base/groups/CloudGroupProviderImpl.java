@@ -19,6 +19,7 @@ package dev.httpmarco.polocloud.base.groups;
 import dev.httpmarco.osgan.networking.packet.PacketBuffer;
 import dev.httpmarco.polocloud.api.CloudAPI;
 import dev.httpmarco.polocloud.api.groups.CloudGroup;
+import dev.httpmarco.polocloud.api.groups.CloudGroupProvider;
 import dev.httpmarco.polocloud.api.groups.platforms.PlatformVersion;
 import dev.httpmarco.polocloud.api.packets.general.OperationNumberPacket;
 import dev.httpmarco.polocloud.api.packets.general.OperationStatePacket;
@@ -31,16 +32,17 @@ import lombok.experimental.Accessors;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Getter
 @Accessors(fluent = true)
-public final class CloudGroupProvider extends dev.httpmarco.polocloud.api.groups.CloudGroupProvider {
+public final class CloudGroupProviderImpl extends CloudGroupProvider {
 
-    private final List<CloudGroup> groups;
+    private final CopyOnWriteArrayList<CloudGroup> groups;
     private final CloudGroupPlatformService platformService = new CloudGroupPlatformService();
     private final CloudGroupServiceTypeAdapter groupServiceTypeAdapter = new CloudGroupServiceTypeAdapter(platformService);
 
-    public CloudGroupProvider() {
+    public CloudGroupProviderImpl() {
 
         // register group packet responders
         var transmitter = Node.instance().transmitter();

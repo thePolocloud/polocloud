@@ -43,7 +43,7 @@ public class CloudGroupPlatformService {
     }
 
     private boolean isPlatformAvailableForRuntime(String platform) {
-        return java.nio.file.Files.exists(PLATFORM_FOLDER.resolve(platform).resolve("server.jar"));
+        return Files.exists(PLATFORM_FOLDER.resolve(platform).resolve("server.jar"));
     }
 
     @SneakyThrows

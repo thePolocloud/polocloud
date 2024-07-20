@@ -5,7 +5,6 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -14,7 +13,7 @@ import java.nio.file.StandardCopyOption;
 public final class FileUtils {
 
     @SneakyThrows
-    private static boolean deleteDirectoryContents(@NotNull File directoryPath) {
+    private boolean deleteDirectoryContents(@NotNull File directoryPath) {
         if (!directoryPath.exists() || !directoryPath.isDirectory()) {
             return false;
         }
@@ -32,7 +31,7 @@ public final class FileUtils {
         return success;
     }
 
-    private static boolean deleteRecursively(File file) {
+    private boolean deleteRecursively(File file) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
             if (files != null) {
@@ -46,11 +45,11 @@ public final class FileUtils {
         return file.delete();
     }
 
-    public static void delete(@NotNull File file) {
+    public void delete(@NotNull File file) {
         deleteDirectoryContents(file);
     }
 
-    public static void delete(@NotNull Path file) {
+    public void delete(@NotNull Path file) {
         deleteDirectoryContents(file.toFile());
     }
 
@@ -62,15 +61,15 @@ public final class FileUtils {
         return path;
     }
 
-    public static Path createDirectory(String path) {
+    public Path createDirectory(String path) {
         return createDirectory(Path.of(path));
     }
 
-    public static boolean copyDirectoryContents(Path sourceDirectoryPath, Path targetDirectoryPath) {
+    public boolean copyDirectoryContents(Path sourceDirectoryPath, Path targetDirectoryPath) {
         return copyDirectoryContents(sourceDirectoryPath.toString(), targetDirectoryPath.toString());
     }
 
-    public static boolean copyDirectoryContents(String sourceDirectoryPath, String targetDirectoryPath) {
+    public boolean copyDirectoryContents(String sourceDirectoryPath, String targetDirectoryPath) {
         File sourceDirectory = new File(sourceDirectoryPath);
         File targetDirectory = new File(targetDirectoryPath);
 
@@ -101,13 +100,9 @@ public final class FileUtils {
         return success;
     }
 
-    private static boolean copyFile(Path source, Path target) {
-        try {
-            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+    @SneakyThrows
+    private boolean copyFile(Path source, Path target) {
+        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+        return true;
     }
 }

@@ -44,12 +44,13 @@ public final class LocalCloudService extends CloudServiceImpl {
     private final Path runningFolder;
     @Setter
     private Process process;
+
     @Setter
     private ChannelTransmit channelTransmit;
 
     public LocalCloudService(CloudGroup group, int orderedId, UUID id, int port, ServiceState state) {
         super(group,
-                orderedId,
+            orderedId,
                 id,
                 port,
                 group.platform().proxy() ? "0.0.0.0" : Node.instance().nodeProvider().localEndpoint().data().hostname(),

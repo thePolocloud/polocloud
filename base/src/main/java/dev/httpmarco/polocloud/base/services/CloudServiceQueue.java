@@ -39,9 +39,10 @@ public final class CloudServiceQueue extends Thread {
             }
 
             // only the head node gives new start impulse
-            if (!Node.instance().nodeProvider().isHead()) {
+            //todo: not working :(
+           /*if (!Node.instance().nodeProvider().isHead()) {
                 return;
-            }
+            }*/
 
             for (var group : CloudAPI.instance().groupProvider().groups()) {
                 var onlineDiff = group.onlineAmount() - group.minOnlineService();

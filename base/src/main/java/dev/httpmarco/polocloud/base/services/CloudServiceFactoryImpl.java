@@ -113,7 +113,6 @@ public final class CloudServiceFactoryImpl implements CloudServiceFactory {
     }
 
     @Override
-    @SneakyThrows
     public void stop(CloudService service) {
         if (!(service instanceof LocalCloudService localCloudService)) {
             return;
@@ -121,7 +120,7 @@ public final class CloudServiceFactoryImpl implements CloudServiceFactory {
 
         localCloudService.state(ServiceState.STOPPING);
 
-        synchronized (this) {
+        new Thread(() -> {
             if (localCloudService.process() != null && localCloudService.process().toHandle().isAlive()) {
                 localCloudService.execute(localCloudService.group().platform().proxy() ? "end" : "stop");
 
@@ -129,19 +128,18 @@ public final class CloudServiceFactoryImpl implements CloudServiceFactory {
                     if (localCloudService.process().waitFor(5, TimeUnit.SECONDS)) {
                         localCloudService.process().exitValue();
                         localCloudService.process(null);
-
                         this.closeProcess(localCloudService);
                         return;
                     }
-                } catch (InterruptedException ignored) {
-
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
 
                 localCloudService.process().toHandle().destroyForcibly();
                 localCloudService.process(null);
                 this.closeProcess(localCloudService);
             }
-        }
+        }).start();
     }
 
     @SneakyThrows
@@ -149,10 +147,8 @@ public final class CloudServiceFactoryImpl implements CloudServiceFactory {
         CloudAPI.instance().globalEventNode().call(new CloudServiceShutdownEvent(service));
 
         if (!service.group().properties().has(GroupProperties.STATIC)) {
-            synchronized (this) {
-                FileUtils.delete(service.runningFolder());
-                Files.deleteIfExists(service.runningFolder());
-            }
+            FileUtils.delete(service.runningFolder());
+            Files.deleteIfExists(service.runningFolder());
         }
         ((CloudServiceProviderImpl) CloudAPI.instance().serviceProvider()).unregisterService(service);
         Node.instance().logger().info("The Service &2'&4" + service.name() + "&2' &1was successfully stopped");

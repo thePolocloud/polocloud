@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 public abstract class PaperMCPlatform extends Platform {
+
     private static final String VERSION_URL = "https://api.papermc.io/v2/projects/%s";
     private static final String BUILD_URL = "https://api.papermc.io/v2/projects/%s/versions/%s/builds";
     private static final String DOWNLOAD_URL = "https://api.papermc.io/v2/projects/%s/versions/%s/builds/%d/downloads/%s-%s.jar";

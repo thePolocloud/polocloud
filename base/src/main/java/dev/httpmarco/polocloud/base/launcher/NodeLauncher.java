@@ -12,5 +12,4 @@ public final class NodeLauncher {
 
         new Node();
     }
-
 }

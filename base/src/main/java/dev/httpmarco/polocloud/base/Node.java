@@ -22,7 +22,7 @@ import dev.httpmarco.polocloud.api.player.CloudPlayerProvider;
 import dev.httpmarco.polocloud.api.properties.PropertyPool;
 import dev.httpmarco.polocloud.base.common.NodeHeader;
 import dev.httpmarco.polocloud.base.events.GlobalEventNode;
-import dev.httpmarco.polocloud.base.groups.CloudGroupProvider;
+import dev.httpmarco.polocloud.base.groups.CloudGroupProviderImpl;
 import dev.httpmarco.polocloud.base.logging.FileLoggerHandler;
 import dev.httpmarco.polocloud.base.logging.Logger;
 import dev.httpmarco.polocloud.base.node.NodeProvider;
@@ -44,8 +44,8 @@ public final class Node extends CloudAPI {
     private final NodeProvider nodeProvider = new NodeProvider();
 
     private final GlobalEventNode globalEventNode = new GlobalEventNode();
-    private final CloudGroupProvider groupProvider = new CloudGroupProvider();
-    private final CloudServiceProviderImpl serviceProvider = new CloudServiceProviderImpl();
+    private final CloudGroupProviderImpl groupProvider = new CloudGroupProviderImpl();
+    private final CloudServiceProviderImpl serviceProvider;
     private final TemplatesService templatesService = new TemplatesService();
     private final CloudPlayerProvider playerProvider = new CloudPlayerProviderImpl();
 
@@ -55,6 +55,9 @@ public final class Node extends CloudAPI {
         // register logging layers (for general output)
         logger.factory().registerLoggers(new FileLoggerHandler(), terminal);
         NodeHeader.print(this.terminal);
+
+        this.serviceProvider = new CloudServiceProviderImpl();
+
         logger().success("Successfully started up&2! (&1Took " + (System.currentTimeMillis() - Long.parseLong(System.getProperty("startup"))) + "ms&2)");
         this.terminal.start();
     }

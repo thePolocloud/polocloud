@@ -28,9 +28,8 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @RequiredArgsConstructor
 public final class CloudGroupServiceTypeAdapter implements JsonSerializer<CloudGroup>, JsonDeserializer<CloudGroup> {
@@ -59,8 +58,8 @@ public final class CloudGroupServiceTypeAdapter implements JsonSerializer<CloudG
     }
 
     @SneakyThrows
-    public @NotNull List<CloudGroup> readGroups() {
-        var groups = new ArrayList<CloudGroup>();
+    public CopyOnWriteArrayList<CloudGroup> readGroups() {
+        var groups = new CopyOnWriteArrayList<CloudGroup>();
         for (var file : Objects.requireNonNull(GROUP_FOLDER.toFile().listFiles())) {
 
             if (!(file.isFile() && file.getName().endsWith(".json"))) {

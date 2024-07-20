@@ -45,7 +45,6 @@ public final class CloudServiceProviderImpl extends CloudServiceProvider {
     private final CloudServiceQueue queue = new CloudServiceQueue(this);
 
     public CloudServiceProviderImpl() {
-
         // send all services back to request
         var transmitter = Node.instance().transmitter();
         transmitter.responder("services-all", (properties) -> new CloudAllServicesPacket(services));
