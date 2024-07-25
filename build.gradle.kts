@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
-group = "space.chunks"
+group = "dev.httpmarco.polocloud.node"
 version = "1.0-SNAPSHOT"
 
 repositories {

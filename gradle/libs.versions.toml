@@ -11,7 +11,7 @@ guice = "7.0.0"
 osgan = "1.2.17-SNAPSHOT"
 
 #logging
-log4j2 = "2.20.0"
+log4j2 = "2.23.1"
 
 # configuration
 gson = "2.11.0"
