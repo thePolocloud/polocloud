@@ -1,7 +1,7 @@
 [versions]
 lombok = "1.18.34"
 annotations = "24.1.0"
-osgan = "1.2.16-SNAPSHOT"
+osgan = "1.2.17-SNAPSHOT"
 
 gson = "2.11.0"
 
