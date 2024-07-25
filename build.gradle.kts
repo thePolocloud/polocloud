@@ -27,13 +27,13 @@ dependencies {
     implementation(libs.log4j2.simple)
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.withType<JavaCompile>().configureEach {
+    sourceCompatibility = JavaVersion.VERSION_17.toString()
+    targetCompatibility = JavaVersion.VERSION_17.toString()
+    options.encoding = "UTF-8"
+    options.compilerArgs.add("-parameters")
 }
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
 
 tasks.named("shadowJar", ShadowJar::class) {
     mergeServiceFiles()
