@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.node.terminal.commands;
 
+import dev.httpmarco.polocloud.api.platforms.PlatformGroupDisplay;
 import dev.httpmarco.polocloud.node.commands.Command;
 import dev.httpmarco.polocloud.node.commands.CommandArgumentType;
 import dev.httpmarco.polocloud.api.groups.ClusterGroupService;
@@ -21,7 +22,7 @@ public final class GroupCommand extends Command {
         }, CommandArgumentType.Keyword("list"));
 
         syntax(context -> {
-            //todo remove group
+            groupService.create(context.arg(groupIdArgument), new String[0], new PlatformGroupDisplay("paper", "1.21"), 1, 512, false, 0, 0);
         }, "Create a new cluster group.", CommandArgumentType.Keyword("create"), groupIdArgument);
 
         syntax(context -> groupService.delete(context.arg(groupArgument).name()).whenComplete((s, throwable) -> {

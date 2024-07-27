@@ -9,6 +9,7 @@ guice = "7.0.0"
 
 # network
 osgan = "1.2.17-SNAPSHOT"
+netty5 = "5.0.0.Alpha5"
 
 #logging
 log4j2 = "2.23.1"
@@ -27,6 +28,7 @@ guice = { group = "com.google.inject", name = "guice", version.ref = "guice" }
 
 # network
 osgan-netty = { group = "dev.httpmarco", name = "osgan-netty", version.ref = "osgan" }
+netty5 = { group = "io.netty", name = "netty5-all", version.ref = "netty5" }
 
 # logging
 log4j2 = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j2" }

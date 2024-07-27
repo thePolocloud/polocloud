@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.node.cluster.impl;
 
+import dev.httpmarco.osgan.networking.channel.ChannelTransmit;
 import dev.httpmarco.polocloud.node.cluster.NodeEndpoint;
 import dev.httpmarco.polocloud.node.cluster.NodeEndpointData;
 import dev.httpmarco.polocloud.node.cluster.NodeSituation;
@@ -14,6 +15,11 @@ public class NodeEndpointImpl implements NodeEndpoint {
 
     private final NodeEndpointData data;
     private NodeSituation situation = NodeSituation.INITIALIZE;
+
+    @Override
+    public ChannelTransmit transmit() {
+        return null;
+    }
 
     @Override
     public void situation(NodeSituation situation) {

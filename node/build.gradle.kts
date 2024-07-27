@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation(libs.jline)
     implementation(project(":api"))
+    compileOnly(libs.netty5)
 }
 
 

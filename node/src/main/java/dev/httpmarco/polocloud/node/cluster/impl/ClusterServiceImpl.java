@@ -32,6 +32,11 @@ public final class ClusterServiceImpl implements ClusterService {
         this.endpoints = new HashSet<>();
     }
 
+    @Override
+    public boolean localHead() {
+        return this.headNode.equals(localNode);
+    }
+
     public void initialize() {
         // detect head node
         this.headNode = HeadNodeDetection.detect(this);

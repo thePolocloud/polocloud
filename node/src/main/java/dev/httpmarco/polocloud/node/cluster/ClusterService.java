@@ -10,6 +10,8 @@ public interface ClusterService extends Closeable {
 
     NodeEndpoint headNode();
 
+    boolean localHead();
+
     Set<NodeEndpoint> endpoints();
 
     void initialize();

@@ -45,7 +45,6 @@ public final class JLineTerminalCompleter implements Completer {
                     continue;
                 }
 
-
                 for (int i = 0; i < syntaxCommand.arguments().length; i++) {
                     if ((i + 1) != parsedLine.wordIndex()) {
                         continue;

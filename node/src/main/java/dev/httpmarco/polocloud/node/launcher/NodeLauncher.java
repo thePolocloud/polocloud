@@ -16,8 +16,8 @@ public class NodeLauncher {
 
 
         try {
-            Injector injector = Guice.createInjector(new NodeModule());
             System.setProperty("startup", String.valueOf(System.currentTimeMillis()));
+            Injector injector = Guice.createInjector(new NodeModule());
             injector.getInstance(Node.class);
         } catch (Exception exception) {
             for (var errorLine : exception.getMessage().split("\\n", -1)) {

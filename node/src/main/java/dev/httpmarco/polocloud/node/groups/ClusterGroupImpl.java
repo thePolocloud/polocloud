@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.node.groups.impl;
+package dev.httpmarco.polocloud.node.groups;
 
 import dev.httpmarco.polocloud.api.groups.ClusterGroup;
 import dev.httpmarco.polocloud.api.platforms.PlatformGroupDisplay;
@@ -20,5 +20,5 @@ public class ClusterGroupImpl implements ClusterGroup {
     private boolean staticService;
     private int minOnlineServerInstances;
     private int maxOnlineServerInstances;
-    ;
+
 }
