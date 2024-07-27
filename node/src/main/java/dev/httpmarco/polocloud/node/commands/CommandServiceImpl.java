@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dev.httpmarco.polocloud.node.cluster.ClusterService;
 import dev.httpmarco.polocloud.api.groups.ClusterGroupService;
+import dev.httpmarco.polocloud.node.platforms.PlatformService;
 import dev.httpmarco.polocloud.node.terminal.JLineTerminal;
 import dev.httpmarco.polocloud.node.terminal.commands.ClearCommand;
 import dev.httpmarco.polocloud.node.terminal.commands.GroupCommand;
@@ -26,9 +27,9 @@ public final class CommandServiceImpl implements CommandService {
 
     // todo search for a better inject way
     @Inject
-    public CommandServiceImpl(JLineTerminal terminal, ClusterService clusterService, ClusterGroupService groupService) {
+    public CommandServiceImpl(JLineTerminal terminal, ClusterService clusterService, ClusterGroupService groupService, PlatformService platformService) {
         registerCommand(new ShutdownCommand(terminal, clusterService));
-        registerCommand(new GroupCommand(groupService));
+        registerCommand(new GroupCommand(groupService, platformService));
         registerCommand(new ClearCommand(terminal));
     }
 

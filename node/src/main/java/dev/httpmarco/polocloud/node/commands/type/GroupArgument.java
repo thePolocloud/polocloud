@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
+import java.util.Objects;
 
 public final class GroupArgument extends CommandArgument<ClusterGroup> {
 
@@ -41,7 +42,6 @@ public final class GroupArgument extends CommandArgument<ClusterGroup> {
     @Contract("_ -> new")
     @Override
     public @NotNull ClusterGroup buildResult(String input) {
-        //todo
-        return null;
+        return Objects.requireNonNull(groupService.find(input));
     }
 }

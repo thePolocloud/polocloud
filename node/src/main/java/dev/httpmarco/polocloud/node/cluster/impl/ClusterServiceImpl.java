@@ -2,6 +2,7 @@ package dev.httpmarco.polocloud.node.cluster.impl;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import dev.httpmarco.osgan.networking.packet.Packet;
 import dev.httpmarco.polocloud.node.NodeConfig;
 import dev.httpmarco.polocloud.node.cluster.ClusterService;
 import dev.httpmarco.polocloud.node.cluster.LocalNode;
@@ -36,6 +37,21 @@ public final class ClusterServiceImpl implements ClusterService {
     public boolean localHead() {
         return this.headNode.equals(localNode);
     }
+
+    @Override
+    public void broadcast(Packet packet) {
+        for (var endpoint : this.endpoints) {
+            endpoint.transmit().sendPacket(packet);
+        }
+    }
+    @Override
+    public void broadcastAll(Packet packet) {
+        this.localNode.transmit().sendPacket(packet);
+        for (var endpoint : this.endpoints) {
+            endpoint.transmit().sendPacket(packet);
+        }
+    }
+
 
     public void initialize() {
         // detect head node

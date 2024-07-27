@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,6 +46,14 @@ public final class PlatformService {
     @SneakyThrows
     private PlatformConfig readLocalPlatformConfig(Path versionFile) {
         return JsonUtils.GSON.fromJson(Files.readString(versionFile), PlatformConfig.class);
+    }
+
+    public @Nullable Platform platform(String platform) {
+        return Arrays.stream(this.platforms).filter(it -> it.platform().equalsIgnoreCase(platform)).findFirst().orElse(null);
+    }
+
+    public boolean exists(String platform) {
+        return Arrays.stream(this.platforms).anyMatch(it -> it.platform().equalsIgnoreCase(platform));
     }
 
     @SneakyThrows

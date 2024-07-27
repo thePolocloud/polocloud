@@ -25,22 +25,17 @@ import java.util.concurrent.CompletableFuture;
 @Getter
 @Singleton
 @Accessors(fluent = true)
-public final class ClusterGroupServiceImpl implements ClusterGroupService {
+public final class ClusterGroupServiceImpl extends ClusterGroupService {
 
     private final Set<ClusterGroup> groups = new HashSet<>();
-
     private final ClusterService clusterService;
 
     @Inject
     public ClusterGroupServiceImpl(@NotNull ClusterService clusterService) {
         this.clusterService = clusterService;
 
-        clusterService.localNode().transmit().responder(GroupCreationResponder.TAG, property -> GroupCreationResponder.handle(this, property));
-
-        // if the head node alert that the cluster has a new node
-        clusterService.localNode().transmit().listen(GroupCreatePacket.class, (packet) -> {
-            //  ClusterNodeGroupCreateProcess.create(packet.name(), packet.nodes(), packet.platformGroupDisplay(), packet.minMemory(), packet.maxMemory(), packet.staticService(), packet.minOnline(), packet.maxOnline());
-        });
+        clusterService.localNode().transmit().listen(GroupCreatePacket.class, (transmit, packet) -> ClusterGroupFactory.createLocalStorageGroup(packet, this));
+        clusterService.localNode().transmit().responder(GroupCreationResponder.TAG, property -> GroupCreationResponder.handle(this, clusterService, property));
     }
 
     @Override
@@ -56,6 +51,11 @@ public final class ClusterGroupServiceImpl implements ClusterGroupService {
 
     @Override
     public CompletableFuture<ClusterGroup> create(String name, String[] nodes, PlatformGroupDisplay platform, int minMemory, int maxMemory, boolean staticService, int minOnline, int maxOnline) {
-        return GroupCreationRequest.request(clusterService, name, nodes, platform, minMemory, maxMemory, staticService, minOnline, maxOnline);
+        return GroupCreationRequest.request(this, clusterService, name, nodes, platform, minMemory, maxMemory, staticService, minOnline, maxOnline);
+    }
+
+    @Override
+    public @NotNull CompletableFuture<ClusterGroup> findAsync(@NotNull String group) {
+        return CompletableFuture.completedFuture(this.groups.stream().filter(it -> it.name().equalsIgnoreCase(group)).findFirst().orElse(null));
     }
 }

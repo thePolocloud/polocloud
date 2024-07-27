@@ -4,6 +4,7 @@ import com.google.inject.Singleton;
 import dev.httpmarco.osgan.networking.server.CommunicationServer;
 import dev.httpmarco.polocloud.node.cluster.LocalNode;
 import dev.httpmarco.polocloud.node.cluster.NodeEndpointData;
+import dev.httpmarco.polocloud.node.cluster.impl.transmit.LocalChannelTransmit;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
