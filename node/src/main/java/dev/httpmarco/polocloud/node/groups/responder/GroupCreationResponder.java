@@ -4,7 +4,7 @@ import dev.httpmarco.osgan.networking.CommunicationProperty;
 import dev.httpmarco.osgan.networking.packet.Packet;
 import dev.httpmarco.polocloud.api.groups.ClusterGroupService;
 import dev.httpmarco.polocloud.api.packet.group.GroupCreatePacket;
-import dev.httpmarco.polocloud.api.packet.group.GroupCreationResponse;
+import dev.httpmarco.polocloud.api.packet.MessageResponsePacket;
 import dev.httpmarco.polocloud.api.platforms.PlatformGroupDisplay;
 import dev.httpmarco.polocloud.node.cluster.ClusterService;
 import dev.httpmarco.polocloud.node.util.JsonUtils;
@@ -16,28 +16,40 @@ import org.jetbrains.annotations.NotNull;
 @UtilityClass
 public class GroupCreationResponder {
 
-    public static String TAG = "group-creation";
-
     public Packet handle(@NotNull ClusterGroupService groupService, ClusterService clusterService, @NotNull CommunicationProperty property) {
 
         var name = property.getString("name");
 
         if (groupService.exists(name)) {
-            return GroupCreationResponse.fail("Group already exists!");
+            return MessageResponsePacket.fail("Group already exists!");
         }
+
+        var minMemory = property.getInteger("minMemory");
+        var maxMemory = property.getInteger("maxMemory");
+
+        if (minMemory < 1 || maxMemory < 1) {
+            return MessageResponsePacket.fail("The min and max memory musst be higher than 1 mb.");
+        }
+
+        if (minMemory > maxMemory) {
+            return MessageResponsePacket.fail("The min memory cannot be higher than max memory.");
+        }
+
+        var nodes = JsonUtils.GSON.fromJson(property.getString("nodes"), String[].class);
+        var platform = new PlatformGroupDisplay(property.getString("platform"), property.getString("version"));
 
         // alert on every node the new group
         clusterService.broadcastAll(new GroupCreatePacket(
                 name,
-                JsonUtils.GSON.fromJson(property.getString("nodes"), String[].class),
-                new PlatformGroupDisplay(property.getString("platform"), property.getString("version")),
-                property.getInteger("minMemory"),
-                property.getInteger("maxMemory"),
+                nodes,
+                platform,
+                minMemory,
+                maxMemory,
                 property.getBoolean("staticService"),
                 property.getInteger("minOnline"),
                 property.getInteger("maxOnline"))
         );
 
-        return GroupCreationResponse.success();
+        return MessageResponsePacket.success();
     }
 }

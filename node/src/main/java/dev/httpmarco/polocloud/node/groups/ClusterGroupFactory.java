@@ -13,9 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Log4j2
 @UtilityClass
@@ -51,10 +49,15 @@ public final class ClusterGroupFactory {
         clusterGroupService.groups().add(group);
     }
 
-    public List<ClusterGroup> readGroups() {
-        var groups = new ArrayList<ClusterGroup>();
-        for (File file : Objects.requireNonNull(GROUP_DIR.toFile().listFiles())) {
+    public void deleteLocalStorageGroup(String name) {
+        // todo
+    }
 
+    @SneakyThrows
+    public @NotNull Set<ClusterGroup> readGroups() {
+        var groups = new HashSet<ClusterGroup>();
+        for (File file : Objects.requireNonNull(GROUP_DIR.toFile().listFiles())) {
+            groups.add(GROUP_GSON.fromJson(Files.readString(file.toPath()), ClusterGroup.class));
         }
         return groups;
     }

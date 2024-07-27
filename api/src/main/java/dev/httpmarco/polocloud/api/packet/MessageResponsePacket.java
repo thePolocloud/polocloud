@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.api.packet.group;
+package dev.httpmarco.polocloud.api.packet;
 
 import dev.httpmarco.osgan.networking.packet.Packet;
 import dev.httpmarco.osgan.networking.packet.PacketBuffer;
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 @Accessors(fluent = true)
 @AllArgsConstructor
-public final class GroupCreationResponse extends Packet {
+public final class MessageResponsePacket extends Packet {
 
     private boolean successfully;
     private String reason;
@@ -35,13 +35,13 @@ public final class GroupCreationResponse extends Packet {
     }
 
     @Contract("_ -> new")
-    public static @NotNull GroupCreationResponse fail(String reason) {
-        return new GroupCreationResponse(false, reason);
+    public static @NotNull MessageResponsePacket fail(String reason) {
+        return new MessageResponsePacket(false, reason);
     }
 
     @Contract(" -> new")
-    public static @NotNull GroupCreationResponse success() {
-        return new GroupCreationResponse(true, null);
+    public static @NotNull MessageResponsePacket success() {
+        return new MessageResponsePacket(true, null);
     }
 
 }

@@ -16,10 +16,19 @@ public abstract class ClusterGroupService {
 
     public abstract boolean exists(String group);
 
-    public abstract CompletableFuture<Optional<String>> delete(String group);
+    public abstract CompletableFuture<Optional<String>> deleteAsync(String group);
 
-    public abstract CompletableFuture<ClusterGroup> create(String name, String[] nodes, PlatformGroupDisplay platform, int minMemory, int maxMemory, boolean staticService, int minOnline, int maxOnline);
+    @SneakyThrows
+    public Optional<String> delete(String group) {
+        return deleteAsync(group).get(5, TimeUnit.SECONDS);
+    }
 
+    public abstract CompletableFuture<Optional<String>> createAsync(String name, String[] nodes, PlatformGroupDisplay platform, int minMemory, int maxMemory, boolean staticService, int minOnline, int maxOnline);
+
+    @SneakyThrows
+    public Optional<String> create(String name, String[] nodes, PlatformGroupDisplay platform, int minMemory, int maxMemory, boolean staticService, int minOnline, int maxOnline) {
+        return this.createAsync(name, nodes, platform, minMemory, maxMemory, staticService, minOnline, maxOnline).get(5, TimeUnit.SECONDS);
+    }
 
     public abstract CompletableFuture<ClusterGroup> findAsync(@NotNull String group);
 

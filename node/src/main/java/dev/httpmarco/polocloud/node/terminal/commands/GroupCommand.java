@@ -39,13 +39,8 @@ public final class GroupCommand extends Command {
                         context.arg(staticService),
                         context.arg(minOnlineArgument),
                         context.arg(maxOnlineArgument)
-                ).whenComplete((group, throwable) -> {
-                    if (throwable == null) {
-                        log.info("Successfully create group {}", group.name());
-                    } else {
-                        log.warn("Cannot create group: {}", throwable.getMessage());
-                    }
-                }), "Create a new cluster group.",
+                ).ifPresentOrElse(s -> log.warn("Cannot create group: {}", s), () -> log.info("Successfully create group {}", context.arg(groupIdArgument)))
+                , "Create a new cluster group.",
                 CommandArgumentType.Keyword("create"),
                 groupIdArgument,
                 platformArgument,
@@ -57,10 +52,7 @@ public final class GroupCommand extends Command {
                 maxOnlineArgument
         );
 
-
-        syntax(context -> groupService.delete(context.arg(groupArgument).name()).whenComplete((s, throwable) -> {
-            // todo delete group
-        }), CommandArgumentType.Keyword("delete"), groupArgument);
+        syntax(context -> groupService.delete(context.arg(groupArgument).name()).ifPresentOrElse(s -> log.warn("Cannot delete group: {}", s), () -> log.info("Successfully delete group {} in cluster!", context.arg(groupArgument).name())), CommandArgumentType.Keyword("delete"), groupArgument);
 
         syntax(context -> {
             var group = context.arg(groupArgument);

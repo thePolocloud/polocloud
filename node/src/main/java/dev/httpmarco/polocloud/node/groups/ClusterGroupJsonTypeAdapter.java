@@ -12,8 +12,37 @@ public final class ClusterGroupJsonTypeAdapter implements JsonSerializer<Cluster
 
     @Contract(pure = true)
     @Override
-    public @Nullable ClusterGroup deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        return null;
+    public @NotNull ClusterGroup deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        var jsonObject = json.getAsJsonObject();
+
+        var name = jsonObject.get("name").getAsString();
+
+        if (!jsonObject.has("minMemory")) {
+            throw new JsonParseException("Cannot load group " + name + ", because min memory is missing!");
+        }
+        var minMemory = jsonObject.get("minMemory").getAsInt();
+
+        if (!jsonObject.has("maxMemory")) {
+            throw new JsonParseException("Cannot load group " + name + ", because min maxMemory is missing!");
+        }
+        var maxMemory = jsonObject.get("maxMemory").getAsInt();
+
+        if (!jsonObject.has("staticService")) {
+            throw new JsonParseException("Cannot load group " + name + ", because min staticService is missing!");
+        }
+        var staticService = jsonObject.get("staticService").getAsBoolean();
+
+        if (!jsonObject.has("minOnlineServerInstances")) {
+            throw new JsonParseException("Cannot load group " + name + ", because min minOnlineServerInstances is missing!");
+        }
+        var minOnlineServerInstances = jsonObject.get("minOnlineServerInstances").getAsInt();
+
+        if (!jsonObject.has("maxOnlineServerInstances")) {
+            throw new JsonParseException("Cannot load group " + name + ", because min maxOnlineServerInstances is missing!");
+        }
+        var maxOnlineServerInstances = jsonObject.get("maxOnlineServerInstances").getAsInt();
+
+        return new ClusterGroupImpl(name, null, null, minMemory, maxMemory, staticService, minOnlineServerInstances, maxOnlineServerInstances);
     }
 
     @Override
