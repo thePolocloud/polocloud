@@ -9,6 +9,22 @@
           "version": "1.21",
           "checksum": "76c606131494125f064dc2ed401b946d4a12e08bf0ccdbf32edaa08b6633c30a",
           "downloadLink": "https://api.papermc.io/v2/projects/paper/versions/1.21/builds/109/downloads/paper-1.21-109.jar"
+        },
+        {
+          "version": "1.20.6",
+          "checksum": "bbd69d83848e25bdf0ecb040cc98a2263d95ed66e3bd5128a8c8552f7bf994bd",
+          "downloadLink": "https://api.papermc.io/v2/projects/paper/versions/1.20.6/builds/148/downloads/paper-1.20.6-148.jar"
+        }
+      ]
+    },
+    {
+      "platform": "velocity",
+      "type": "PROXY",
+      "versions": [
+        {
+          "version": "3.3.0-SNAPSHOT",
+          "checksum": "8c4a6ef056cd546f162f369f4431957f05cdf1b9d7c26620f469c17a46895ca9",
+          "downloadLink": "https://api.papermc.io/v2/projects/velocity/versions/3.3.0-SNAPSHOT/builds/413/downloads/velocity-3.3.0-SNAPSHOT-413.jar"
         }
       ]
     }
