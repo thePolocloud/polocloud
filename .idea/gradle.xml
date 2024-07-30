@@ -5,8 +5,7 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="$USER_HOME$/Documents/gradle-8.7" />
-        <option name="gradleJvm" value="openjdk-17" />
+        <option name="gradleJvm" value="temurin-17" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />

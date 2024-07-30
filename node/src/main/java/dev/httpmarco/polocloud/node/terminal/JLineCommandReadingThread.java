@@ -51,6 +51,7 @@ public final class JLineCommandReadingThread extends Thread {
             } catch (UserInterruptException exception) {
                 NodeShutdown.nodeShutdown(terminal, clusterService);
             }
+
         }
     }
 }

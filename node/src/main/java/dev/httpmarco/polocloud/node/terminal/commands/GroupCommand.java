@@ -5,6 +5,7 @@ import dev.httpmarco.polocloud.node.cluster.ClusterService;
 import dev.httpmarco.polocloud.node.commands.Command;
 import dev.httpmarco.polocloud.node.commands.CommandArgumentType;
 import dev.httpmarco.polocloud.api.groups.ClusterGroupService;
+import dev.httpmarco.polocloud.node.groups.ClusterGroupEditFields;
 import dev.httpmarco.polocloud.node.platforms.PlatformService;
 import lombok.extern.log4j.Log4j2;
 
@@ -26,7 +27,7 @@ public final class GroupCommand extends Command {
         }, "List all registered groups&8.", CommandArgumentType.Keyword("list"));
 
         var platformArgument = CommandArgumentType.Platform(platformService, "platform");
-        var platformVersionArgument = CommandArgumentType.PlatformVersion(platformService, "version");
+        var platformVersionArgument = CommandArgumentType.PlatformVersion("version");
         var minMemoryArgument = CommandArgumentType.Integer("minMemory");
         var maxMemoryArgument = CommandArgumentType.Integer("maxMemory");
         var minOnlineArgument = CommandArgumentType.Integer("minOnline");
@@ -66,9 +67,9 @@ public final class GroupCommand extends Command {
             log.info("Name&8: &b{}", group.name());
             log.info("Runtime nodes&8: &b{}", String.join("&8, &b", group.nodes()));
             log.info("Platform&8: &b{}-{}", group.platform().platform(), group.platform().version());
-            log.info("Static service&8: &b" + group.staticService());
-            log.info("Minimum memory&8: &b{}", group.minMemory());
-            log.info("Maximum memory&8: &b{}", group.maxMemory());
+            log.info("Static service&8: &b{}", group.staticService());
+            log.info("Minimum memory&8: &b{}mb", group.minMemory());
+            log.info("Maximum memory&8: &b{}mb", group.maxMemory());
             log.info("Minimum online services&8: &b{}", group.minOnlineServerInstances());
             log.info("Maximum online services&8: &b{}", group.maxOnlineServerInstances());
         }, "Show all information about a group&8.", groupArgument, CommandArgumentType.Keyword("info"));
@@ -78,10 +79,15 @@ public final class GroupCommand extends Command {
         }, "Shutdown all services with this group&8.", groupArgument, CommandArgumentType.Keyword("shutdown"));
 
 
-        var editKey = CommandArgumentType.Text("key");
+        var editKey = CommandArgumentType.Enum(ClusterGroupEditFields.class, "key");
         var editValue = CommandArgumentType.Text("value");
 
         syntax(context -> {
+            var group = context.arg(groupArgument);
+            var editableField = context.arg(editKey);
+            var value = context.arg(editValue);
+
+            log.info("{}:{}: {}", group.name(), editableField.name(), value);
 
         }, "Change a property of a group&8.", groupArgument, CommandArgumentType.Keyword("edit"), editKey, editValue);
 

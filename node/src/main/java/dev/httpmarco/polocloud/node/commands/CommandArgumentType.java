@@ -1,6 +1,8 @@
 package dev.httpmarco.polocloud.node.commands;
 
 import dev.httpmarco.polocloud.api.groups.ClusterGroup;
+import dev.httpmarco.polocloud.node.commands.specific.PlatformArgument;
+import dev.httpmarco.polocloud.node.commands.specific.PlatformBindVersionArgument;
 import dev.httpmarco.polocloud.node.commands.type.*;
 import dev.httpmarco.polocloud.api.groups.ClusterGroupService;
 import dev.httpmarco.polocloud.node.platforms.Platform;
@@ -17,14 +19,17 @@ public final class CommandArgumentType {
         return new GroupArgument(key, groupService);
     }
 
-    public @NotNull CommandArgument<PlatformVersion> PlatformVersion(PlatformService platformService, String key) {
-        return new PlatformVersionArgument(key, platformService);
+    public @NotNull CommandArgument<PlatformVersion> PlatformVersion(String key) {
+        return new PlatformBindVersionArgument(key);
     }
 
     public @NotNull CommandArgument<Platform> Platform(PlatformService platformService, String key) {
         return new PlatformArgument(key, platformService);
     }
 
+    public @NotNull <E extends Enum<E>> CommandArgument<E> Enum(Class<E> enumClass, String key) {
+        return new EnumArgument<>(enumClass, key);
+    }
 
     @Contract("_ -> new")
     public @NotNull CommandArgument<Integer> Integer(String key) {

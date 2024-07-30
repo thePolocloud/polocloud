@@ -5,6 +5,7 @@ import dev.httpmarco.polocloud.api.Named;
 import dev.httpmarco.polocloud.api.groups.ClusterGroup;
 import dev.httpmarco.polocloud.node.commands.CommandArgument;
 import dev.httpmarco.polocloud.api.groups.ClusterGroupService;
+import dev.httpmarco.polocloud.node.commands.CommandContext;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -33,9 +34,8 @@ public final class GroupArgument extends CommandArgument<ClusterGroup> {
         return "The Argument " + key() + " is not a registered cluster group!";
     }
 
-    @Contract(value = " -> new", pure = true)
     @Override
-    public @NotNull @Unmodifiable List<String> defaultArgs() {
+    public @NotNull @Unmodifiable List<String> defaultArgs(CommandContext context) {
         return groupService.groups().stream().map(Named::name).toList();
     }
 

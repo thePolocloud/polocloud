@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.node.commands.type;
 
 import dev.httpmarco.polocloud.node.commands.CommandArgument;
+import dev.httpmarco.polocloud.node.commands.CommandContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -17,7 +18,7 @@ public final  class EnumArgument<E extends Enum<E>> extends CommandArgument<E> {
     }
 
     @Override
-    public List<String> defaultArgs() {
+    public List<String> defaultArgs(CommandContext context) {
         return Arrays.stream(enumClass.getEnumConstants()).map(e -> e.name().toLowerCase()).toList();
     }
 

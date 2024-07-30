@@ -14,7 +14,7 @@ public abstract class CommandArgument<T> {
 
     private String key;
 
-    public List<String> defaultArgs() {
+    public List<String> defaultArgs(CommandContext context) {
         return List.of();
     }
 
