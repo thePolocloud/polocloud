@@ -29,20 +29,15 @@ public class DependencyDownloader {
             return;
         }
 
-        Boolean download = DependencyHelper.download(dependency.downloadUrl(), file);
+        DependencyHelper.download(dependency.downloadUrl(), file);
+        PoloCloudLauncher.CLASS_LOADER.addURL(file.toURI().toURL());
 
-        if(download) {
-            PoloCloudLauncher.CLASS_LOADER.addURL(file.toURI().toURL());
-
-            if (dependency.withSubDependencies()) {
-                dependency.loadSubDependencies();
-                for (var subDependency : dependency.subDependencies()) {
-                    download(subDependency);
-                }
+        if (dependency.withSubDependencies()) {
+            dependency.loadSubDependencies();
+            for (var subDependency : dependency.subDependencies()) {
+                download(subDependency);
             }
         }
-
-        return download;
     }
 
 
