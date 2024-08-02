@@ -33,6 +33,13 @@ public class DependencyDownloader {
 
         if(download) {
             PoloCloudLauncher.CLASS_LOADER.addURL(file.toURI().toURL());
+
+            if (dependency.withSubDependencies()) {
+                dependency.loadSubDependencies();
+                for (var subDependency : dependency.subDependencies()) {
+                    download(subDependency);
+                }
+            }
         }
 
         return download;
