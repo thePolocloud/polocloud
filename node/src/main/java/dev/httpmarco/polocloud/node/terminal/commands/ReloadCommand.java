@@ -2,8 +2,8 @@ package dev.httpmarco.polocloud.node.terminal.commands;
 
 import dev.httpmarco.polocloud.node.Node;
 import dev.httpmarco.polocloud.node.commands.Command;
-import dev.httpmarco.polocloud.node.packets.cluster.ClusterReloadCallPacket;
-import dev.httpmarco.polocloud.node.packets.cluster.ClusterRequireReloadPacket;
+import dev.httpmarco.polocloud.node.packets.ClusterReloadCallPacket;
+import dev.httpmarco.polocloud.node.packets.ClusterRequireReloadPacket;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2

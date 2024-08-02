@@ -30,7 +30,7 @@ public final class Node {
     private final ClusterService clusterService;
     private final PlatformService platformService;
     private final ClusterGroupProvider groupService;
-    private final ClusterServiceProvider serviceProvider;
+    private final ClusterServiceProviderImpl serviceProvider;
 
     private final JLineTerminal terminal;
     private final CommandService commandService;
@@ -53,11 +53,13 @@ public final class Node {
         this.commandService.registerCommands(new GroupCommand(), new ServiceCommand());
 
         // start cluster and check other node
-        clusterService.initialize();
+        this.clusterService.initialize();
 
         Runtime.getRuntime().addShutdownHook(new Thread(NodeShutdown::nodeShutdown));
 
         log.info("Cluster node boot successfully &8(&7Took {}ms&8)", System.currentTimeMillis() - Long.parseLong(System.getProperty("startup")));
-        terminal.allowInput();
+
+        this.terminal.allowInput();
+        this.serviceProvider.clusterServiceQueue().start();
     }
 }
