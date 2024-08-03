@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.node.terminal.commands;
 
 import dev.httpmarco.polocloud.api.platforms.PlatformGroupDisplay;
+import dev.httpmarco.polocloud.api.services.ClusterService;
 import dev.httpmarco.polocloud.node.Node;
 import dev.httpmarco.polocloud.node.commands.Command;
 import dev.httpmarco.polocloud.node.commands.CommandArgumentType;
@@ -75,6 +76,16 @@ public final class GroupCommand extends Command {
         }, "Show all information about a group&8.", groupArgument, CommandArgumentType.Keyword("info"));
 
         syntax(context -> {
+            var group = context.arg(groupArgument);
+            if (group.services().isEmpty()) {
+                log.info("This group has no services&8!");
+                return;
+            }
+
+            log.info("Stopping all services of the group &8'&f{}&8'...", group.name());
+            for (ClusterService service : group.services()) {
+                service.shutdown();
+            }
 
         }, "Shutdown all services with this group&8.", groupArgument, CommandArgumentType.Keyword("shutdown"));
 
