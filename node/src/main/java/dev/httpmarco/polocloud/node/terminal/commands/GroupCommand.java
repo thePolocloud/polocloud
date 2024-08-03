@@ -11,7 +11,7 @@ import lombok.extern.log4j.Log4j2;
 public final class GroupCommand extends Command {
 
     public GroupCommand() {
-        super("group");
+        super("group", "Manage or create your cluster groups", "groups");
 
         var groupService = Node.instance().groupService();
         var platformService = Node.instance().platformService();

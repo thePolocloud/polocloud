@@ -10,11 +10,12 @@ import lombok.extern.log4j.Log4j2;
 public final class ReloadCommand extends Command {
 
     public ReloadCommand() {
-        super("reload", "rl");
+        super("reload", "Reload all configurations and services", "rl");
 
         var clusterService = Node.instance().clusterService();
 
         defaultExecution((it) -> {
+            long currentTime = System.currentTimeMillis();
             log.info("Start reloading of cluster&8...");
 
             if (clusterService.localHead()) {
@@ -25,7 +26,7 @@ public final class ReloadCommand extends Command {
             }
 
 
-            log.info("Successfully reloading&8!");
+            log.info("Successfully reloading&8! (&7Took {}ms&8)", System.currentTimeMillis() - currentTime);
         });
     }
 }

@@ -13,12 +13,14 @@ public abstract class Command {
 
     private final String name;
     private final String[] aliases;
+    private final String description;
 
     public @Nullable CommandExecution defaultExecution;
     public final List<CommandSyntax> commandSyntaxes = new ArrayList<>();
 
-    public Command(String name, String... aliases) {
+    public Command(String name, String description, String... aliases) {
         this.name = name;
+        this.description = description;
         this.aliases = aliases;
     }
 
