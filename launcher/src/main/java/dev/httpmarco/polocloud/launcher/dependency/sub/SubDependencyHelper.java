@@ -4,6 +4,7 @@ import dev.httpmarco.polocloud.launcher.dependency.Dependency;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
@@ -24,55 +25,76 @@ public class SubDependencyHelper {
     public List<Dependency> findSubDependencies(Dependency dependency) {
         var subDependencies = new ArrayList<Dependency>();
 
-        var url = new URL(getPomUrl(dependency.groupId(), dependency.artifactId(), dependency.version()));
-        var connection = (HttpURLConnection) url.openConnection();
-        try (var inputStream = connection.getInputStream()) {
-            var factory = DocumentBuilderFactory.newInstance();
-            var builder = factory.newDocumentBuilder();
-            var document = builder.parse(new InputSource(inputStream));
+        var document = fetchPomXmlDocument(dependency.groupId(), dependency.artifactId(), dependency.version());
+        var dependencyNodes = document.getElementsByTagName("dependency");
 
-            var dependencyNodes = document.getElementsByTagName("dependency");
-            for (int i = 0; i < dependencyNodes.getLength(); i++) {
-                var dependencyElement = (Element) dependencyNodes.item(i);
-                var groupIdValue = getTextContent(dependencyElement, "groupId");
-                var artifactIdValue = getTextContent(dependencyElement, "artifactId");
-                var versionValue = getTextContent(dependencyElement, "version");
+        for (int i = 0; i < dependencyNodes.getLength(); i++) {
+            var dependencyElement = (Element) dependencyNodes.item(i);
+            var groupIdValue = getTextContent(dependencyElement, "groupId");
+            var artifactIdValue = getTextContent(dependencyElement, "artifactId");
+            var versionValue = getTextContent(dependencyElement, "version");
 
-                if (versionValue == null || versionValue.isEmpty() || (versionValue.startsWith("${") && versionValue.endsWith("}"))) {
-                    versionValue = SubDependencyHelper.getLatestVersion(groupIdValue, artifactIdValue);
-                }
-
-                var subDependency = new Dependency(groupIdValue, artifactIdValue, versionValue);
-                subDependencies.add(subDependency);
+            if (versionValue == null || versionValue.isEmpty() || isPlaceholder(versionValue)) {
+                versionValue = getLatestStableVersion(groupIdValue, artifactIdValue);
             }
+
+            var subDependency = new Dependency(groupIdValue, artifactIdValue, versionValue);
+            subDependencies.add(subDependency);
         }
 
         return subDependencies;
     }
 
-    public String getLatestVersion(String groupId, String artifactId) throws Exception {
-        var metadataUrl = String.format("https://repo1.maven.org/maven2/%s/%s/maven-metadata.xml", groupId.replace(".", "/"), artifactId);
-        var url = new URL(metadataUrl);
+    @SneakyThrows
+    public String getLatestStableVersion(String groupId, String artifactId) {
+        var document = fetchMetadataXmlDocument(groupId, artifactId);
+
+        var versionsElement = (Element) document.getElementsByTagName("versions").item(0);
+        var versionNodes = versionsElement.getElementsByTagName("version");
+
+        String latestStableVersion = null;
+        for (int i = 0; i < versionNodes.getLength(); i++) {
+            String version = versionNodes.item(i).getTextContent();
+            if (isStableVersion(version)) {
+                latestStableVersion = version;
+            }
+        }
+
+        if (latestStableVersion != null) {
+            return latestStableVersion;
+        }
+
+        throw new IllegalStateException("Unable to determine latest stable version for " + groupId + ":" + artifactId);
+    }
+
+    @SneakyThrows
+    private Document fetchPomXmlDocument(String groupId, String artifactId, String version) {
+        var url = new URL(getPomUrl(groupId, artifactId, version));
+        return fetchXmlDocument(url);
+    }
+
+    @SneakyThrows
+    private Document fetchMetadataXmlDocument(String groupId, String artifactId) {
+        var metadataUrl = new URL(String.format("https://repo1.maven.org/maven2/%s/%s/maven-metadata.xml", groupId.replace(".", "/"), artifactId));
+        return fetchXmlDocument(metadataUrl);
+    }
+
+    @SneakyThrows
+    private Document fetchXmlDocument(URL url) {
         var connection = (HttpURLConnection) url.openConnection();
         try (var inputStream = connection.getInputStream()) {
             var factory = DocumentBuilderFactory.newInstance();
             var builder = factory.newDocumentBuilder();
-            var document = builder.parse(new InputSource(inputStream));
-
-            var versioningNodes = document.getElementsByTagName("versioning");
-            if (versioningNodes.getLength() > 0) {
-                var versioningElement = (Element) versioningNodes.item(0);
-                var releaseNodes = versioningElement.getElementsByTagName("release");
-                if (releaseNodes.getLength() > 0) {
-                    return releaseNodes.item(0).getTextContent();
-                }
-                var latestNodes = versioningElement.getElementsByTagName("latest");
-                if (latestNodes.getLength() > 0) {
-                    return latestNodes.item(0).getTextContent();
-                }
-            }
+            return builder.parse(new InputSource(inputStream));
         }
-        throw new IllegalStateException("Unable to determine latest version for " + groupId + ":" + artifactId);
+    }
+
+    private boolean isPlaceholder(String versionValue) {
+        return versionValue.startsWith("${") && versionValue.endsWith("}");
+    }
+
+    private boolean isStableVersion(String version) {
+        return !(version.contains("alpha") || version.contains("beta"));
     }
 
     private String getTextContent(Element element, String tagName) {
@@ -82,5 +104,4 @@ public class SubDependencyHelper {
         }
         return null;
     }
-
 }
