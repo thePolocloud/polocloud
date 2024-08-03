@@ -41,7 +41,7 @@ public final class JLineTerminalCompleter implements Completer {
         var commandName = parsedLine.words().get(0);
         for (var command : commandService.commandsByName(commandName)) {
 
-            for (CommandSyntax commandSyntax : command.commandSyntaxes) {
+            for (CommandSyntax commandSyntax : command.commandSyntaxes()) {
 
                 if (isMatchingSyntax(parsedLine, commandSyntax)) {
                     addSuggestions(parsedLine, commandSyntax, list);

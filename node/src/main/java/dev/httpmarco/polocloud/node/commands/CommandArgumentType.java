@@ -1,6 +1,8 @@
 package dev.httpmarco.polocloud.node.commands;
 
 import dev.httpmarco.polocloud.api.groups.ClusterGroup;
+import dev.httpmarco.polocloud.node.cluster.ClusterService;
+import dev.httpmarco.polocloud.node.cluster.NodeEndpoint;
 import dev.httpmarco.polocloud.node.commands.specific.PlatformArgument;
 import dev.httpmarco.polocloud.node.commands.specific.PlatformBindVersionArgument;
 import dev.httpmarco.polocloud.node.commands.type.*;
@@ -29,6 +31,10 @@ public final class CommandArgumentType {
 
     public @NotNull <E extends Enum<E>> CommandArgument<E> Enum(Class<E> enumClass, String key) {
         return new EnumArgument<>(enumClass, key);
+    }
+
+    public @NotNull CommandArgument<NodeEndpoint> NodeEndpoint(ClusterService clusterService, String key) {
+        return new NodeEndpointArgument(key, clusterService);
     }
 
     @Contract("_ -> new")

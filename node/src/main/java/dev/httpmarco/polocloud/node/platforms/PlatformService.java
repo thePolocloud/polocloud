@@ -59,7 +59,7 @@ public final class PlatformService {
         Files.copy(Objects.requireNonNull(this.getClass().getClassLoader().getResourceAsStream("versions.json")), versionFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    private int versionsAmount() {
+    public int versionsAmount() {
         return Arrays.stream(this.platforms).mapToInt(it -> it.versions().size()).sum();
     }
 }

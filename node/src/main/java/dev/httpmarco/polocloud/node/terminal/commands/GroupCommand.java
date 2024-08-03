@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.node.terminal.commands;
 
 import dev.httpmarco.polocloud.api.platforms.PlatformGroupDisplay;
+import dev.httpmarco.polocloud.api.services.ClusterService;
 import dev.httpmarco.polocloud.node.Node;
 import dev.httpmarco.polocloud.node.commands.Command;
 import dev.httpmarco.polocloud.node.commands.CommandArgumentType;
@@ -11,7 +12,7 @@ import lombok.extern.log4j.Log4j2;
 public final class GroupCommand extends Command {
 
     public GroupCommand() {
-        super("group");
+        super("group", "Manage or create your cluster groups", "groups");
 
         var groupService = Node.instance().groupService();
         var platformService = Node.instance().platformService();
@@ -22,7 +23,7 @@ public final class GroupCommand extends Command {
         var groupArgument = CommandArgumentType.ClusterGroup(groupService, "group");
 
         syntax(context -> {
-            log.info("Following &b{} &7groups are loading&8:", groupService.groups().size());
+            log.info("Following &b{} &7groups are loaded&8:", groupService.groups().size());
             groupService.groups().forEach(group -> log.info("&8- &f{}&8: (&7{}&8)", group.name(), group.details()));
         }, "List all registered groups&8.", CommandArgumentType.Keyword("list"));
 
@@ -75,6 +76,16 @@ public final class GroupCommand extends Command {
         }, "Show all information about a group&8.", groupArgument, CommandArgumentType.Keyword("info"));
 
         syntax(context -> {
+            var group = context.arg(groupArgument);
+            if (group.services().isEmpty()) {
+                log.info("This group has no services&8!");
+                return;
+            }
+
+            log.info("Stopping all services of the group &8'&f{}&8'...", group.name());
+            for (ClusterService service : group.services()) {
+                service.shutdown();
+            }
 
         }, "Shutdown all services with this group&8.", groupArgument, CommandArgumentType.Keyword("shutdown"));
 

@@ -9,6 +9,7 @@ import dev.httpmarco.polocloud.node.groups.ClusterGroupProviderImpl;
 import dev.httpmarco.polocloud.node.platforms.PlatformService;
 import dev.httpmarco.polocloud.node.services.ClusterServiceProviderImpl;
 import dev.httpmarco.polocloud.node.terminal.JLineTerminal;
+import dev.httpmarco.polocloud.node.terminal.commands.ClusterCommand;
 import dev.httpmarco.polocloud.node.terminal.commands.GroupCommand;
 import dev.httpmarco.polocloud.node.terminal.commands.ServiceCommand;
 import dev.httpmarco.polocloud.node.util.Configurations;
@@ -49,7 +50,7 @@ public final class Node {
         this.serviceProvider = new ClusterServiceProviderImpl();
 
         // register provider commands
-        this.commandService.registerCommands(new GroupCommand(), new ServiceCommand());
+        this.commandService.registerCommands(new GroupCommand(), new ServiceCommand(), new ClusterCommand(this.clusterService));
 
         // start cluster and check other node
         this.clusterService.initialize();
