@@ -10,7 +10,9 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @Log4j2
@@ -19,6 +21,7 @@ import java.util.Objects;
 public final class PlatformService {
 
     private final Platform[] platforms;
+    private final List<PlatformPatcher> patchers = new ArrayList<>();
 
     @SneakyThrows
     public PlatformService() {
@@ -36,8 +39,6 @@ public final class PlatformService {
 
         this.platforms = this.readLocalPlatformConfig(versionFile).platforms();
         log.info("Loading {} cluster platforms with {} versions&8.", platforms.length, versionsAmount());
-
-       // PlatformDownloadTask.download(this.platforms[0], this.platforms[0].versions().stream().findFirst().get());
     }
 
     @SneakyThrows
@@ -58,7 +59,7 @@ public final class PlatformService {
         Files.copy(Objects.requireNonNull(this.getClass().getClassLoader().getResourceAsStream("versions.json")), versionFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    private int versionsAmount() {
+    public int versionsAmount() {
         return Arrays.stream(this.platforms).mapToInt(it -> it.versions().size()).sum();
     }
 }

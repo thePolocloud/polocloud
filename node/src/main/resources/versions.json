@@ -4,6 +4,10 @@
     {
       "platform": "paper",
       "type": "SERVER",
+      "patcher": "paperclip",
+      "startArguments": [
+        "-nogui"
+      ],
       "versions": [
         {
           "version": "1.21",

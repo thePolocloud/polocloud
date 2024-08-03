@@ -24,7 +24,7 @@ public class CommandParser {
         // we must calculate the usage, because no command was found
 
         for (var command : commands) {
-            for (var syntaxCommand : command.commandSyntaxes) {
+            for (var syntaxCommand : command.commandSyntaxes()) {
                 log.info("{} {}", command.name(), syntaxCommand.usage());
             }
         }
@@ -40,7 +40,7 @@ public class CommandParser {
                 return true;
             }
 
-            for (var syntaxCommand : command.commandSyntaxes) {
+            for (var syntaxCommand : command.commandSyntaxes()) {
 
                 if (args.length != syntaxCommand.arguments().length) {
                     continue;

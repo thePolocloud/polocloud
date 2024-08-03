@@ -6,7 +6,7 @@ import dev.httpmarco.polocloud.node.commands.Command;
 public final class ShutdownCommand extends Command {
 
     public ShutdownCommand() {
-        super("shutdown", "stop", "exit");
+        super("shutdown", "Shutdown the cloud and all node services", "stop", "exit");
         defaultExecution(commandContext -> NodeShutdown.nodeShutdown());
     }
 }
