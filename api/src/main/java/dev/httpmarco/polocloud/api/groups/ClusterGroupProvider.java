@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.api.groups;
 
+import dev.httpmarco.polocloud.api.Reloadable;
 import dev.httpmarco.polocloud.api.platforms.PlatformGroupDisplay;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +11,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public abstract class ClusterGroupService {
+public abstract class ClusterGroupProvider implements Reloadable {
 
     public abstract CompletableFuture<Set<ClusterGroup>> groupsAsync();
 

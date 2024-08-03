@@ -2,7 +2,7 @@ package dev.httpmarco.polocloud.node.cluster.tasks;
 
 import dev.httpmarco.polocloud.node.cluster.NodeEndpoint;
 import dev.httpmarco.polocloud.node.cluster.NodeSituation;
-import dev.httpmarco.polocloud.node.cluster.impl.ClusterServiceImpl;
+import dev.httpmarco.polocloud.node.cluster.ClusterServiceImpl;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 

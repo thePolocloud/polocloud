@@ -2,7 +2,7 @@ package dev.httpmarco.polocloud.node.groups.responder;
 
 import dev.httpmarco.osgan.networking.CommunicationProperty;
 import dev.httpmarco.osgan.networking.packet.Packet;
-import dev.httpmarco.polocloud.api.groups.ClusterGroupService;
+import dev.httpmarco.polocloud.api.groups.ClusterGroupProvider;
 import dev.httpmarco.polocloud.api.packet.group.GroupCreatePacket;
 import dev.httpmarco.polocloud.api.packet.MessageResponsePacket;
 import dev.httpmarco.polocloud.api.platforms.PlatformGroupDisplay;
@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 @UtilityClass
 public class GroupCreationResponder {
 
-    public Packet handle(@NotNull ClusterGroupService groupService, ClusterService clusterService, @NotNull CommunicationProperty property) {
+    public Packet handle(@NotNull ClusterGroupProvider groupService, ClusterService clusterService, @NotNull CommunicationProperty property) {
 
         var name = property.getString("name");
 

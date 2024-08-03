@@ -10,6 +10,8 @@ public interface CommandService {
 
     void registerCommand(Command command);
 
+    void registerCommands(Command... command);
+
     void unregisterCommand(Command command);
 
     void call(String commandId, String[] args);

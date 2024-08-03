@@ -28,6 +28,6 @@ public class NodeEndpointImpl implements NodeEndpoint {
 
     @Override
     public void close() {
-        // todo
+        transmit().channel().close();
     }
 }

@@ -1,11 +1,15 @@
 package dev.httpmarco.polocloud.api.groups;
 
+import dev.httpmarco.polocloud.api.Detail;
 import dev.httpmarco.polocloud.api.Named;
 import dev.httpmarco.polocloud.api.platforms.PlatformGroupDisplay;
+import dev.httpmarco.polocloud.api.services.ClusterService;
 
-public interface ClusterGroup extends Named {
+import java.util.List;
 
-    String[] node();
+public interface ClusterGroup extends Named, Detail {
+
+    String[] nodes();
 
     int minMemory();
 
@@ -19,5 +23,8 @@ public interface ClusterGroup extends Named {
 
     int maxOnlineServerInstances();
 
+    long serviceCount();
+
+    List<ClusterService> services();
 
 }

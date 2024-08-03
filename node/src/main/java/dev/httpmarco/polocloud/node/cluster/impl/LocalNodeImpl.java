@@ -1,6 +1,5 @@
 package dev.httpmarco.polocloud.node.cluster.impl;
 
-import com.google.inject.Singleton;
 import dev.httpmarco.osgan.networking.server.CommunicationServer;
 import dev.httpmarco.polocloud.node.cluster.LocalNode;
 import dev.httpmarco.polocloud.node.cluster.NodeEndpointData;
@@ -10,7 +9,6 @@ import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-@Singleton
 @Getter
 @Accessors(fluent = true)
 public final class LocalNodeImpl extends NodeEndpointImpl implements LocalNode {

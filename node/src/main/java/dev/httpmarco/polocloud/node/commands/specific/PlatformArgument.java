@@ -1,6 +1,7 @@
-package dev.httpmarco.polocloud.node.commands.type;
+package dev.httpmarco.polocloud.node.commands.specific;
 
 import dev.httpmarco.polocloud.node.commands.CommandArgument;
+import dev.httpmarco.polocloud.node.commands.CommandContext;
 import dev.httpmarco.polocloud.node.platforms.Platform;
 import dev.httpmarco.polocloud.node.platforms.PlatformService;
 import org.jetbrains.annotations.Contract;
@@ -25,7 +26,7 @@ public final class PlatformArgument extends CommandArgument<Platform> {
     }
 
     @Override
-    public List<String> defaultArgs() {
+    public List<String> defaultArgs(CommandContext context) {
         return Arrays.stream(platformService.platforms()).map(Platform::platform).toList();
     }
 

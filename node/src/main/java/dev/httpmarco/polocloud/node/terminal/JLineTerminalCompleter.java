@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.node.terminal;
 
-import dev.httpmarco.polocloud.node.commands.CommandService;
+import dev.httpmarco.polocloud.node.Node;
+import dev.httpmarco.polocloud.node.commands.CommandContext;
 import dev.httpmarco.polocloud.node.commands.CommandSyntax;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -17,10 +18,10 @@ import java.util.List;
 @AllArgsConstructor
 public final class JLineTerminalCompleter implements Completer {
 
-    private CommandService commandService;
-
     @Override
     public void complete(LineReader lineReader, @NotNull ParsedLine parsedLine, List<Candidate> list) {
+        var commandService = Node.instance().commandService();
+
         if (parsedLine.wordIndex() == 0) {
             // we only display the command names -> not aliases
 
@@ -56,11 +57,10 @@ public final class JLineTerminalCompleter implements Completer {
         }
 
         for (int i = 0; i < argumentIndex; i++) {
-
             var expectedArgument = commandSyntax.arguments()[i];
             var enteredArgument = parsedLine.words().get(i + 1).replace("<", "").replace(">", "");
 
-            if ((!expectedArgument.key().equals(enteredArgument) && !expectedArgument.defaultArgs().contains(enteredArgument)) && !expectedArgument.predication(enteredArgument)) {
+            if ((!expectedArgument.key().equals(enteredArgument) && !expectedArgument.predication(enteredArgument))) {
                 return false;
             }
         }
@@ -74,14 +74,25 @@ public final class JLineTerminalCompleter implements Completer {
         }
 
         var argument = commandSyntax.arguments()[argumentIndex];
+        var context = new CommandContext();
 
-        if (argument.defaultArgs().isEmpty()) {
+        for (int i = 0; i < argumentIndex; i++) {
+            // read all previous temp parameters
+            var input = parsedLine.words().get(i + 1).replace("<", "").replace(">", "");
+            var tempArgument = commandSyntax.arguments()[i];
+            if (input.equalsIgnoreCase(tempArgument.key())) {
+                continue;
+            }
+            context.append(commandSyntax.arguments()[i], commandSyntax.arguments()[i].buildResult(input));
+        }
+
+        if (argument.defaultArgs(context).isEmpty()) {
             String candidateValue = "<" + argument.key() + ">";
             if (list.stream().noneMatch(candidate -> candidate.value().equals(candidateValue))) {
                 list.add(new Candidate(candidateValue));
             }
         } else {
-            argument.defaultArgs().stream()
+            argument.defaultArgs(context).stream()
                     .filter(defaultArg -> list.stream().noneMatch(candidate -> candidate.value().equals(defaultArg)))
                     .forEach(defaultArg -> list.add(new Candidate(defaultArg)));
         }

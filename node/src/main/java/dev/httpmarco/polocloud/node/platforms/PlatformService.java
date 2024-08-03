@@ -1,7 +1,5 @@
 package dev.httpmarco.polocloud.node.platforms;
 
-import com.google.inject.Singleton;
-import dev.httpmarco.polocloud.node.platforms.tasks.PlatformDownloadTask;
 import dev.httpmarco.polocloud.node.util.JsonUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -12,16 +10,18 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @Log4j2
 @Getter
 @Accessors(fluent = true)
-@Singleton
 public final class PlatformService {
 
     private final Platform[] platforms;
+    private final List<PlatformPatcher> patchers = new ArrayList<>();
 
     @SneakyThrows
     public PlatformService() {
@@ -39,8 +39,6 @@ public final class PlatformService {
 
         this.platforms = this.readLocalPlatformConfig(versionFile).platforms();
         log.info("Loading {} cluster platforms with {} versions&8.", platforms.length, versionsAmount());
-
-        PlatformDownloadTask.download(this.platforms[0], this.platforms[0].versions().stream().findFirst().get());
     }
 
     @SneakyThrows

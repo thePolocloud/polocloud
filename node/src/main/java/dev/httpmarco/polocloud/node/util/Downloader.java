@@ -36,9 +36,8 @@ public class Downloader {
     }
 
     @SneakyThrows
-    public File download(String link, Path path) {
+    public void download(String link, Path path) {
         Files.copy(urlStream(link), path);
-        return path.toFile();
     }
 
     public String directJsonDownloader(String link) {

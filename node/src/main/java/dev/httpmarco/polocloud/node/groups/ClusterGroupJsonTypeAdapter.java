@@ -2,10 +2,9 @@ package dev.httpmarco.polocloud.node.groups;
 
 import com.google.gson.*;
 import dev.httpmarco.polocloud.api.groups.ClusterGroup;
+import dev.httpmarco.polocloud.api.platforms.PlatformGroupDisplay;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.reflect.Type;
 
 public final class ClusterGroupJsonTypeAdapter implements JsonSerializer<ClusterGroup>, JsonDeserializer<ClusterGroup> {
@@ -42,7 +41,17 @@ public final class ClusterGroupJsonTypeAdapter implements JsonSerializer<Cluster
         }
         var maxOnlineServerInstances = jsonObject.get("maxOnlineServerInstances").getAsInt();
 
-        return new ClusterGroupImpl(name, null, null, minMemory, maxMemory, staticService, minOnlineServerInstances, maxOnlineServerInstances);
+        if (!jsonObject.has("platform")) {
+            throw new JsonParseException("Cannot load group " + name + ", because platform is missing!");
+        }
+        var platform = (PlatformGroupDisplay) context.deserialize(jsonObject.get("platform"), PlatformGroupDisplay.class);
+
+        if (!jsonObject.has("nodes")) {
+            throw new JsonParseException("Cannot load group " + name + ", because nodes is missing!");
+        }
+        var nodes = jsonObject.get("nodes") instanceof JsonPrimitive ? new String[]{jsonObject.get("nodes").getAsString()} : jsonObject.get("nodes").getAsJsonArray().asList().stream().map(JsonElement::getAsString).toArray(String[]::new);
+
+        return new ClusterGroupImpl(name, platform, nodes, minMemory, maxMemory, staticService, minOnlineServerInstances, maxOnlineServerInstances);
     }
 
     @Override
@@ -51,12 +60,12 @@ public final class ClusterGroupJsonTypeAdapter implements JsonSerializer<Cluster
 
         jsonObject.addProperty("name", group.name());
 
-        if (group.node().length == 1) {
-            jsonObject.addProperty("nodes", group.node()[0]);
+        if (group.nodes().length == 1) {
+            jsonObject.addProperty("nodes", group.nodes()[0]);
         } else {
             var nodeArray = new JsonArray();
 
-            for (String node : group.node()) {
+            for (String node : group.nodes()) {
                 nodeArray.add(node);
             }
 
