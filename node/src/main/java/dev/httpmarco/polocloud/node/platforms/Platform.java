@@ -1,9 +1,6 @@
 package dev.httpmarco.polocloud.node.platforms;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,7 +9,6 @@ import java.util.Set;
 /**
  * paper
  * velocity
- * vanilla
  * purpur
  * spigot
  * bungeecord
@@ -23,6 +19,7 @@ import java.util.Set;
  * (folia)
  */
 
+@Setter
 @Getter
 @Accessors(fluent = true)
 @RequiredArgsConstructor
@@ -32,7 +29,7 @@ public final class Platform {
     private final PlatformType type;
     private final Set<PlatformVersion> versions;
 
-    @Setter
     private @Nullable PlatformPatcher platformPatcher;
+    private @Nullable String[] startArguments;
 
 }
