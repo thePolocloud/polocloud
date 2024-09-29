@@ -1,12 +1,14 @@
 package dev.httpmarco.polocloud.node;
 
 import dev.httpmarco.polocloud.api.CloudAPI;
+import dev.httpmarco.polocloud.api.config.ConfigProvider;
 import dev.httpmarco.polocloud.api.event.EventProvider;
 import dev.httpmarco.polocloud.api.properties.PropertiesPool;
 import dev.httpmarco.polocloud.node.cluster.ClusterProvider;
 import dev.httpmarco.polocloud.node.cluster.ClusterProviderImpl;
 import dev.httpmarco.polocloud.node.commands.CommandService;
 import dev.httpmarco.polocloud.node.commands.CommandServiceImpl;
+import dev.httpmarco.polocloud.node.config.ConfigProviderImpl;
 import dev.httpmarco.polocloud.node.events.EventProviderImpl;
 import dev.httpmarco.polocloud.node.groups.ClusterGroupProviderImpl;
 import dev.httpmarco.polocloud.node.module.ModuleProvider;
@@ -39,6 +41,7 @@ public final class Node extends CloudAPI {
     private final ClusterProvider clusterProvider;
     private final TemplatesProvider templatesProvider;
     private final EventProvider eventProvider;
+    private final ConfigProvider configProvider;
     private final PlatformService platformService;
     private final ClusterGroupProviderImpl groupProvider;
     private final ClusterServiceProviderImpl serviceProvider;
@@ -56,7 +59,7 @@ public final class Node extends CloudAPI {
         instance = this;
 
         //register all local node properties
-        PropertyRegister.register(NodeProperties.PROXY_PORT_START_RANGE, NodeProperties.SERVICE_PORT_START_RANGE, NodeProperties.SERVER_PORT_START_RANGE);
+        PropertyRegister.register(NodeProperties.PROXY_PORT_START_RANGE, NodeProperties.SERVICE_PORT_START_RANGE, NodeProperties.SERVER_PORT_START_RANGE, NodeProperties.GROUP_PORT_START_RANGE);
 
         var nodeConfig = Configurations.readContent(Path.of("config.json"), new NodeConfig());
 
@@ -64,6 +67,7 @@ public final class Node extends CloudAPI {
         this.templatesProvider = new TemplatesProvider();
         this.clusterProvider = new ClusterProviderImpl(nodeConfig);
         this.eventProvider = new EventProviderImpl();
+        this.configProvider = new ConfigProviderImpl();
         this.moduleProvider = new ModuleProvider();
 
         this.commandService = new CommandServiceImpl();

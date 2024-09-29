@@ -20,7 +20,10 @@ public final class ServicePortDetector {
         var serverPort = platformType.defaultRuntimePort();
 
         var pool = Node.instance().nodeProperties();
-        if (platformType == PlatformType.PROXY && pool.has(NodeProperties.PROXY_PORT_START_RANGE)) {
+
+        if (group.properties().has(NodeProperties.GROUP_PORT_START_RANGE)) {
+            serverPort = group.properties().property(NodeProperties.GROUP_PORT_START_RANGE);
+        } else if (platformType == PlatformType.PROXY && pool.has(NodeProperties.PROXY_PORT_START_RANGE)) {
             serverPort = pool.property(NodeProperties.PROXY_PORT_START_RANGE);
         } else if (platformType == PlatformType.SERVER && pool.has(NodeProperties.SERVER_PORT_START_RANGE)) {
             serverPort = pool.property(NodeProperties.SERVER_PORT_START_RANGE);

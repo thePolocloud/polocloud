@@ -15,6 +15,9 @@ public final class NodeProperties {
     // define the start port of all services (multi-paper master) on this node. Default: 25565
     public final Property<Integer> SERVICE_PORT_START_RANGE = Property.of("SERVICE_PORT_START_RANGE", Integer.class);
 
+    // define the start port of all servers (spigot, paper...) of the group. Default: platform type default port
+    public final Property<Integer> GROUP_PORT_START_RANGE = Property.of("GROUP_PORT_START_RANGE", Integer.class);
+
     // if a player connect the cluster with a proxy, we notify this in the terminal
     public final Property<Boolean> LOG_PLAYERS_CONNECTION = Property.of("LOG_PLAYERS_CONNECTION", Boolean.class);
 

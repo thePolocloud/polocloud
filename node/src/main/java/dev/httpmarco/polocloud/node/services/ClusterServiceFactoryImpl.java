@@ -65,6 +65,7 @@ public final class ClusterServiceFactoryImpl implements ClusterServiceFactory {
         processBuilder.environment().put("forwarding_secret", PlatformService.FORWARDING_SECRET);
         processBuilder.environment().put("hostname", localService.hostname());
         processBuilder.environment().put("port", String.valueOf(localService.port()));
+        processBuilder.environment().put("cloud_root_dir", System.getProperty("user.dir"));
 
         // copy platform plugin for have a better control of service
         var pluginDir = localService.runningDir().resolve(platform.pluginDir());
