@@ -3,6 +3,7 @@ package dev.httpmarco.polocloud.instance;
 import dev.httpmarco.osgan.networking.client.CommunicationClient;
 import dev.httpmarco.osgan.networking.client.CommunicationClientAction;
 import dev.httpmarco.polocloud.api.CloudAPI;
+import dev.httpmarco.polocloud.api.modules.ModuleProvider;
 import dev.httpmarco.polocloud.api.packet.ConnectionAuthPacket;
 import dev.httpmarco.polocloud.api.players.ClusterPlayerProvider;
 import dev.httpmarco.polocloud.api.services.ClusterService;
@@ -51,5 +52,11 @@ public final class ClusterInstance extends CloudAPI {
         });
 
         ClusterInstanceFactory.startPlatform(args);
+    }
+
+    @Override
+    public ModuleProvider moduleProvider() {
+        //TODO
+        throw new UnsupportedOperationException("moduleProvider is only supported on local node");
     }
 }
