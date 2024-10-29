@@ -19,7 +19,7 @@ gson = "2.11.0"
 jline = "3.27.1"
 
 # platforms
-spigot = "1.20.4-R0.1-SNAPSHOT"
+spigot = "1.21.3-R0.1-SNAPSHOT"
 velocity = "3.3.0-SNAPSHOT"
 bungeecord = "1.20-R0.2"
 waterdogpe = "1.2.4"
