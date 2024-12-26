@@ -17,7 +17,7 @@ log4j2 = "2.24.3"
 gson = "2.11.0"
 
 # console
-jline = "3.27.1"
+jline = "3.28.0"
 
 # platforms
 spigot = "1.20.4-R0.1-SNAPSHOT"
