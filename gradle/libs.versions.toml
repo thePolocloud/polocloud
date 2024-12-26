@@ -11,7 +11,7 @@ osgan = "1.1.1-SNAPSHOT"
 netty5 = "5.0.0.Alpha5"
 
 #logging
-log4j2 = "2.24.2"
+log4j2 = "2.24.3"
 
 # configuration
 gson = "2.11.0"
