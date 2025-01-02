@@ -22,7 +22,7 @@ gson = "2.8.6"
 
 # Protocol
 netty = "5.0.0.Alpha5"
-netline = "1.0.3-SNAPSHOT"
+netline = "1.0.4-SNAPSHOT"
 
 # terminal
 jline = "3.28.0"
