@@ -3,7 +3,7 @@ import org.gradle.kotlin.dsl.*
 
 plugins {
     id("java")
-    id("com.gradleup.shadow") version "9.0.0-beta13"
+    id("com.gradleup.shadow") version "9.0.0-SNAPSHOT"
     id("com.google.protobuf") version "0.9.5"
 }
 
