@@ -14,7 +14,7 @@ lombok = "1.18.38"
 gson = "2.13.1"
 
 # terminal
-jline = "3.30.1"
+jline = "3.30.2"
 
 # Networking
 grpc = "1.72.0"
