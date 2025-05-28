@@ -17,7 +17,7 @@ gson = "2.13.1"
 jline = "3.30.1"
 
 # Networking
-grpc = "1.72.0"
+grpc = "1.73.0"
 redis = "6.6.0.RELEASE"
 
 # Platforms
