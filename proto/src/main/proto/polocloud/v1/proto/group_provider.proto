@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package dev.httpmarco.polocloud.v1.proto;
+
+message GroupSnapshot {
+  string name = 1;
+  GroupType type = 2;
+  int64 minimumMemory = 3;
+  int64 maximumMemory = 4;
+  int64 minimumOnline = 5;
+  int64 maximumOnline = 6;
+}
+
+enum GroupType {
+  SERVICE = 0;
+  SERVER = 1;
+  PROXY = 2;
+}
