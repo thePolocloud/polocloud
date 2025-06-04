@@ -17,12 +17,20 @@ interface Runtime {
          * @return the most suitable [Runtime] implementation for the current environment.
          */
         fun create(): Runtime {
-            return listOf(
+            val runtime = listOf(
                 KubernetesRuntime(),
                 DockerRuntime(),
                 LocalRuntime() // Fallback if others are not runnable
             ).firstOrNull { it.runnable() } ?: LocalRuntime()
+            runtime.boot() // Boot the runtime if necessary
+            return runtime
         }
+    }
+
+    fun boot() {
+        // Default implementation does nothing.
+        // This method can be overridden by specific runtime implementations
+        // to perform any necessary bootstrapping or initialization.
     }
 
     /**
