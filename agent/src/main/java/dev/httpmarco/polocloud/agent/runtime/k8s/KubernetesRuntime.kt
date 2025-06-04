@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 class KubernetesRuntime : Runtime {
 
     private val kubernetesClient = KubernetesClientBuilder().build()
-    private val groupStorage = KubernetesRuntimeGroupStorage()
+    private val groupStorage = KubernetesRuntimeGroupStorage(kubernetesClient)
     private val serviceStorage = KubernetesRuntimeServiceStorage()
 
     override fun runnable(): Boolean {
@@ -22,10 +22,6 @@ class KubernetesRuntime : Runtime {
             logger.debug("Failed to connect to Kubernetes API: ${e.javaClass.simpleName} - ${e.message}")
             false
         }
-    }
-
-    override fun boot() {
-
     }
 
     override fun serviceStorage() = serviceStorage

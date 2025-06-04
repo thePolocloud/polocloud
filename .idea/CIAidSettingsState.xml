@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CIAidSettingsState">
+    <option name="yamlToUserMarkings">
+      <map>
+        <entry key="$PROJECT_DIR$/k8s/group.yml" value="true" />
+        <entry key="$PROJECT_DIR$/k8s/local-polocloud-init.yml" value="true" />
+      </map>
+    </option>
+  </component>
+</project>

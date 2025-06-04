@@ -2,10 +2,17 @@ package dev.httpmarco.polocloud.agent.runtime.k8s
 
 import dev.httpmarco.polocloud.agent.groups.Group
 import dev.httpmarco.polocloud.agent.runtime.RuntimeGroupStorage
+import io.fabric8.kubernetes.client.KubernetesClient
 
-class KubernetesRuntimeGroupStorage : RuntimeGroupStorage {
+class KubernetesRuntimeGroupStorage(private val kubeClient: KubernetesClient) : RuntimeGroupStorage {
 
     override fun items(): List<Group> {
-        return emptyList()
+        return kubeClient
+            .resources(KubernetesGroup::class.java)
+            .list()
+            .getItems()
+            .stream()
+            .map({ group -> Group(group.spec) })
+            .toList()
     }
 }
