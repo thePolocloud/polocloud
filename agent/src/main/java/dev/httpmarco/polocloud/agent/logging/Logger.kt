@@ -3,6 +3,7 @@ package dev.httpmarco.polocloud.agent.logging
 import com.github.ajalt.mordant.rendering.TextColors.Companion.rgb
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.rendering.TextStyle
+import java.time.LocalTime
 
 class Logger {
 
@@ -27,7 +28,7 @@ class Logger {
     }
 
     private fun log(level: String, style: TextStyle, message: String) {
-        val timestamp = java.time.LocalTime.now().withNano(0)
+        val timestamp = LocalTime.now().withNano(0).format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"))
         terminal.println("${("$timestamp")} | ${style("$level:")} $message")
     }
 }

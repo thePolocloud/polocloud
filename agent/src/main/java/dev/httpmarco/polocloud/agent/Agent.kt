@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.agent
 
+import dev.httpmarco.polocloud.agent.grpc.GrpcServerEndpoint
 import dev.httpmarco.polocloud.agent.logging.Logger
 import dev.httpmarco.polocloud.agent.runtime.Runtime
 
@@ -11,14 +12,20 @@ object Agent {
 
     private val runtime : Runtime
 
+    private val grpcServerEndpoint = GrpcServerEndpoint()
+
     init {
         // display the default log information
         logger.info("Starting PoloCloud Agent...")
 
-        runtime = Runtime.create()
+        this.runtime = Runtime.create()
+        this.grpcServerEndpoint.connect()
 
         logger.info("Using runtime: ${runtime::class.simpleName}")
         logger.info("Load groups: ${runtime.groupStorage().items().size}")
+    }
 
+    fun close() {
+        this.grpcServerEndpoint.close()
     }
 }
