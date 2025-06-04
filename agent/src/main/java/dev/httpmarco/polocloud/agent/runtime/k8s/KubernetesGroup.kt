@@ -9,7 +9,7 @@ import io.fabric8.kubernetes.model.annotation.Version
 
 @Kind("Group")
 @Version("v1")
-@Group("Group")
+@Group("polocloud.de")
 class KubernetesGroup() : CustomResource<GroupData, KubernetesGroupStatus>(), Namespaced {
 
 }
