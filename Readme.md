@@ -39,7 +39,19 @@
 
 #### 3.1 Local
 
+To run PoloCloud **locally** on your machine, you need:
+
+- A local Java environment (e.g., JDK 17)
+
+**Steps:**
+
+1. Clone the project and build dependencies.
+2. Start the application via the start script.
+
 #### 3.2 Docker
+
+You can containerize PoloCloud using Docker to run it in an isolated environment easily.
+
 
 #### 3.3 Kubernetes
 
