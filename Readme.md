@@ -17,6 +17,14 @@
             <li><a href="#go">Go</a></li>
           </ul>
         </li>
+        <li>
+          <a href="#sdk">Running</a>
+          <ul>
+            <li><a href="#local">Local</a></li>
+            <li><a href="#docker">Docker</a></li>
+            <li><a href="#k8s">Kubernetes</a></li>
+          </ul>
+        </li>
     </ol>
 </details>
 
@@ -26,3 +34,20 @@
 
 ### 2. Using the sdk
 
+
+### 3. Running
+
+#### 3.1 Local
+
+#### 3.2 Docker
+
+#### 3.3 Kubernetes
+
+[![Cluster Setup Status](https://img.shields.io/github/actions/workflow/status/httpmarco/polocloud/cluster-setup.yml?label=cluster%20setup)](https://github.com/httpmarco/polocloud/actions/workflows/cluster-setup.yml)
+
+To run PoloCloud in a Kubernetes cluster, you can use the provided initialization script.  
+It sets up the required namespace, service accounts, and roles.
+
+```sh
+kubectl apply -f https://raw.githubusercontent.com/httpmarco/polocloud/master/scripts/init-cluster.yml
+```

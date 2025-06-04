@@ -1,4 +1,10 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: nextcluster
+  name: polocloud
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent
+  namespace: polocloud

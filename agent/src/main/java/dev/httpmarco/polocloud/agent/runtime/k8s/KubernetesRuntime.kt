@@ -25,7 +25,7 @@ class KubernetesRuntime : Runtime {
     }
 
     override fun boot() {
-        init(kubernetesClient)
+
     }
 
     override fun serviceStorage() = serviceStorage
