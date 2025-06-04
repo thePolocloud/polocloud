@@ -10,7 +10,7 @@ val logger = Logger()
 
 object Agent {
 
-    private val runtime : Runtime
+    private lateinit var runtime : Runtime
 
     private val grpcServerEndpoint = GrpcServerEndpoint()
 
@@ -23,6 +23,11 @@ object Agent {
 
         logger.info("Using runtime: ${runtime::class.simpleName}")
         logger.info("Load groups: ${runtime.groupStorage().items().size}")
+
+
+        while (true) {
+            // for testing
+        }
     }
 
     fun close() {

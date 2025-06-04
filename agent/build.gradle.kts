@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.1.20"
+    id("com.gradleup.shadow") version "9.0.0-beta13"
 }
 
 group = "dev.httpmarco.polocloud"
@@ -19,6 +20,19 @@ dependencies {
     implementation(libs.bundles.terminal)
     implementation(libs.bundles.runtime)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+}
+
+tasks.shadowJar {
+    archiveFileName.set("polocloud-agent.jar")
+    manifest {
+        attributes("Main-Class" to "dev.httpmarco.polocloud.agent.AgentBootKt");
+    }
+}
+
+tasks {
+    build {
+        dependsOn(shadowJar)
+    }
 }
 
 tasks.test {
