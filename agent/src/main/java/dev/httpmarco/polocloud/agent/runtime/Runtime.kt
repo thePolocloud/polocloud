@@ -51,4 +51,14 @@ interface Runtime {
      */
     fun groupStorage(): RuntimeGroupStorage
 
+    /**
+     * Shuts down the runtime.
+     * This method can be overridden by specific runtime implementations
+     * to perform any necessary shutdown operations.
+     */
+    fun shutdown() {
+        // Default implementation does nothing.
+        // This method can be overridden by specific runtime implementations
+        // to perform any necessary shutdown operations.
+    }
 }
