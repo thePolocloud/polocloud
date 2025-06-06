@@ -23,7 +23,7 @@ dependencies {
     compileOnly(project(":polocloud-api"))
     compileOnly(libs.bundles.grpc)
 
-    compileOnly("io.netty:netty-all:4.2.1.Final")
+    compileOnly("io.netty:netty-all:4.2.2.Final")
 
     compileOnly(libs.bundles.utils)
     annotationProcessor(libs.bundles.utils)
