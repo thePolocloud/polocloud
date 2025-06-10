@@ -29,6 +29,6 @@ class Logger {
 
     private fun log(level: String, style: TextStyle, message: String) {
         val timestamp = LocalTime.now().withNano(0).format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"))
-        terminal.println("${("$timestamp")} | ${style("$level:")} $message")
+        println("${("$timestamp")} | ${style("$level:")} $message")
     }
 }

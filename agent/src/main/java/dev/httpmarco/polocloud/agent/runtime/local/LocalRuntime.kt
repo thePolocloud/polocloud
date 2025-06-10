@@ -26,4 +26,8 @@ class LocalRuntime : Runtime {
     override fun shutdown() {
         this.terminal.shutdown()
     }
+
+    override fun postInitialize() {
+        this.terminal.jLine3Reading.start()
+    }
 }

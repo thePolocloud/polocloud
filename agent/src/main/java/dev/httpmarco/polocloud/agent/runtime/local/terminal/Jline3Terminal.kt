@@ -12,7 +12,7 @@ class Jline3Terminal {
         .encoding(StandardCharsets.UTF_8)
         .dumb(true)
         .jansi(true)
-        .build();
+        .build()
     private val lineReader = LineReaderBuilder.builder()
         .terminal(this.terminal)
         // .completer(new PolocloudTerminalCompleter ())
@@ -22,11 +22,9 @@ class Jline3Terminal {
         .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
         .option(LineReader.Option.AUTO_PARAM_SLASH, false)
         .variable(LineReader.BELL_STYLE, "none")
-        .build();
+        .build()
 
-    init {
-        JLine3Reading(this.lineReader)
-    }
+    val jLine3Reading = JLine3Reading(this.lineReader)
 
     fun shutdown() {
         this.terminal.close()

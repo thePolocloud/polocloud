@@ -25,6 +25,8 @@ object Agent {
         logger.info("Load groups: ${runtime.groupStorage().items().size}")
 
 
+        this.runtime.postInitialize()
+
         while (true) {
             // for testing
         }
