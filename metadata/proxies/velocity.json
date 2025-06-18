@@ -1,3 +1,5 @@
 {
-  "name": "velocity"
+  "name": "velocity",
+  "type": "PROXY",
+  "language": "JAVA"
 }

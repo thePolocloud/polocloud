@@ -1,3 +1,5 @@
 {
-  "name": "Paper"
+  "name": "Paper",
+  "type": "SERVER",
+  "language": "JAVA"
 }
