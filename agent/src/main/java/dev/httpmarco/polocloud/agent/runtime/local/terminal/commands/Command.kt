@@ -34,7 +34,7 @@ abstract class Command(private val name: String, private val description: String
         return !this.commandSyntaxes.isEmpty()
     }
 
-    override fun equals(obj: Any?): Boolean {
-        return obj is Command && obj.name == name
+    override fun equals(other: Any?): Boolean {
+        return other is Command && other.name == name
     }
 }
