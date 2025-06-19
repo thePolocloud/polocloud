@@ -12,7 +12,7 @@ class KeywordArgument(key: String?) : CommandArgument<String?>(key) {
         return ""
     }
 
-    override fun buildResult(input: String?): String {
+    override fun buildResult(input: String): String {
         return ""
     }
 

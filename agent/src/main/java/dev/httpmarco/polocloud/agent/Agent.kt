@@ -10,11 +10,14 @@ import dev.httpmarco.polocloud.agent.runtime.Runtime
 val logger = Logger()
 val i18n = I18nPolocloudAgent();
 
-object Agent {
+class Agent {
 
-    private lateinit var runtime : Runtime
-
+    lateinit var runtime : Runtime
     private val grpcServerEndpoint = GrpcServerEndpoint()
+
+    companion object {
+        val instance = Agent()
+    }
 
     init {
         // display the default log information

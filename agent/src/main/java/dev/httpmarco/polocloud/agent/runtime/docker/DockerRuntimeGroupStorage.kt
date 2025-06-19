@@ -8,4 +8,8 @@ class DockerRuntimeGroupStorage : RuntimeGroupStorage {
     override fun items(): List<Group> {
         return listOf()
     }
+
+    override fun item(identifier: String): Group? {
+        TODO("Not yet implemented")
+    }
 }

@@ -15,4 +15,8 @@ class KubernetesRuntimeGroupStorage(private val kubeClient: KubernetesClient) : 
             .map({ group -> Group(group.spec) })
             .toList()
     }
+
+    override fun item(identifier: String): Group? {
+        TODO("Not yet implemented")
+    }
 }

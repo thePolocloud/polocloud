@@ -6,4 +6,6 @@ interface RuntimeGroupStorage {
 
     fun items(): List<Group>
 
+    fun item(identifier: String): Group?
+
 }

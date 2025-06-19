@@ -20,4 +20,8 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
             return@map Group(Json.decodeFromString(Files.readString(it)))
         }.toList()
     }
+
+    override fun item(identifier: String): Group? {
+        TODO("Not yet implemented")
+    }
 }
