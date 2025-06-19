@@ -1,16 +1,11 @@
 plugins {
     kotlin("jvm") version "2.1.20"
-}
-
-group = "dev.httpmarco.polocloud"
-version = "1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
+    kotlin("plugin.serialization") version "1.9.0"
 }
 
 dependencies {
     testImplementation(kotlin("test"))
+    implementation(libs.gson)
 }
 
 tasks.test {
