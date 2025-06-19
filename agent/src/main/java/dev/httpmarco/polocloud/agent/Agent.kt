@@ -1,12 +1,14 @@
 package dev.httpmarco.polocloud.agent
 
 import dev.httpmarco.polocloud.agent.grpc.GrpcServerEndpoint
+import dev.httpmarco.polocloud.agent.i18n.I18nPolocloudAgent
 import dev.httpmarco.polocloud.agent.logging.Logger
 import dev.httpmarco.polocloud.agent.runtime.Runtime
 
 // global terminal instance for the agent
 // this is used to print messages to the console
 val logger = Logger()
+val i18n = I18nPolocloudAgent();
 
 object Agent {
 
