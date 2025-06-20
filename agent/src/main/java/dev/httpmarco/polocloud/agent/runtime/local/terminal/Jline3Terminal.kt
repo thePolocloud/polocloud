@@ -1,5 +1,7 @@
 package dev.httpmarco.polocloud.agent.runtime.local.terminal
 
+import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.CommandService
+import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.ClearCommand
 import org.jline.reader.LineReader
 import org.jline.reader.LineReaderBuilder
 import org.jline.terminal.TerminalBuilder
@@ -24,7 +26,16 @@ class Jline3Terminal {
         .variable(LineReader.BELL_STYLE, "none")
         .build()
 
-    val jLine3Reading = JLine3Reading(this.lineReader)
+    val commandService = CommandService()
+    val jLine3Reading = JLine3Reading(this.lineReader, this.commandService)
+
+    init {
+        this.commandService.registerCommand(ClearCommand(this))
+    }
+
+    fun clearScreen() {
+        println("\u001b[H\u001b[2J")
+    }
 
     fun shutdown() {
         this.terminal.close()

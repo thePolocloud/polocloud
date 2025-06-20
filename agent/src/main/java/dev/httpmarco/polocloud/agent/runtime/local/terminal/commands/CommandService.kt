@@ -1,0 +1,36 @@
+package dev.httpmarco.polocloud.agent.runtime.local.terminal.commands
+
+import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.ShutdownCommand
+import java.util.*
+
+class CommandService {
+    val commands = ArrayList<Command>()
+
+    init {
+        this.registerCommand(ShutdownCommand())
+    }
+
+    fun commandsByName(name: String): MutableList<Command> {
+        return commands.stream().filter {
+            it!!.name == name || Arrays.stream(it.aliases).anyMatch({ s -> s.equals(name) })
+        }.toList()
+    }
+
+    fun registerCommand(command: Command) {
+        this.commands.add(command)
+    }
+
+    fun registerCommands(vararg commands: Command) {
+        for (command in commands) {
+            registerCommand(command)
+        }
+    }
+
+    fun unregisterCommand(command: Command) {
+        this.commands.remove(command)
+    }
+
+    fun call(commandId: String, args: Array<String>) {
+        CommandParser.serializer(this, commandId, args)
+    }
+}

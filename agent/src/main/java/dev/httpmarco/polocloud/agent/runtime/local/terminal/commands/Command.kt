@@ -1,21 +1,12 @@
 package dev.httpmarco.polocloud.agent.runtime.local.terminal.commands;
 
-abstract class Command(private val name: String, private val description: String?, vararg aliases: List<String>) {
+abstract class Command(val name: String, val description: String, vararg val aliases: String) {
 
-    private var defaultExecution: CommandExecution? = null
-    private val commandSyntaxes: MutableList<CommandSyntax?> = ArrayList()
-
-
-    fun name(): String {
-        return name
-    }
+    var defaultExecution: CommandExecution? = null
+    val commandSyntaxes: MutableList<CommandSyntax?> = ArrayList()
 
     fun syntax(execution: CommandExecution, vararg arguments: CommandArgument<*>) {
         this.commandSyntaxes.add(CommandSyntax(execution, null, arguments))
-    }
-
-    fun defaultExecution(): CommandExecution? {
-        return this.defaultExecution
     }
 
     fun commandSyntaxes(): MutableList<CommandSyntax?> {
@@ -26,7 +17,7 @@ abstract class Command(private val name: String, private val description: String
         this.commandSyntaxes.add(CommandSyntax(execution, description, arguments))
     }
 
-    fun defaultExecution(execution: CommandExecution?) {
+    fun defaultExecution(execution: CommandExecution) {
         this.defaultExecution = execution
     }
 
@@ -36,5 +27,13 @@ abstract class Command(private val name: String, private val description: String
 
     override fun equals(other: Any?): Boolean {
         return other is Command && other.name == name
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + description.hashCode()
+        result = 31 * result + (defaultExecution?.hashCode() ?: 0)
+        result = 31 * result + commandSyntaxes.hashCode()
+        return result
     }
 }

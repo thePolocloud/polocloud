@@ -1,12 +1,12 @@
 package dev.httpmarco.polocloud.agent.runtime.local.terminal.commands
 
-abstract class CommandArgument<T>(open val key: String?) {
+abstract class CommandArgument<T>(open val key: String) {
 
-    open fun defaultArgs(context: CommandContext?): MutableList<String?> {
+    open fun defaultArgs(context: CommandContext): MutableList<String> {
         return mutableListOf()
     }
 
-    // if one argument must be special type
+    // if one argument must be a special type
     open fun predication(rawInput: String): Boolean {
         return !(rawInput.startsWith("<") && rawInput.endsWith(">"))
     }
