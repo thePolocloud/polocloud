@@ -10,14 +10,14 @@ plugins {
 dependencies {
     implementation(libs.bundles.proto)
 
-    protobufProtoc("com.google.protobuf:protoc:3.25.7")
+    protobufProtoc("com.google.protobuf:protoc:3.25.8")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
 }
 
 protobuf {
     protobuf {
         protoc {
-            artifact = "com.google.protobuf:protoc:3.25.7"
+            artifact = "com.google.protobuf:protoc:3.25.8"
         }
         plugins {
             id("grpc") {
