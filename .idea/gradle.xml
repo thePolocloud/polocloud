@@ -10,6 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/agent" />
+            <option value="$PROJECT_DIR$/launcher" />
             <option value="$PROJECT_DIR$/platforms" />
             <option value="$PROJECT_DIR$/proto" />
             <option value="$PROJECT_DIR$/sdk" />
