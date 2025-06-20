@@ -8,6 +8,9 @@ fun main(args: Array<String>) {
     println("\u001b[H\u001b[2J")
     // Not work always, but it is a good try
 
+    // register a clean hook for good shutdown
+    registerHook()
+
     Agent
 }
 
