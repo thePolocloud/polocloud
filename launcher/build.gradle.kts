@@ -1,15 +1,14 @@
 plugins {
     kotlin("jvm") version "2.1.20"
+    id("com.gradleup.shadow") version "9.0.0-beta13"
 }
 
 dependencies {
     testImplementation(kotlin("test"))
 }
 
-tasks.jar {
-    from(
-        includeLibs("agent")
-    )
+tasks.shadowJar {
+    from(includeLibs("agent", "shadowJar"))
 
     manifest {
         attributes("Main-Class" to "dev.httpmarco.polocloud.launcher.PolocloudLauncherKt")
@@ -28,5 +27,5 @@ kotlin {
 }
 
 fun includeLibs(project: String, task: String = "jar"): Task {
-    return project(project).tasks.getByPath(":$project:$task")
+    return project(":$project").tasks.getByPath(":$project:$task")
 }

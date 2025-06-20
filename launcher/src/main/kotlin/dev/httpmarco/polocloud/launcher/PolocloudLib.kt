@@ -17,12 +17,10 @@ class PolocloudLib(val name: String) {
         /**
          * Creates a list of PolocloudLib instances from the provided names.
          */
-        fun of(vararg name: String): LinkedList<PolocloudLib> {
+        fun of(vararg name: String): List<PolocloudLib> {
             return Arrays.stream(name).map {
-                if (it != null) {
-                    PolocloudLib(it)
-                }
-            }.collect(Collectors.toCollection(Supplier { LinkedList() }))
+                return@map PolocloudLib(it)
+            }.toList()
         }
     }
 

@@ -17,7 +17,7 @@ class PolocloudProcess : Thread() {
     override fun run() {
         val processBuilder = ProcessBuilder()
             .inheritIO()
-            .command("java", "-jar", "polocloud.jar")
+            .command(arguments())
 
         // copy all environment variables from the current process
         processBuilder.environment().putAll(System.getenv())
@@ -35,14 +35,18 @@ class PolocloudProcess : Thread() {
 
         val bootLib = this.processLibs.stream().filter { it.name == BOOT_LIB }.findFirst().orElseThrow { LibNotFoundException(BOOT_LIB) }
 
-        arguments.add("$usedJava/bin/java")
+        if(usedJava != null) {
+            arguments.add("$usedJava/bin/java")
+        } else {
+            arguments.add("java")
+        }
         arguments.add("-javaagent:%s".format(bootLib.target()))
 
         arguments.add("-cp")
         arguments.add(
             java.lang.String.join(
                 if (windowsProcess()) ";" else ":",
-                processLibs.stream().map({ it -> it.target().toString() }).toList()
+                processLibs.stream().map { it.target().toString() }.toList()
             )
         )
         arguments.add(bootLib.mainClass())
