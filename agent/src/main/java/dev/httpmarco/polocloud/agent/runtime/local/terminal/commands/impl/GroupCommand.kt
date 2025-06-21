@@ -31,5 +31,9 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
             Agent.instance.runtime.groupStorage().publish(Group(GroupData(context.arg(nameArgument))))
         }, KeywordArgument("create"), nameArgument)
 
+        syntax(execution = { context -> {
+            Agent.instance.runtime.groupStorage().destroy(context.arg(groupArgument))
+            logger.info("Group ${context.arg(groupArgument).data.name} deleted.")
+        } }, KeywordArgument("delete"), groupArgument)
     }
 }

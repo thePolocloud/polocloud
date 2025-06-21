@@ -4,15 +4,17 @@ import dev.httpmarco.polocloud.agent.groups.Group
 import dev.httpmarco.polocloud.agent.runtime.RuntimeGroupStorage
 import kotlinx.serialization.json.Json
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.listDirectoryEntries
 
 private val STORAGE_PATH = Path("local/groups")
 
 class LocalRuntimeGroupStorage : RuntimeGroupStorage {
 
-    private var cachedGroups = listOf<Group>()
+    private var cachedGroups: MutableList<Group>
 
     init {
         // create directory if it does not exist
@@ -39,10 +41,16 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
     }
 
     override fun publish(group: Group) {
-        Files.writeString(STORAGE_PATH.resolve(group.data.name + ".json"), Json.encodeToString(group.data))
+        Files.writeString(groupPath(group), Json.encodeToString(group.data))
+        this.cachedGroups.add(group)
     }
 
     override fun destroy(group: Group) {
-        TODO("Not yet implemented")
+        this.cachedGroups.remove(group)
+        this.groupPath(group).deleteIfExists()
+    }
+
+    private fun groupPath(group: Group): Path {
+        return STORAGE_PATH.resolve(group.data.name + ".json")
     }
 }
