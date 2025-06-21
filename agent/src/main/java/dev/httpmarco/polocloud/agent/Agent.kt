@@ -12,7 +12,7 @@ val i18n = I18nPolocloudAgent();
 
 class Agent {
 
-    lateinit var runtime : Runtime
+    var runtime: Runtime
     private val grpcServerEndpoint = GrpcServerEndpoint()
 
     companion object {
@@ -31,10 +31,6 @@ class Agent {
 
 
         this.runtime.postInitialize()
-
-        while (true) {
-            // for testing
-        }
     }
 
     fun close() {

@@ -8,4 +8,8 @@ interface RuntimeGroupStorage {
 
     fun item(identifier: String): Group?
 
+    fun publish(group: Group)
+
+    fun destroy(group: Group)
+
 }

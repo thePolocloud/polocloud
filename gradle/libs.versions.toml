@@ -10,7 +10,6 @@ gson = "1.8.1"
 grpc = "1.73.0"
 
 # terminal
-mordant = "3.0.2"
 jline = "3.30.4"
 
 slf4j = "2.0.17"
@@ -32,7 +31,6 @@ grpc-stub = { group = "io.grpc", name = "grpc-stub", version.ref = "grpc" }
 grpc-services = { group = "io.grpc", name = "grpc-services", version.ref = "grpc" }
 
 # terminal
-mordant = { group = "com.github.ajalt.mordant", name = "mordant", version.ref = "mordant" }
 jline = { group = "org.jline", name = "jline", version.ref = "jline" }
 
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
@@ -47,5 +45,5 @@ k8s = { group = "io.fabric8", name = "kubernetes-client", version.ref = "k8s" }
 
 [bundles]
 proto = ["grpc-protobuf", "grpc-stub", "grpc-services"]
-terminal = ["mordant", "slf4j", "log4j-api", "log4j-core", "log4j-slf4j2-impl"]
+terminal = ["slf4j", "log4j-api", "log4j-core", "log4j-slf4j2-impl"]
 runtime = ["docker", "docker-http", "k8s"]
