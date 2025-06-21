@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.agent
 
+import org.jline.jansi.AnsiConsole
 import kotlin.system.exitProcess
 
 private val SHUTDOWN_HOOK = "polocloud-shutdown-hook"
@@ -18,6 +19,9 @@ fun exitPolocloud() {
     }
 
     idleShutdown = true
+
+    
+    AnsiConsole.systemUninstall()
 
     if (Thread.currentThread().name != SHUTDOWN_HOOK) {
         exitProcess(-1)
