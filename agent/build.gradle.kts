@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.1.21"
+    kotlin("jvm") version "2.2.0"
     id("com.gradleup.shadow") version "9.0.0-beta13"
     kotlin("plugin.serialization") version "2.2.0"
 }
