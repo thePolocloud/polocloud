@@ -11,8 +11,7 @@ class JLine3Reading(private val lineReader: LineReader, private val commandServi
 
         while (!isInterrupted) {
             try {
-                val line = lineReader.readLine("polocloud > ")
-
+                val line = lineReader.readLine(LoggingColor.translate("polocloud &8» &7"))
                 if (line.isBlank()) {
                     // we reset the terminal prompt as message -> we have a clean console
                     println(Ansi.ansi().cursorUpLine().eraseLine().toString() + Ansi.ansi().cursorUp(1).toString())
