@@ -20,7 +20,7 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
                 return@syntax
             }
 
-            groupStorage.items().forEach { logger.info(" - $it.data.name") }
+            groupStorage.items().forEach { logger.info(" - ${it.data.name}") }
         }, KeywordArgument("list"))
 
         var groupArgument = GroupArgument()
@@ -28,11 +28,11 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
         var nameArgument = TextArgument("name")
 
         syntax(execution = { context ->
-            Agent.instance.runtime.groupStorage().publish(Group(GroupData(context.arg(nameArgument))))
+                Agent.instance.runtime.groupStorage().publish(Group(GroupData(context.arg(nameArgument))))
         }, KeywordArgument("create"), nameArgument)
 
-        syntax(execution = { context -> {
-            Agent.instance.runtime.groupStorage().destroy(context.arg(groupArgument))
+            syntax(execution = { context -> {
+                Agent.instance.runtime.groupStorage().destroy(context.arg(groupArgument))
             logger.info("Group ${context.arg(groupArgument).data.name} deleted.")
         } }, KeywordArgument("delete"), groupArgument)
     }

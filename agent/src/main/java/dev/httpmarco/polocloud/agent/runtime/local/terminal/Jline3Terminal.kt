@@ -40,5 +40,4 @@ class Jline3Terminal {
     fun shutdown() {
         this.terminal.close()
     }
-
 }
