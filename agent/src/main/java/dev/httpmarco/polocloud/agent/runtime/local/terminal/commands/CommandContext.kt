@@ -1,7 +1,7 @@
 package dev.httpmarco.polocloud.agent.runtime.local.terminal.commands
 
 class CommandContext {
-    private val contexts: MutableMap<String?, Any?> = HashMap()
+    private val contexts = HashMap<String, Any?>()
 
     fun <T> arg(argument: CommandArgument<T>): T {
         return contexts[argument.key] as T

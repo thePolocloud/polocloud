@@ -41,8 +41,6 @@ object CommandParser {
                     continue
                 }
 
-
-                println("Found command: ${command.name} with syntax: ${syntaxCommand.usage()}")
                 val commandContext = CommandContext()
 
                 var provedSyntax = true
@@ -52,7 +50,6 @@ object CommandParser {
                     val argument = syntaxCommand.arguments[i]
 
                     if (i >= args.size) {
-                        println("Not enough arguments provided for command: ${command.name}")
                         provedSyntax = false
                         break
                     }
@@ -85,9 +82,6 @@ object CommandParser {
                     return true
                 }
 
-                println("Executing command: ${command.name} with arguments: ${args.contentToString()}")
-                println("Command context: $commandContext")
-                println("Command syntax: ${syntaxCommand.usage()}")
                 syntaxCommand.execution.execute(commandContext)
                 return true
             }

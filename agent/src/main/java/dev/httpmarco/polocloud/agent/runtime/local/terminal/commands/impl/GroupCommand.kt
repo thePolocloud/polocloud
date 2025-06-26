@@ -22,22 +22,17 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
             groupStorage.items().forEach { logger.info(" - ${it.data.name} &8(&7minOnlineServices&8=&7${it.data.minOnlineService}&8)") }
         }, KeywordArgument("list"))
 
-        var groupArgument = GroupArgument()
+        val groupArgument = GroupArgument()
 
-        syntax(execution = { context -> {
-            logger.info("b")
-        }}, groupArgument, KeywordArgument("info"))
-
-        syntax(execution = { context -> {
+        syntax(execution = { context ->
             logger.info("a")
             groupStorage.destroy(context.arg(groupArgument))
             logger.info("Group ${context.arg(groupArgument).data.name} deleted.")
-        }
         }, groupArgument, KeywordArgument("delete"))
 
-        var nameArgument = TextArgument("name")
-        var minOnlineServices = IntArgument("minOnlineServices")
-        var maxOnlineServices = IntArgument("maxOnlineServices")
+        val nameArgument = TextArgument("name")
+        val minOnlineServices = IntArgument("minOnlineServices")
+        val maxOnlineServices = IntArgument("maxOnlineServices")
 
         syntax(execution = { context ->
             Agent.instance.runtime.groupStorage().publish(
@@ -51,5 +46,21 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
             )
             logger.info("Group &f${context.arg(nameArgument)} successfully created&8.")
         }, KeywordArgument("create"), nameArgument, minOnlineServices, maxOnlineServices)
+
+
+        syntax(execution = { context -> {
+            Agent.instance.runtime.groupStorage().publish(
+                Group(
+                    GroupData(
+                        context.arg(nameArgument),
+                        context.arg(minOnlineServices),
+                        context.arg(minOnlineServices)
+                    )
+                )
+            )
+            logger.info("Group &f${context.arg(nameArgument)} successfully created&8.")
+        }}, KeywordArgument("test1"), nameArgument, minOnlineServices)
+
+
     }
 }
