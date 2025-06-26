@@ -54,6 +54,11 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
         return this.cachedGroups.any { it.data.name == identifier }
     }
 
+    override fun update(group: Group) {
+        // overwrite the existing group file with the new data
+        Files.writeString(groupPath(group), Json.encodeToString(group.data))
+    }
+
     private fun groupPath(group: Group): Path {
         return STORAGE_PATH.resolve(group.data.name + ".json")
     }

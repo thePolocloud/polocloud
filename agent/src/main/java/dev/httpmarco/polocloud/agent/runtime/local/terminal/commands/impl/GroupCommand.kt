@@ -64,7 +64,17 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
 
 
         syntax(execution = { context ->
-            TODO()
+            var editType = context.arg(GroupEditFlagArgument())
+            var group = context.arg(groupArgument)
+            var value = context.arg(TextArgument("value"))
+
+            when (editType) {
+                GroupEditFlagArgument.TYPES.MIN_ONLINE_SERVICES -> group.data.minOnlineService = value.toInt()
+                GroupEditFlagArgument.TYPES.MAX_ONLINE_SERVICES -> group.data.maxOnlineService = value.toInt()
+            }
+
+            group.update()
+            logger.info("The group &f${group.data.name} &7has been edited&8: &7Update &3${editType.name} &7to &f$value&8.")
         }, groupArgument, KeywordArgument("edit"), GroupEditFlagArgument(), TextArgument("value"))
     }
 }

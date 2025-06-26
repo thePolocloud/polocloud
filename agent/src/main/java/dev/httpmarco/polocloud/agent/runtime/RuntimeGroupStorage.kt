@@ -14,4 +14,6 @@ interface RuntimeGroupStorage {
 
     fun present(identifier: String): Boolean
 
+    fun update(group: Group)
+
 }

@@ -24,4 +24,8 @@ class DockerRuntimeGroupStorage : RuntimeGroupStorage {
     override fun present(identifier: String): Boolean {
         TODO("Not yet implemented")
     }
+
+    override fun update(group: Group) {
+        TODO("Not yet implemented")
+    }
 }
