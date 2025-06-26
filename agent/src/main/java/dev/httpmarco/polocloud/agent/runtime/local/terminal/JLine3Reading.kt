@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.agent.runtime.local.terminal
 
+import dev.httpmarco.polocloud.agent.exitPolocloud
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.CommandService
 import org.jline.jansi.Ansi
 import org.jline.reader.LineReader
@@ -11,7 +12,8 @@ class JLine3Reading(private val lineReader: LineReader, private val commandServi
 
         while (!isInterrupted) {
             try {
-                val line = lineReader.readLine(LoggingColor.translate("polocloud &8» &7"))
+                val line =
+                    lineReader.readLine(LoggingColor.translate("&bpolocloud&8@&7" + System.getenv("polocloud-version") + " &8» &7"))
                 if (line.isBlank()) {
                     // we reset the terminal prompt as message -> we have a clean console
                     println(Ansi.ansi().cursorUpLine().eraseLine().toString() + Ansi.ansi().cursorUp(1).toString())
@@ -23,13 +25,14 @@ class JLine3Reading(private val lineReader: LineReader, private val commandServi
                 val args = splat.copyOfRange(1, splat.size)
 
                 commandService.call(commandName, args)
-            }catch (ex : UserInterruptException) {
+            } catch (_: UserInterruptException) {
                 // pressing Ctrl+C or similar to interrupt reading
-                // TODO close
+                exitPolocloud()
                 break
             } catch (e: Exception) {
                 // Handle other exceptions that may occur during reading
                 println("An error occurred while reading input: ${e.message}")
+                e.printStackTrace()
             }
         }
     }

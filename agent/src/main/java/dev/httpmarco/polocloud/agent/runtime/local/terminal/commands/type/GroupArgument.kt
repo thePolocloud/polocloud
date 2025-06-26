@@ -14,4 +14,8 @@ class GroupArgument : CommandArgument<Group>("group") {
     override fun defaultArgs(context: CommandContext): MutableList<String> {
         return Agent.instance.runtime.groupStorage().items().map { it.data.name }.toMutableList()
     }
+
+    override fun predication(rawInput: String): Boolean {
+        return Agent.instance.runtime.groupStorage().present(rawInput)
+    }
 }

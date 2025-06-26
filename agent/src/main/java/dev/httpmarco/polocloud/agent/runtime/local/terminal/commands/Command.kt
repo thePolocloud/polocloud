@@ -2,14 +2,14 @@ package dev.httpmarco.polocloud.agent.runtime.local.terminal.commands;
 
 abstract class Command(val name: String, val description: String, vararg val aliases: String) {
 
-    var defaultExecution: CommandExecution? = null
-    val commandSyntaxes: MutableList<CommandSyntax?> = ArrayList()
+    var  defaultExecution: CommandExecution? = null
+    val commandSyntaxes: MutableList<CommandSyntax> = ArrayList()
 
     fun syntax(execution: CommandExecution, vararg arguments: CommandArgument<*>) {
         this.commandSyntaxes.add(CommandSyntax(execution, null, arguments))
     }
 
-    fun commandSyntaxes(): MutableList<CommandSyntax?> {
+    fun commandSyntaxes(): MutableList<CommandSyntax> {
         return this.commandSyntaxes
     }
 

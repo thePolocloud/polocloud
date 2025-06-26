@@ -12,4 +12,6 @@ interface RuntimeGroupStorage {
 
     fun destroy(group: Group)
 
+    fun present(identifier: String): Boolean
+
 }

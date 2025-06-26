@@ -9,6 +9,8 @@ import java.nio.charset.StandardCharsets
 
 class Jline3Terminal {
 
+    val commandService = CommandService()
+    
     private val terminal = TerminalBuilder.builder()
         .system(true)
         .encoding(StandardCharsets.UTF_8)
@@ -17,7 +19,7 @@ class Jline3Terminal {
         .build()
     private val lineReader = LineReaderBuilder.builder()
         .terminal(this.terminal)
-        // .completer(new PolocloudTerminalCompleter ())
+        .completer(Jline3Completer(commandService))
         .option(LineReader.Option.AUTO_MENU_LIST, true)
         .variable(LineReader.COMPLETION_STYLE_LIST_SELECTION, "fg:cyan")
         .variable(LineReader.COMPLETION_STYLE_LIST_BACKGROUND, "fg:default")
@@ -26,7 +28,6 @@ class Jline3Terminal {
         .variable(LineReader.BELL_STYLE, "none")
         .build()
 
-    val commandService = CommandService()
     val jLine3Reading = JLine3Reading(this.lineReader, this.commandService)
 
     init {

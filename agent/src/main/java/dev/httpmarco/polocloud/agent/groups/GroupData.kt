@@ -3,4 +3,4 @@ package dev.httpmarco.polocloud.agent.groups
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class GroupData(val name: String)
+data class GroupData(val name: String, val minOnlineService: Int, val maxOnlineService: Int)

@@ -29,5 +29,7 @@ class KubernetesRuntimeGroupStorage(private val kubeClient: KubernetesClient) : 
         kubeClient.resources(KubernetesGroup::class.java).withName(group.data.name).delete()
     }
 
-
+    override fun present(identifier: String): Boolean {
+        TODO("Not yet implemented")
+    }
 }

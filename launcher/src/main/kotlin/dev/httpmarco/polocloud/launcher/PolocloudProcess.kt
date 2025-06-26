@@ -20,7 +20,7 @@ class PolocloudProcess : Thread() {
             .command(arguments())
 
         // copy all environment variables from the current process
-        processBuilder.environment().putAll(System.getenv())
+        processBuilder.environment().put(VERSION_ENV_ID, System.getProperty(VERSION_ENV_ID))
 
         val process = processBuilder.start()
 

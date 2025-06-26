@@ -9,7 +9,7 @@ fun main(args: Array<String>) {
     val ownPath = PolocloudProcess::class.java.getProtectionDomain().codeSource.location.toURI().toPath()
 
     // we need to load the current version from the manifest data
-    System.setProperty(VERSION_ENV_ID,readManifest(VERSION_ENV_ID, ownPath)!!)
+    System.setProperty(VERSION_ENV_ID, readManifest(VERSION_ENV_ID, ownPath)!!)
 
     // generate lib folder
     LIB_DIRECTORY.createDirectories()

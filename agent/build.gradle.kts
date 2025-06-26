@@ -4,13 +4,6 @@ plugins {
     kotlin("plugin.serialization") version "2.2.0"
 }
 
-group = "dev.httpmarco.polocloud"
-version = "1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     testImplementation(kotlin("test"))
 

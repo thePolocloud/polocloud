@@ -14,16 +14,16 @@ private val STORAGE_PATH = Path("local/groups")
 
 class LocalRuntimeGroupStorage : RuntimeGroupStorage {
 
-    private var cachedGroups: MutableList<Group>
+    private var cachedGroups: ArrayList<Group>
 
     init {
         // create directory if it does not exist
         STORAGE_PATH.createDirectories()
 
         // load all groups from the storage path
-        cachedGroups = STORAGE_PATH.listDirectoryEntries("*.json").stream().map {
+        cachedGroups = ArrayList(STORAGE_PATH.listDirectoryEntries("*.json").stream().map {
             return@map Group(Json.decodeFromString(Files.readString(it)))
-        }.toList()
+        }.toList())
     }
 
     /**
@@ -48,6 +48,10 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
     override fun destroy(group: Group) {
         this.cachedGroups.remove(group)
         this.groupPath(group).deleteIfExists()
+    }
+
+    override fun present(identifier: String): Boolean {
+        return this.cachedGroups.any { it.data.name == identifier }
     }
 
     private fun groupPath(group: Group): Path {

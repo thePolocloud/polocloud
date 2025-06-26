@@ -7,10 +7,11 @@ import java.util.*
 import kotlin.Array
 import kotlin.Boolean
 
+
 object CommandParser {
 
     fun serializer(commandService: CommandService, name: String, args: Array<String>) {
-        // all commands with the same start name
+        // all command with same start name
         val commands = commandService.commandsByName(name)
 
         if (executeCommand(commands, args)) {
@@ -23,7 +24,7 @@ object CommandParser {
                 command.defaultExecution!!.execute(CommandContext())
             } else {
                 for (syntaxCommand in command.commandSyntaxes()) {
-                    logger.info("$command.name() $syntaxCommand!!.usage()")
+                    logger.info("${command.name} ${syntaxCommand.usage()}")
                 }
             }
         }
@@ -36,21 +37,22 @@ object CommandParser {
             }
 
             for (syntaxCommand in command.commandSyntaxes()) {
-                if (args.size != syntaxCommand!!.arguments.size && Arrays.stream(syntaxCommand.arguments)
-                        .noneMatch({ it -> it is StringArrayArgument })
-                ) {
+                if (args.size != syntaxCommand.arguments.size && Arrays.stream(syntaxCommand.arguments).noneMatch { it -> it is StringArrayArgument }) {
                     continue
                 }
 
+
+                println("Found command: ${command.name} with syntax: ${syntaxCommand.usage()}")
                 val commandContext = CommandContext()
 
                 var provedSyntax = true
-                var provedSyntaxWarning = Optional.empty<String>()
+                var provedSyntaxWarning : String? = null
 
                 for (i in 0..<syntaxCommand.arguments.size) {
                     val argument = syntaxCommand.arguments[i]
 
                     if (i >= args.size) {
+                        println("Not enough arguments provided for command: ${command.name}")
                         provedSyntax = false
                         break
                     }
@@ -58,22 +60,19 @@ object CommandParser {
                     val rawInput = args[i]
 
                     if (argument is StringArrayArgument) {
-                        commandContext.append(
-                            argument,
-                            argument.buildResult(java.lang.String.join(" ", *args.copyOfRange<String>(i, args.size))
-                            )
-                        )
+                        TODO()
+                        //commandContext.append(argument, argument.buildResult(String.join(" ", Arrays.copyOfRange(args, i, args.size))))
                         break
-                    } else if (argument is KeywordArgument) {
-                        if (!argument.key.equals(rawInput)) {
-                            provedSyntax = false
-                            break
+                    } else if (argument is KeywordArgument ) {
+                        if (argument.key != rawInput) {
+                            provedSyntax = false;
+                            break;
                         }
                     } else if (!argument.predication(rawInput)) {
-                        provedSyntaxWarning = Optional.of<String>(argument.wrongReason())
+                        provedSyntaxWarning = argument.wrongReason()
                         continue
                     }
-
+                        //   println("Adding argument: ${argument.key} with value: $rawInput")
                     commandContext.append(argument, argument.buildResult(rawInput))
                 }
 
@@ -81,11 +80,14 @@ object CommandParser {
                     continue
                 }
 
-                if (provedSyntaxWarning.isPresent()) {
-                    logger.warn(provedSyntaxWarning.get())
+                if (provedSyntaxWarning != null) {
+                    logger.warn(provedSyntaxWarning)
                     return true
                 }
 
+                println("Executing command: ${command.name} with arguments: ${args.contentToString()}")
+                println("Command context: $commandContext")
+                println("Command syntax: ${syntaxCommand.usage()}")
                 syntaxCommand.execution.execute(commandContext)
                 return true
             }
