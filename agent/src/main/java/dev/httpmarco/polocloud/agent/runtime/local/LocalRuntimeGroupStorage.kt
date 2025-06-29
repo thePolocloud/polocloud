@@ -16,6 +16,10 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
 
     private var cachedGroups: ArrayList<Group>
 
+    val json = Json {
+        prettyPrint = true
+    }
+
     init {
         // create directory if it does not exist
         STORAGE_PATH.createDirectories()
@@ -41,7 +45,7 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
     }
 
     override fun publish(group: Group) {
-        Files.writeString(groupPath(group), Json.encodeToString(group.data))
+        Files.writeString(groupPath(group), json.encodeToString(group.data))
         this.cachedGroups.add(group)
     }
 
@@ -56,7 +60,7 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
 
     override fun update(group: Group) {
         // overwrite the existing group file with the new data
-        Files.writeString(groupPath(group), Json.encodeToString(group.data))
+        Files.writeString(groupPath(group), json.encodeToString(group.data))
     }
 
     private fun groupPath(group: Group): Path {

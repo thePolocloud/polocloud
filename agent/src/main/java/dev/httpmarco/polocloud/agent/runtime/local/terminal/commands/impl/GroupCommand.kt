@@ -21,7 +21,8 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
                 return@syntax
             }
             logger.info("Found ${groupStorage.items().size} groups&8:")
-            groupStorage.items().forEach { logger.info(" &8- &3${it.data.name} &8(&7minOnlineServices&8=&7${it.data.minOnlineService}&8)") }
+            groupStorage.items()
+                .forEach { logger.info(" &8- &3${it.data.name} &8(&7minOnlineServices&8=&7${it.data.minOnlineService} services&8=&7${it.serviceCount()}&8)") }
         }, KeywordArgument("list"))
 
         val groupArgument = GroupArgument()
@@ -31,37 +32,38 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
             logger.info("Group ${context.arg(groupArgument).data.name} deleted.")
         }, groupArgument, KeywordArgument("delete"))
 
+        syntax(execution = { context ->
+            var group = context.arg(groupArgument)
+
+            logger.info("Group &3${group.data.name}&8:")
+            logger.info(" &8- &7Min Memory&8: &f${group.data.minMemory}MB")
+            logger.info(" &8- &7Max Memory&8: &f${group.data.maxMemory}MB")
+            logger.info(" &8- &7Min Online Services&8: &f${group.data.minOnlineService}")
+            logger.info(" &8- &7Max Online Services&8: &f${group.data.maxOnlineService}")
+            logger.info(" &8- &7Online services&8: &f${group.serviceCount()}")
+        }, groupArgument, KeywordArgument("info"))
+
+
         val nameArgument = TextArgument("name")
         val minOnlineServices = IntArgument("minOnlineServices")
         val maxOnlineServices = IntArgument("maxOnlineServices")
+        val minMemory = IntArgument("minMemory")
+        val maxMemory = IntArgument("maxMemory")
 
         syntax(execution = { context ->
             Agent.instance.runtime.groupStorage().publish(
                 Group(
                     GroupData(
                         context.arg(nameArgument),
+                        context.arg(minMemory),
+                        context.arg(maxMemory),
                         context.arg(minOnlineServices),
                         context.arg(maxOnlineServices)
                     )
                 )
             )
             logger.info("Group &f${context.arg(nameArgument)} successfully created&8.")
-        }, KeywordArgument("create"), nameArgument, minOnlineServices, maxOnlineServices)
-
-
-        syntax(execution = { context -> {
-            Agent.instance.runtime.groupStorage().publish(
-                Group(
-                    GroupData(
-                        context.arg(nameArgument),
-                        context.arg(minOnlineServices),
-                        context.arg(minOnlineServices)
-                    )
-                )
-            )
-            logger.info("Group &f${context.arg(nameArgument)} successfully created&8.")
-        }}, KeywordArgument("test1"), nameArgument, minOnlineServices)
-
+        }, KeywordArgument("create"), nameArgument, minMemory, maxMemory, minOnlineServices, maxOnlineServices)
 
         syntax(execution = { context ->
             var editType = context.arg(GroupEditFlagArgument())
