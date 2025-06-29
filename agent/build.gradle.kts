@@ -15,6 +15,8 @@ dependencies {
     implementation(libs.bundles.runtime)
     implementation(libs.gson)
     implementation(libs.jline)
+
+    compileOnly(project(":platforms"))
 }
 
 tasks.shadowJar {

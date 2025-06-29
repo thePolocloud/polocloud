@@ -11,6 +11,7 @@ import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.GroupE
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.IntArgument
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.KeywordArgument
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.TextArgument
+import dev.httpmarco.polocloud.platforms.PlatformIndex
 
 class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("group", "Manage all group actions") {
 
@@ -41,6 +42,7 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
             logger.info(" &8- &7Min Online Services&8: &f${group.data.minOnlineService}")
             logger.info(" &8- &7Max Online Services&8: &f${group.data.maxOnlineService}")
             logger.info(" &8- &7Online services&8: &f${group.serviceCount()}")
+            logger.info(" &8- &7Platform&8: &f${group.data.platform.group} (${group.data.platform.version})")
         }, groupArgument, KeywordArgument("info"))
 
 
@@ -55,6 +57,7 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
                 Group(
                     GroupData(
                         context.arg(nameArgument),
+                        PlatformIndex("paper", "1.21.6"),
                         context.arg(minMemory),
                         context.arg(maxMemory),
                         context.arg(minOnlineServices),

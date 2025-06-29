@@ -12,7 +12,7 @@ class PlatformPool(val platforms: List<Platform>) {
         /**
          * Load all platforms
          */
-        fun load(url: String): PlatformPool {
+        fun load(url: String =  "https://raw.githubusercontent.com/HttpMarco/polocloud/refs/heads/master/metadata/metadata.json"): PlatformPool {
             val platformTable: PlatformTable = Json.decodeFromString<PlatformTable>(URI(url).toURL().readText())
             val platforms = mutableListOf<Platform>()
             val platformUrl = url.substringBeforeLast("/")

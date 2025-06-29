@@ -10,7 +10,7 @@ import kotlin.io.path.Path
  */
 
 val LIB_DIRECTORY = Path("local/libs")
-val REQUIRED_LIBS = arrayOf("agent")
+val REQUIRED_LIBS = arrayOf("agent", "platforms")
 const val VERSION_ENV_ID = "polocloud-version"
 const val BOOT_LIB = "agent"
 

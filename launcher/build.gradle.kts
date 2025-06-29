@@ -8,7 +8,7 @@ dependencies {
 }
 
 tasks.shadowJar {
-    from(includeLibs("agent", "shadowJar"))
+    from(includeLibs("agent", "shadowJar"), includeLibs("platforms"))
 
     manifest {
         attributes("Main-Class" to "dev.httpmarco.polocloud.launcher.PolocloudLauncherKt")

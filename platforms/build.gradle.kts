@@ -14,3 +14,7 @@ tasks.test {
 kotlin {
     jvmToolchain(23)
 }
+
+tasks.jar {
+    archiveFileName.set("polocloud-platforms-$version.jar")
+}
