@@ -33,6 +33,7 @@ class Agent {
 
         val groups = runtime.groupStorage().items()
         logger.info("Load groups&8 (&7${groups.size}&8): &7" + groups.joinToString(separator = "&8, &7") { it.data.name })
+        logger.info("Load platforms&8 (&7${platformPool.platforms.size}&8): &7" + platformPool.platforms.joinToString(separator = "&8, &7") { it.name })
 
         logger.info("The agent is now &3successfully &7started and ready to use&8!")
 

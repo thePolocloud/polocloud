@@ -1,5 +1,5 @@
 {
-  "name": "Paper",
+  "name": "paper",
   "type": "SERVER",
   "language": "JAVA",
   "url": "https://api.papermc.io/v2/projects/paper/versions/%version%/builds/%buildId%/downloads/paper-%version%-%buildId%.jar",

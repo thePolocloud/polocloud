@@ -23,6 +23,8 @@ fun exitPolocloud() {
     
     AnsiConsole.systemUninstall()
 
+    logger.info("Polocloud Agent is shutting down...")
+
     if (Thread.currentThread().name != SHUTDOWN_HOOK) {
         exitProcess(-1)
     }
