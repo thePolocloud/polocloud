@@ -4,7 +4,7 @@ version = "1.0"
 [versions]
 
 # libraries
-gson = "1.8.1"
+gson = "1.9.0"
 
 # networking
 grpc = "1.73.0"
