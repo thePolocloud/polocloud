@@ -11,12 +11,10 @@ open class Group(val data: GroupData) {
     }
 
     fun serviceCount() : Int {
-        //todo
-        return 0
+        return this.services().count()
     }
 
     fun services() : List<Service> {
-        //todo
-        return emptyList()
+        return Agent.instance.runtime.serviceStorage().findServicesByGroup(this)
     }
 }
