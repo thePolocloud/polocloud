@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.agent.runtime.local
 
 import dev.httpmarco.polocloud.agent.groups.Group
+import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.agent.runtime.RuntimeGroupStorage
 import kotlinx.serialization.json.Json
 import java.nio.file.Files
@@ -14,14 +15,17 @@ private val STORAGE_PATH = Path("local/groups")
 
 class LocalRuntimeGroupStorage : RuntimeGroupStorage {
 
-    private var cachedGroups: ArrayList<Group>
+    private lateinit var cachedGroups: ArrayList<Group>
 
     val json = Json {
         prettyPrint = true
     }
 
     init {
-        // create directory if it does not exist
+        this.initialize()
+    }
+
+    private fun initialize() {
         STORAGE_PATH.createDirectories()
 
         // load all groups from the storage path
@@ -61,6 +65,12 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
     override fun update(group: Group) {
         // overwrite the existing group file with the new data
         Files.writeString(groupPath(group), json.encodeToString(group.data))
+    }
+
+    override fun reload() {
+        logger.info("Drop all cached groups and reload from storage&8...")
+        this.initialize()
+        logger.info("Collect &3${this.cachedGroups.size}&7 groups from storage&8.")
     }
 
     private fun groupPath(group: Group): Path {

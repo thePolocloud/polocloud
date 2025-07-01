@@ -6,7 +6,10 @@ import io.grpc.stub.StreamObserver
 
 class GroupGrpcService : GroupProviderHandlerGrpc.GroupProviderHandlerImplBase() {
 
-    override fun find(request: GroupProvider.FindRequest?, responseObserver: StreamObserver<GroupProvider.FindResponse?>?) {
+    override fun find(request: GroupProvider.FindRequest, responseObserver: StreamObserver<GroupProvider.FindResponse>) {
+
+
+
         TODO()
     }
 }

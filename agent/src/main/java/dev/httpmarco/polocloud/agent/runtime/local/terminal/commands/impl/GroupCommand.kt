@@ -29,11 +29,6 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
         val groupArgument = GroupArgument()
 
         syntax(execution = { context ->
-            groupStorage.destroy(context.arg(groupArgument))
-            logger.info("Group ${context.arg(groupArgument).data.name} deleted.")
-        }, groupArgument, KeywordArgument("delete"))
-
-        syntax(execution = { context ->
             var group = context.arg(groupArgument)
 
             logger.info("Group &3${group.data.name}&8:")
@@ -45,6 +40,31 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
             logger.info(" &8- &7Platform&8: &f${group.data.platform.group} (${group.data.platform.version})")
         }, groupArgument, KeywordArgument("info"))
 
+
+        syntax(execution = { context ->
+            var editType = context.arg(GroupEditFlagArgument())
+            var group = context.arg(groupArgument)
+            var value = context.arg(TextArgument("value"))
+
+            when (editType) {
+                GroupEditFlagArgument.TYPES.MIN_ONLINE_SERVICES -> group.data.minOnlineService = value.toInt()
+                GroupEditFlagArgument.TYPES.MAX_ONLINE_SERVICES -> group.data.maxOnlineService = value.toInt()
+                GroupEditFlagArgument.TYPES.MIN_MEMORY -> group.data.minMemory = value.toInt()
+                GroupEditFlagArgument.TYPES.MAX_MEMORY -> group.data.maxMemory = value.toInt()
+            }
+
+            group.update()
+            logger.info("The group &f${group.data.name} &7has been edited&8: &7Update &3${editType.name} &7to &f$value&8.")
+        }, groupArgument, KeywordArgument("edit"), GroupEditFlagArgument(), TextArgument("value"))
+
+        syntax(execution = { context ->
+            TODO()
+        }, groupArgument, KeywordArgument("shutdownAll"))
+
+        syntax(execution = { context ->
+            groupStorage.destroy(context.arg(groupArgument))
+            logger.info("Group ${context.arg(groupArgument).data.name} deleted.")
+        }, groupArgument, KeywordArgument("delete"))
 
         val nameArgument = TextArgument("name")
         val minOnlineServices = IntArgument("minOnlineServices")
@@ -68,18 +88,5 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
             logger.info("Group &f${context.arg(nameArgument)} successfully created&8.")
         }, KeywordArgument("create"), nameArgument, minMemory, maxMemory, minOnlineServices, maxOnlineServices)
 
-        syntax(execution = { context ->
-            var editType = context.arg(GroupEditFlagArgument())
-            var group = context.arg(groupArgument)
-            var value = context.arg(TextArgument("value"))
-
-            when (editType) {
-                GroupEditFlagArgument.TYPES.MIN_ONLINE_SERVICES -> group.data.minOnlineService = value.toInt()
-                GroupEditFlagArgument.TYPES.MAX_ONLINE_SERVICES -> group.data.maxOnlineService = value.toInt()
-            }
-
-            group.update()
-            logger.info("The group &f${group.data.name} &7has been edited&8: &7Update &3${editType.name} &7to &f$value&8.")
-        }, groupArgument, KeywordArgument("edit"), GroupEditFlagArgument(), TextArgument("value"))
     }
 }

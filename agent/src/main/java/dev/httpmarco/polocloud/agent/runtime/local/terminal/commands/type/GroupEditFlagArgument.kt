@@ -16,5 +16,7 @@ class GroupEditFlagArgument(editValue: String = "key") : CommandArgument<GroupEd
     enum class TYPES {
         MIN_ONLINE_SERVICES,
         MAX_ONLINE_SERVICES,
+        MIN_MEMORY,
+        MAX_MEMORY;
     }
 }

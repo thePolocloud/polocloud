@@ -16,4 +16,6 @@ interface RuntimeGroupStorage {
 
     fun update(group: Group)
 
+    fun reload()
+
 }

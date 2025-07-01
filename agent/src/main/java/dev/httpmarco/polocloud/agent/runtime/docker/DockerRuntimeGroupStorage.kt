@@ -3,6 +3,7 @@ package dev.httpmarco.polocloud.agent.runtime.docker
 import dev.httpmarco.polocloud.agent.groups.Group
 import dev.httpmarco.polocloud.agent.runtime.RuntimeGroupStorage
 
+
 class DockerRuntimeGroupStorage : RuntimeGroupStorage {
 
     override fun items(): List<Group> {
@@ -26,6 +27,10 @@ class DockerRuntimeGroupStorage : RuntimeGroupStorage {
     }
 
     override fun update(group: Group) {
+        TODO("Not yet implemented")
+    }
+
+    override fun reload() {
         TODO("Not yet implemented")
     }
 }
