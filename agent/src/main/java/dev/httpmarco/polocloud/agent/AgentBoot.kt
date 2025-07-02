@@ -13,6 +13,10 @@ fun main(args: Array<String>) {
     // register a clean hook for good shutdown
     registerHook()
 
+    Thread.currentThread().uncaughtExceptionHandler = Thread.UncaughtExceptionHandler { _, throwable ->
+        logger.throwable(throwable)
+    }
+
     Agent
 }
 

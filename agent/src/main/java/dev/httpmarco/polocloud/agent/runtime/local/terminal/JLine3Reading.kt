@@ -30,13 +30,7 @@ class JLine3Reading(private val lineReader: LineReader, private val commandServi
                 exitPolocloud()
                 break
             } catch (e: Throwable) {
-                // Handle other exceptions that may occur during reading
-                logger.error("An error occurred thread: ${e.message}")
-
-                // for a better debugging experience, we print the stack trace
-                e.stackTrace.forEach {
-                    logger.error("  at ${it.className}.${it.methodName}(${it.fileName}:${it.lineNumber})")
-                }
+                logger.throwable(e)
             }
         }
     }

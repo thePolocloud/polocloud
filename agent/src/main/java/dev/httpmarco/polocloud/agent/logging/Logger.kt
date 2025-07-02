@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.agent.logging
 
+import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.LoggingColor
 import java.time.LocalTime
 
@@ -17,6 +18,16 @@ class Logger {
 
     fun error(message: String) {
         log("ERROR", "&c", message)
+    }
+
+    fun throwable(throwable: Throwable) {
+        // Handle other exceptions that may occur during reading
+        logger.error("An error occurred thread: ${throwable.message}")
+
+        // for a better debugging experience, we print the stack trace
+        throwable.stackTrace.forEach {
+            logger.error("  at ${it.className}.${it.methodName}(${it.fileName}:${it.lineNumber})")
+        }
     }
 
     fun debug(message: String) {

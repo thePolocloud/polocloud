@@ -1,9 +1,6 @@
 package dev.httpmarco.polocloud.agent.runtime.local
 
-import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.runtime.Runtime
-import dev.httpmarco.polocloud.agent.runtime.RuntimeFactory
-import dev.httpmarco.polocloud.agent.runtime.RuntimeServiceStorage
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.Jline3Terminal
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.GroupCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.PlatformCommand
@@ -23,7 +20,7 @@ class LocalRuntime : Runtime {
 
         terminal.commandService.registerCommand(GroupCommand(runtimeGroupStorage))
         terminal.commandService.registerCommand(ServiceCommand(runtimeServiceStorage))
-        terminal.commandService.registerCommand(PlatformCommand(Agent.instance.platformPool))
+        terminal.commandService.registerCommand(PlatformCommand())
     }
 
     override fun runnable(): Boolean {
