@@ -5,6 +5,7 @@ import dev.httpmarco.polocloud.agent.i18n.I18nPolocloudAgent
 import dev.httpmarco.polocloud.agent.logging.Logger
 import dev.httpmarco.polocloud.agent.runtime.Runtime
 import dev.httpmarco.polocloud.platforms.PlatformPool
+import kotlin.io.path.Path
 
 // global terminal instance for the agent
 // this is used to print messages to the console
@@ -14,7 +15,7 @@ val i18n = I18nPolocloudAgent();
 class Agent {
 
     val runtime: Runtime
-    val platformPool : PlatformPool = PlatformPool.load()
+    val platformPool : PlatformPool = PlatformPool.load(Path("local/platforms.json"))
 
     private val grpcServerEndpoint = GrpcServerEndpoint()
 

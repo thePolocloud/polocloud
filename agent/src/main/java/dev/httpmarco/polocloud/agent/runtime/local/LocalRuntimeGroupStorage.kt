@@ -3,6 +3,7 @@ package dev.httpmarco.polocloud.agent.runtime.local
 import dev.httpmarco.polocloud.agent.groups.Group
 import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.agent.runtime.RuntimeGroupStorage
+import dev.httpmarco.polocloud.agent.utils.PRETTY_JSON
 import kotlinx.serialization.json.Json
 import java.nio.file.Files
 import java.nio.file.Path
@@ -16,10 +17,6 @@ private val STORAGE_PATH = Path("local/groups")
 class LocalRuntimeGroupStorage : RuntimeGroupStorage {
 
     private lateinit var cachedGroups: ArrayList<Group>
-
-    val json = Json {
-        prettyPrint = true
-    }
 
     init {
         this.initialize()
@@ -49,7 +46,7 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
     }
 
     override fun publish(group: Group) {
-        Files.writeString(groupPath(group), json.encodeToString(group.data))
+        Files.writeString(groupPath(group), PRETTY_JSON.encodeToString(group.data))
         this.cachedGroups.add(group)
     }
 
@@ -64,7 +61,7 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
 
     override fun update(group: Group) {
         // overwrite the existing group file with the new data
-        Files.writeString(groupPath(group), json.encodeToString(group.data))
+        Files.writeString(groupPath(group), PRETTY_JSON.encodeToString(group.data))
     }
 
     override fun reload() {
