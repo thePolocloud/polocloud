@@ -3,5 +3,10 @@
   "type": "SERVER",
   "language": "JAVA",
   "url": "https://api.papermc.io/v2/projects/paper/versions/%version%/builds/%buildId%/downloads/paper-%version%-%buildId%.jar",
-  "versions": []
+  "versions": [
+    {
+      "version": "1.21.7",
+      "buildId": 15
+    }
+  ]
 }
