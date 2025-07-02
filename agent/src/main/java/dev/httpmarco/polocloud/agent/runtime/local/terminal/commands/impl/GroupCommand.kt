@@ -38,7 +38,7 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
             logger.info(" &8- &7Max Online Services&8: &f${group.data.maxOnlineService}")
             logger.info(" &8- &7Online services&8: &f${group.serviceCount()}")
             logger.info(" &8- &7Platform&8: &f${group.data.platform.group} (${group.data.platform.version})")
-        }, groupArgument, KeywordArgument("info"))
+        }, groupArgument)
 
 
         syntax(execution = { context ->

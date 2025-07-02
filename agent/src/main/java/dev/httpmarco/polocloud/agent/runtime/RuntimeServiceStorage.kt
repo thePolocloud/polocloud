@@ -8,7 +8,7 @@ interface RuntimeServiceStorage {
 
     fun deployService(service: Service)
 
-    fun findService(uuid: UUID): Service?
+    fun findService(uniqueId: UUID): Service?
 
     fun findService(name: String): Service?
 

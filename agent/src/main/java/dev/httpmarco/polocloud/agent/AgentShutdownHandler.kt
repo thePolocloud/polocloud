@@ -24,6 +24,7 @@ fun exitPolocloud() {
         it.shutdown()
     }
 
+    Agent.instance.close()
     
     AnsiConsole.systemUninstall()
 

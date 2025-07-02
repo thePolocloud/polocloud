@@ -20,12 +20,13 @@ class Logger {
     }
 
     fun debug(message: String) {
-        if(!debugMode) return
+        if (!debugMode) return
         log("DEBUG", "&f", message)
     }
 
     private fun log(level: String, style: String, message: String) {
         val timestamp = LocalTime.now().withNano(0).format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"))
+
         println(LoggingColor.translate("${("$timestamp")} &8| $style$level&8: &7$message"))
     }
 }

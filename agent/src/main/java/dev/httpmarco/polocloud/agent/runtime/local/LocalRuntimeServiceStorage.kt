@@ -19,7 +19,10 @@ class LocalRuntimeServiceStorage : RuntimeServiceStorage {
     }
 
     override fun findService(name: String): Service? {
-        TODO("Not yet implemented")
+        return this.services.stream()
+            .filter { it.name() == name }
+            .findFirst()
+            .orElse(null)
     }
 
     override fun findServiceByName(name: String): Service? {

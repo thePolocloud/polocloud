@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.agent.runtime.local.terminal
 
 import dev.httpmarco.polocloud.agent.exitPolocloud
+import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.CommandService
 import org.jline.jansi.Ansi
 import org.jline.reader.LineReader
@@ -9,7 +10,6 @@ import org.jline.reader.UserInterruptException
 class JLine3Reading(private val lineReader: LineReader, private val commandService: CommandService) : Thread() {
 
     override fun run() {
-
         while (!isInterrupted) {
             try {
                 val line =
@@ -29,10 +29,14 @@ class JLine3Reading(private val lineReader: LineReader, private val commandServi
                 // pressing Ctrl+C or similar to interrupt reading
                 exitPolocloud()
                 break
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 // Handle other exceptions that may occur during reading
-                println("An error occurred while reading input: ${e.message}")
-                e.printStackTrace()
+                logger.error("An error occurred thread: ${e.message}")
+
+                // for a better debugging experience, we print the stack trace
+                e.stackTrace.forEach {
+                    logger.error("  at ${it.className}.${it.methodName}(${it.fileName}:${it.lineNumber})")
+                }
             }
         }
     }
