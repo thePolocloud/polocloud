@@ -21,7 +21,7 @@ class PlatformPool(val platforms: List<Platform>, val path: Path) {
 
         fun load(path: Path): PlatformPool {
             if (path.exists()) {
-                return PlatformPool(PRETTY_JSON.decodeFromString(Files.readString(path)), path)
+                return PlatformPool(PRETTY_JSON.decodeFromString<List<Platform>>(Files.readString(path)), path)
             } else {
                 val platformTable: PlatformTable =
                     Json.decodeFromString<PlatformTable>(URI(PLATFORM_TABLE_URL).toURL().readText())
@@ -41,5 +41,9 @@ class PlatformPool(val platforms: List<Platform>, val path: Path) {
 
     fun saveLocal() {
         Files.writeString(path, PRETTY_JSON.encodeToString(platforms))
+    }
+
+    fun findPlatform(name: String): Platform? {
+        return platforms.firstOrNull { it.name.equals(name, ignoreCase = true) }
     }
 }

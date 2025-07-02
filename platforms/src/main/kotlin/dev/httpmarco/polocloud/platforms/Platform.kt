@@ -3,7 +3,7 @@ package dev.httpmarco.polocloud.platforms
 import kotlinx.serialization.Serializable
 
 @Serializable
-class Platform(
+data class Platform(
     val name: String,
     val type: PlatformType,
     val language: PlatformLanguage,
@@ -11,5 +11,7 @@ class Platform(
     val versions: List<PlatformVersion>
 ) {
 
-
+    fun prepare(version: String) {
+        TODO()
+    }
 }
