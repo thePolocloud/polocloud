@@ -12,8 +12,10 @@ class LocalRuntimeQueue : Thread("polocloud-local-runtime-queue") {
             Agent.instance.runtime.groupStorage().items().forEach {
                 for (n in 0 until requiredServersThatStart(it)) {
 
-                    Agent.instance.runtime.serviceStorage().deployService(Service(it))
-                    logger.info("Starting new service for group ${it.data.name} (required: ${requiredServersThatStart(it)}")
+                    val service = Service(it)
+
+                    Agent.instance.runtime.serviceStorage().deployService(service)
+                    Agent.instance.runtime.factory().bootApplication(service)
                 }
             }
             sleep(1000)

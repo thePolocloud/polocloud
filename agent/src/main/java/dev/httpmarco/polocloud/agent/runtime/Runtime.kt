@@ -52,6 +52,12 @@ interface Runtime {
     fun groupStorage(): RuntimeGroupStorage
 
     /**
+     * Returns the current factory for the runtime.
+     * This method should be overridden by the specific runtime implementations
+     */
+    fun factory(): RuntimeFactory
+
+    /**
      * Shuts down the runtime.
      * This method can be overridden by specific runtime implementations
      * to perform any necessary shutdown operations.

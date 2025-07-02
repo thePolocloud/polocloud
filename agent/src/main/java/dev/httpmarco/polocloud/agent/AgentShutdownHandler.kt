@@ -20,10 +20,14 @@ fun exitPolocloud() {
 
     idleShutdown = true
 
+    Agent.instance.runtime.serviceStorage().items().forEach {
+        it.shutdown()
+    }
+
     
     AnsiConsole.systemUninstall()
 
-    logger.info("Polocloud Agent is shutting down...")
+    logger.info("Polocloud Agent is shutting down&8...")
 
     if (Thread.currentThread().name != SHUTDOWN_HOOK) {
         exitProcess(-1)

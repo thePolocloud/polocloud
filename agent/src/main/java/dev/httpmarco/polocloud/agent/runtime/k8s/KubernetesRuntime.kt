@@ -2,6 +2,7 @@ package dev.httpmarco.polocloud.agent.runtime.k8s
 
 import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.agent.runtime.Runtime
+import dev.httpmarco.polocloud.agent.runtime.RuntimeFactory
 import io.fabric8.kubernetes.client.KubernetesClientBuilder
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -27,5 +28,8 @@ class KubernetesRuntime : Runtime {
     override fun serviceStorage() = serviceStorage
 
     override fun groupStorage() = groupStorage
+    override fun factory(): RuntimeFactory {
+        TODO("Not yet implemented")
+    }
 
 }

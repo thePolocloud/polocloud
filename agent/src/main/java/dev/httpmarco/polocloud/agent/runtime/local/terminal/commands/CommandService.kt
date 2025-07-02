@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.agent.runtime.local.terminal.commands
 
+import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.InfoCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.ReloadCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.ShutdownCommand
 import java.util.*
@@ -10,7 +11,7 @@ class CommandService {
     init {
         this.registerCommand(ShutdownCommand())
         this.registerCommand(ReloadCommand())
-
+        this.registerCommand(InfoCommand())
     }
 
     fun commandsByName(name: String): MutableList<Command> {

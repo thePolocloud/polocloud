@@ -14,6 +14,10 @@ class DockerRuntimeServiceStorage : RuntimeServiceStorage {
         TODO("Not yet implemented")
     }
 
+    override fun findService(name: String): Service? {
+        TODO("Not yet implemented")
+    }
+
     override fun findServiceByName(name: String): Service? {
         TODO("Not yet implemented")
     }
@@ -23,6 +27,10 @@ class DockerRuntimeServiceStorage : RuntimeServiceStorage {
     }
 
     override fun items(): List<Service> {
+        TODO("Not yet implemented")
+    }
+
+    override fun dropService(service: Service) {
         TODO("Not yet implemented")
     }
 }

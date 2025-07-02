@@ -10,10 +10,14 @@ interface RuntimeServiceStorage {
 
     fun findService(uuid: UUID): Service?
 
+    fun findService(name: String): Service?
+
     fun findServiceByName(name: String): Service?
 
     fun findServicesByGroup(group: Group) : List<Service>
 
     fun items(): List<Service>
+
+    fun dropService(service: Service)
 
 }
