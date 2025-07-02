@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl
 
 import com.sun.management.OperatingSystemMXBean
+import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.Command
 import java.lang.management.ManagementFactory
@@ -12,6 +13,8 @@ class InfoCommand : Command("info", "Used to display information about the agent
 
     init {
         defaultExecution {
+            logger.info("Current agent information&8:")
+            logger.info("  &8- &7Cluster type&8: &3${Agent.instance.runtime.javaClass.simpleName}")
             logger.info("  &8- &7Cpu usage&8: &3${cpuUsage()}%")
             logger.info("  &8- &7Used memory&8: &3${usedMemory()}MB")
             logger.info("  &8- &7Max memory&8: &3${maxMemory()}MB")

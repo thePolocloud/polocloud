@@ -39,7 +39,6 @@ class PlatformPool(val platforms: List<Platform>, val path: Path) {
         }
     }
 
-
     fun saveLocal() {
         Files.writeString(path, PRETTY_JSON.encodeToString(platforms))
     }

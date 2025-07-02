@@ -16,7 +16,7 @@ class ServiceCommand(private val serviceStorage: RuntimeServiceStorage) :
                 logger.info("No service found.")
                 return@syntax
             }
-            logger.info("Found ${serviceStorage.items().size} groups&8:")
+            logger.info("Found ${serviceStorage.items().size} services&8:")
             serviceStorage.items().forEach { logger.info(" &8- &3${it.name()} &8(&7uuid&8=&7${it.uniqueId}&8)") }
         }, KeywordArgument("list"))
 
