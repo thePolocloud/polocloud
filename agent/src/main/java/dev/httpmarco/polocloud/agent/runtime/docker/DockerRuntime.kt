@@ -2,7 +2,9 @@ package dev.httpmarco.polocloud.agent.runtime.docker
 
 import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.agent.runtime.Runtime
+import dev.httpmarco.polocloud.agent.runtime.RuntimeExpender
 import dev.httpmarco.polocloud.agent.runtime.RuntimeFactory
+import dev.httpmarco.polocloud.agent.services.Service
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -25,8 +27,13 @@ class DockerRuntime : Runtime {
 
     override fun groupStorage() = groupStorage
 
-    override fun factory(): RuntimeFactory {
+    override fun factory(): RuntimeFactory<DockerService> {
         TODO("Not yet implemented")
     }
+
+    override fun expender(): RuntimeExpender<DockerService> {
+        TODO("Not yet implemented")
+    }
+
 
 }

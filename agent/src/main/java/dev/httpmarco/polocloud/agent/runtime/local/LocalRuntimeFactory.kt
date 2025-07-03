@@ -6,14 +6,10 @@ import dev.httpmarco.polocloud.agent.runtime.RuntimeFactory
 import dev.httpmarco.polocloud.agent.services.Service
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.exists
-import kotlin.io.path.name
+import java.util.concurrent.TimeUnit
+import kotlin.io.path.*
 
-class LocalRuntimeFactory : RuntimeFactory {
+class LocalRuntimeFactory : RuntimeFactory<LocalService> {
 
     private val factoryPath = Path("temp")
 
@@ -26,7 +22,7 @@ class LocalRuntimeFactory : RuntimeFactory {
         factoryPath.createDirectories()
     }
 
-    override fun bootApplication(service: Service) {
+    override fun bootApplication(service: LocalService) {
 
         if (service.state != Service.State.PREPARING) {
             logger.error("Cannot boot application for service ${service.name()} because it is not in PREPARING state, but in ${service.state} state&8. &7Wait for action&8...")
@@ -36,11 +32,6 @@ class LocalRuntimeFactory : RuntimeFactory {
         logger.info("The service &3${service.name()}&7 is now starting&8...")
 
         val platform = service.group.platform()
-
-        if (platform == null) {
-            logger.error("Cannot boot service ${service.name()} because the platform is null. Make sure the group has a valid platform assigned.")
-            return
-        }
 
         service.state = Service.State.STARTING
         service.path.createDirectories()
@@ -56,26 +47,44 @@ class LocalRuntimeFactory : RuntimeFactory {
 
         // basically current only the java command is supported yet
         val commands = ArrayList<String>()
+        val javaPath = System.getProperty("java.home")
 
-        commands.addAll(listOf("java", "-jar", applicationPath.name))
+        commands.add("${javaPath}/bin/java")
+        commands.addAll(
+            listOf(
+                "-Dterminal.jline=false",
+                "-Dfile.encoding=UTF-8",
+                "-Xms" + service.group.data.minMemory + "M",
+                "-Xmx" + service.group.data.maxMemory + "M",
+                "-jar",
+                applicationPath.name
+            )
+        )
         commands.addAll(platform.arguments)
 
-        service.process = ProcessBuilder().directory(service.path.toFile()).command(commands).start()
+        val processBuilder = ProcessBuilder(commands).directory(service.path.toFile())
+
+        // todo: env here set
+
+        service.process = processBuilder.start()
     }
 
     @OptIn(ExperimentalPathApi::class)
-    override fun shutdownApplication(service: Service) {
-        //todo shutdown with command in input stream
-
+    override fun shutdownApplication(service: LocalService) {
         if (service.state == Service.State.STOPPING || service.state == Service.State.STOPPING) {
             logger.info("Cannot shutdown service ${service.name()} because it is already stopping or stopped&8. &7Wait for action&8...")
             return
         }
 
         logger.info("The service &3${service.name()}&7 is now stopping&8...")
-        //  if (service.process().waitFor(PolocloudSuite.instance().config().local().processTerminationIdleSeconds(), TimeUnit.SECONDS)) {
 
         if (service.process != null) {
+            service.executeCommand(service.group.platform().shutdownCommand)
+
+            if (service.process!!.waitFor(5, TimeUnit.SECONDS)) {
+                service.process!!.exitValue()
+            }
+
             service.process!!.toHandle().destroyForcibly()
             service.process = null
         }

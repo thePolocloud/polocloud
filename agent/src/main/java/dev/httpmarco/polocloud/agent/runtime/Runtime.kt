@@ -3,6 +3,7 @@ package dev.httpmarco.polocloud.agent.runtime
 import dev.httpmarco.polocloud.agent.runtime.docker.DockerRuntime
 import dev.httpmarco.polocloud.agent.runtime.k8s.KubernetesRuntime
 import dev.httpmarco.polocloud.agent.runtime.local.LocalRuntime
+import dev.httpmarco.polocloud.agent.services.Service
 
 interface Runtime {
 
@@ -55,7 +56,13 @@ interface Runtime {
      * Returns the current factory for the runtime.
      * This method should be overridden by the specific runtime implementations
      */
-    fun factory(): RuntimeFactory
+    fun factory(): RuntimeFactory<Service>
+
+    /**
+     * Returns the expender for the runtime.
+     * This method should be overridden by the specific runtime implementations
+     */
+    fun expender(): RuntimeExpender<Service>
 
     /**
      * Shuts down the runtime.

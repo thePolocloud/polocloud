@@ -18,13 +18,13 @@ class InfoCommand : Command("info", "Used to display information about the agent
         cpuUsage()
 
         defaultExecution {
-            logger.info("Current agent information&8:")
-            logger.info("  &8- &7Uptime&8: &3${formatDuration(System.currentTimeMillis() - System.getProperty("polocloud.lifecycle.boot-time").toLong())}")
-            logger.info("  &8- &7Cluster type&8: &3${Agent.instance.runtime.javaClass.simpleName}")
-            logger.info("  &8- &7Java version&8: &3${System.getProperty("java.version")}")
-            logger.info("  &8- &7Cpu usage&8: &3${cpuUsage()}%")
-            logger.info("  &8- &7Used memory&8: &3${usedMemory()}MB")
-            logger.info("  &8- &7Max memory&8: &3${maxMemory()}MB")
+            logger.info("Current &3agent &7information&8:")
+            logger.info("  &8- &7Uptime&8: &f${formatDuration(System.currentTimeMillis() - System.getProperty("polocloud.lifecycle.boot-time").toLong())}")
+            logger.info("  &8- &7Cluster type&8: &f${Agent.instance.runtime.javaClass.simpleName}")
+            logger.info("  &8- &7Java version&8: &f${System.getProperty("java.version")}")
+            logger.info("  &8- &7Cpu usage&8: &f${cpuUsage()}%")
+            logger.info("  &8- &7Used memory&8: &f${usedMemory()}MB")
+            logger.info("  &8- &7Max memory&8: &f${maxMemory()}MB")
         }
     }
 

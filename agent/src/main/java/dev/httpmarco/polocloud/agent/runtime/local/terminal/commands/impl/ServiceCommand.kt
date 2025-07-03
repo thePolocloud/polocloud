@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl
 
+import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.agent.runtime.RuntimeServiceStorage
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.Command
@@ -49,7 +50,8 @@ class ServiceCommand(private val serviceStorage: RuntimeServiceStorage) :
         syntax(execution = {
             var service = it.arg(serviceArgument)
 
-            TODO()
+            Agent.instance.runtime.expender().executeCommand(service, it.arg(commandArg))
+            logger.info("Executed command on service &3${service.name()}&8: &f${it.arg(commandArg)}")
         }, serviceArgument, KeywordArgument("execute"), commandArg)
     }
 }

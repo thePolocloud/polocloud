@@ -2,10 +2,10 @@ package dev.httpmarco.polocloud.agent.runtime
 
 import dev.httpmarco.polocloud.agent.services.Service
 
-interface RuntimeFactory {
+interface RuntimeFactory<out T : Service> {
 
-    fun bootApplication(service: Service)
+    fun bootApplication(service: @UnsafeVariance T)
 
-    fun shutdownApplication(service: Service)
+    fun shutdownApplication(service: @UnsafeVariance T)
 
 }

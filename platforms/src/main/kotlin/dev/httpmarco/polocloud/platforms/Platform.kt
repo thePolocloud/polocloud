@@ -12,6 +12,7 @@ data class Platform(
     val type: PlatformType,
     val language: PlatformLanguage,
     val url: String,
+    val shutdownCommand: String = "stop",
     val arguments: List<String>,
     val versions: List<PlatformVersion>
 ) {

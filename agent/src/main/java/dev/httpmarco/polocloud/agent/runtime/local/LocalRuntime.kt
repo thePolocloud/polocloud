@@ -12,8 +12,9 @@ class LocalRuntime : Runtime {
     private val runtimeServiceStorage = LocalRuntimeServiceStorage()
     private val runtimeFactory = LocalRuntimeFactory()
     private val runtimeQueue = LocalRuntimeQueue()
+    private val runtimeExpender = LocalRuntimeExpender()
 
-    private lateinit var terminal: Jline3Terminal
+    lateinit var terminal: Jline3Terminal
 
     override fun boot() {
         terminal = Jline3Terminal()
@@ -32,6 +33,8 @@ class LocalRuntime : Runtime {
     override fun groupStorage() = runtimeGroupStorage
 
     override fun factory() = runtimeFactory
+
+    override fun expender() = runtimeExpender
 
     override fun shutdown() {
         this.runtimeQueue.interrupt()

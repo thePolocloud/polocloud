@@ -57,8 +57,7 @@ object CommandParser {
                     val rawInput = args[i]
 
                     if (argument is StringArrayArgument) {
-                        TODO()
-                        //commandContext.append(argument, argument.buildResult(String.join(" ", Arrays.copyOfRange(args, i, args.size))))
+                        commandContext.append(argument, argument.buildResult(args.sliceArray(i until args.size).joinToString(" "), commandContext))
                         break
                     } else if (argument is KeywordArgument ) {
                         if (argument.key != rawInput) {
