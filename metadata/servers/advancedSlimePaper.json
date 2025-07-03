@@ -1,0 +1,12 @@
+{
+  "name": "advancedSlimePaper",
+  "type": "SERVER",
+  "language": "JAVA",
+  "url": "https://api.infernalsuite.com/v1/projects/asp/%version%/download/%buildId%",
+  "versions": [
+    {
+      "version": "f515d5ba-1c09-497d-9425-bab20ef59ced",
+      "buildId": "e273f7b7-8389-4c39-af6b-54f8cecb55fc"
+    }
+  ]
+}

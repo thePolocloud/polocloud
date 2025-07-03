@@ -51,6 +51,9 @@ class LocalRuntimeFactory : RuntimeFactory {
         platform.prepare(service.group.data.platform.version)
         Files.copy(applicationPath, service.path.resolve(applicationPath.name), StandardCopyOption.REPLACE_EXISTING)
 
+        //todo remove: only for testing
+        Files.writeString(service.path.resolve("eula.txt"), "eula=true")
+
         // basically current only the java command is supported yet
         val commands = listOf("java", "-jar", applicationPath.name)
 
