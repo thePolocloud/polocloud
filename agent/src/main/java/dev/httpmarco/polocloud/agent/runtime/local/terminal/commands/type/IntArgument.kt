@@ -21,7 +21,7 @@ class IntArgument(key: String) : CommandArgument<Int>(key) {
         return mutableListOf()
     }
 
-    override fun buildResult(input: String): Int {
+    override fun buildResult(input: String, context: CommandContext): Int {
         return input.toInt()
     }
 }

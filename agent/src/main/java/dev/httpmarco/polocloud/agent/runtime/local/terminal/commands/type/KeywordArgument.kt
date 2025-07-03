@@ -2,6 +2,7 @@ package dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type
 
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.CommandArgument
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.CommandContext
+import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.CommandSyntax
 
 class KeywordArgument(key: String) : CommandArgument<String>(key) {
     override fun defaultArgs(context: CommandContext): MutableList<String> {
@@ -12,7 +13,7 @@ class KeywordArgument(key: String) : CommandArgument<String>(key) {
         return ""
     }
 
-    override fun buildResult(input: String): String {
+    override fun buildResult(input: String, context: CommandContext): String {
         return ""
     }
 

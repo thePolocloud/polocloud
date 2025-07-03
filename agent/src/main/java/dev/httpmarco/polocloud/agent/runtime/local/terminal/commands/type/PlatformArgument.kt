@@ -7,7 +7,7 @@ import dev.httpmarco.polocloud.platforms.Platform
 
 class PlatformArgument(key: String = "platform") : CommandArgument<Platform>(key) {
 
-    override fun buildResult(input: String): Platform {
+    override fun buildResult(input: String, context: CommandContext): Platform {
         return Agent.instance.platformPool.findPlatform(input)!!
     }
 

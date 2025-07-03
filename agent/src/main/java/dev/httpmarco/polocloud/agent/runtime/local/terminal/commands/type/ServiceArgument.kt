@@ -7,7 +7,7 @@ import dev.httpmarco.polocloud.agent.services.Service
 
 class ServiceArgument(key: String = "service") : CommandArgument<Service>(key) {
 
-    override fun buildResult(input: String): Service {
+    override fun buildResult(input: String, context: CommandContext): Service {
         // null check is done in the predication method
         return Agent.instance.runtime.serviceStorage().findService(input)!!
     }

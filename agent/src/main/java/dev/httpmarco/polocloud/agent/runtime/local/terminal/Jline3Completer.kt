@@ -68,7 +68,7 @@ class Jline3Completer(private val commandService: CommandService) : Completer {
             if (input.equals(tempArgument.key, ignoreCase = true)) {
                 continue
             }
-            context.append(commandSyntax.arguments[i], commandSyntax.arguments[i].buildResult(input))
+            context.append(commandSyntax.arguments[i], commandSyntax.arguments[i].buildResult(input, context))
         }
 
         if (argument.defaultArgs(context).isEmpty()) {
@@ -78,10 +78,10 @@ class Jline3Completer(private val commandService: CommandService) : Completer {
             }
         } else {
             argument.defaultArgs(context).stream()
-                .filter({ defaultArg ->
+                .filter { defaultArg ->
                     list.stream().noneMatch { candidate: Candidate? -> candidate!!.value() == defaultArg }
-                })
-                .forEach({ defaultArg -> list.add(Candidate(defaultArg)) })
+                }
+                .forEach { defaultArg -> list.add(Candidate(defaultArg)) }
         }
     }
 }

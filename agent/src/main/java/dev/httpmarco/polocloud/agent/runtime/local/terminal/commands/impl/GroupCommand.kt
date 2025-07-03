@@ -10,6 +10,8 @@ import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.GroupA
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.GroupEditFlagArgument
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.IntArgument
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.KeywordArgument
+import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.PlatformArgument
+import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.PlatformVersionArgument
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.type.TextArgument
 import dev.httpmarco.polocloud.platforms.PlatformIndex
 
@@ -67,6 +69,8 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
         }, groupArgument, KeywordArgument("delete"))
 
         val nameArgument = TextArgument("name")
+        val platformArgument = PlatformArgument()
+        val platformVersionArgument = PlatformVersionArgument(platformArgument)
         val minOnlineServices = IntArgument("minOnlineServices")
         val maxOnlineServices = IntArgument("maxOnlineServices")
         val minMemory = IntArgument("minMemory")
@@ -77,7 +81,7 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
                 Group(
                     GroupData(
                         context.arg(nameArgument),
-                        PlatformIndex("paper", "1.21.6"),
+                        PlatformIndex(context.arg(platformArgument).name, context.arg(platformVersionArgument).version),
                         context.arg(minMemory),
                         context.arg(maxMemory),
                         context.arg(minOnlineServices),
@@ -86,7 +90,7 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage) : Command("gro
                 )
             )
             logger.info("Group &f${context.arg(nameArgument)} successfully created&8.")
-        }, KeywordArgument("create"), nameArgument, minMemory, maxMemory, minOnlineServices, maxOnlineServices)
+        }, KeywordArgument("create"), nameArgument, platformArgument, platformVersionArgument, minMemory, maxMemory, minOnlineServices, maxOnlineServices)
 
     }
 }

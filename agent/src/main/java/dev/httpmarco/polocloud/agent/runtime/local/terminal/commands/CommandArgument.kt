@@ -16,5 +16,5 @@ abstract class CommandArgument<T>(open val key: String) {
         return "Wrong argument format"
     }
 
-    abstract fun buildResult(input: String): T
+    abstract fun buildResult(input: String, context: CommandContext): T
 }

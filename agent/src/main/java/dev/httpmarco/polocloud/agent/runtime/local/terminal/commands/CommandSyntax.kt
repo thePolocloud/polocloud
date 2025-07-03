@@ -6,11 +6,11 @@ import java.util.Arrays
 class CommandSyntax(
     val execution: CommandExecution,
     val description: String?,
-    val arguments: Array<out CommandArgument<*>>
+    val arguments: MutableList<CommandArgument<*>>
 ) {
     fun usage(): String {
         return java.lang.String.join(
-            " ", Arrays.stream(arguments)
+            " ", arguments.stream()
                 .map { if (it is KeywordArgument) "&f" + it.key else "&8<&f" + it.key + "&8>" }
                 .toList()
         ) + (if (description == null) "" else " &8- &7$description")

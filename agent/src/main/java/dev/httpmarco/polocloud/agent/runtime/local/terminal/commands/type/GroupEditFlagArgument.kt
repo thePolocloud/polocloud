@@ -5,7 +5,7 @@ import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.CommandCont
 
 class GroupEditFlagArgument(editValue: String = "key") : CommandArgument<GroupEditFlagArgument.TYPES>(editValue) {
 
-    override fun buildResult(input: String): TYPES {
+    override fun buildResult(input: String, context: CommandContext): TYPES {
         return TYPES.valueOf(input.uppercase())
     }
 

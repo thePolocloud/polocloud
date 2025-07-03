@@ -3,7 +3,6 @@
     "velocity"
   ],
   "availableServers": [
-    "paper",
-    "advancedSlimePaper"
+    "paper"
   ]
 }

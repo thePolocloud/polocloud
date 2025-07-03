@@ -37,7 +37,7 @@ object CommandParser {
             }
 
             for (syntaxCommand in command.commandSyntaxes()) {
-                if (args.size != syntaxCommand.arguments.size && Arrays.stream(syntaxCommand.arguments).noneMatch { it -> it is StringArrayArgument }) {
+                if (args.size != syntaxCommand.arguments.size && syntaxCommand.arguments.stream().noneMatch { it -> it is StringArrayArgument }) {
                     continue
                 }
 
@@ -70,7 +70,7 @@ object CommandParser {
                         continue
                     }
                         //   println("Adding argument: ${argument.key} with value: $rawInput")
-                    commandContext.append(argument, argument.buildResult(rawInput))
+                    commandContext.append(argument, argument.buildResult(rawInput, commandContext))
                 }
 
                 if (!provedSyntax) {
