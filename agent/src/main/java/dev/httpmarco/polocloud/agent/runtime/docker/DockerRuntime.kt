@@ -13,6 +13,8 @@ class DockerRuntime : Runtime {
 
     private val serviceStorage = DockerRuntimeServiceStorage()
     private val groupStorage = DockerRuntimeGroupStorage()
+    private val expender = DockerExpender()
+    private val runtimeFactory = DockerFactory()
 
     override fun runnable(): Boolean {
         return try {
@@ -27,13 +29,8 @@ class DockerRuntime : Runtime {
 
     override fun groupStorage() = groupStorage
 
-    override fun factory(): RuntimeFactory<DockerService> {
-        TODO("Not yet implemented")
-    }
+    override fun factory() = runtimeFactory
 
-    override fun expender(): RuntimeExpender<DockerService> {
-        TODO("Not yet implemented")
-    }
-
+    override fun expender() = expender
 
 }

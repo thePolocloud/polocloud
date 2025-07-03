@@ -13,6 +13,8 @@ class KubernetesRuntime : Runtime {
     private val kubernetesClient = KubernetesClientBuilder().build()
     private val groupStorage = KubernetesRuntimeGroupStorage(kubernetesClient)
     private val serviceStorage = KubernetesRuntimeServiceStorage()
+    private val factory = KubernetesFactory()
+    private val expender = KubernetesExpender()
 
     override fun runnable(): Boolean {
         return try {
@@ -30,12 +32,8 @@ class KubernetesRuntime : Runtime {
 
     override fun groupStorage() = groupStorage
 
-    override fun factory(): RuntimeFactory<KubernetesService> {
-        TODO("Not yet implemented")
-    }
+    override fun factory() = factory;
 
-    override fun expender(): RuntimeExpender<KubernetesService> {
-        TODO("Not yet implemented")
-    }
+    override fun expender() = expender
 
 }
