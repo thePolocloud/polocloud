@@ -80,6 +80,7 @@ class LocalRuntimeFactory : RuntimeFactory {
         Thread.sleep(200) // wait for a process to be destroyed
         service.path.deleteRecursively()
 
+        service.state = Service.State.STOPPED
         Agent.instance.runtime.serviceStorage().dropService(service)
         logger.info("The service &3${service.name()}&7 has been stopped and deleted&8.")
     }

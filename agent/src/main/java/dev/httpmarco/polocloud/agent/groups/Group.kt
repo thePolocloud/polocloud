@@ -17,8 +17,8 @@ open class Group(val data: GroupData) {
         return this.services().count()
     }
 
-    fun platform() : Platform? {
-        return Agent.instance.platformPool.findPlatform(data.platform.group)
+    fun platform() : Platform {
+        return Agent.instance.platformPool.findPlatform(data.platform.group)!!
     }
 
     fun services() : List<Service> {

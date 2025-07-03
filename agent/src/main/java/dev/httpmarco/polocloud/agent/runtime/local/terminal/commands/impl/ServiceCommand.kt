@@ -26,9 +26,11 @@ class ServiceCommand(private val serviceStorage: RuntimeServiceStorage) :
             var service = it.arg(serviceArgument)
 
             logger.info("Service &3${service.name()}&8:")
-            logger.info(" &8- &7Id&8: &f${service.uniqueId}MB")
-            logger.info(" &8- &7State&8: &f${service.state}MB")
+            logger.info(" &8- &7Id&8: &f${service.uniqueId}")
+            logger.info(" &8- &7State&8: &f${service.state}")
             logger.info(" &8- &7Group&8: &f${service.group.data.name}")
+            logger.info(" &8- &7Port&8: &f${service.port}")
+            logger.info(" &8- &7Hostname&8: &f${service.hostname}")
         }, serviceArgument)
 
         syntax(execution = {
