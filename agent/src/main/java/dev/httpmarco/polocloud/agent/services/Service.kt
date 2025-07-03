@@ -9,6 +9,7 @@ class Service(val group: Group) {
 
     val uniqueId = UUID.randomUUID()
     val path = Path("temp/${name()}-${uniqueId}")
+    val port = 25565
 
     var state = State.PREPARING
     var process: Process? = null

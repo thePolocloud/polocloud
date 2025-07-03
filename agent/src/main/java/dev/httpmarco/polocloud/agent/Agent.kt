@@ -1,5 +1,7 @@
 package dev.httpmarco.polocloud.agent
 
+import dev.httpmarco.polocloud.agent.detector.DetectorFactoryThread
+import dev.httpmarco.polocloud.agent.detector.OnlineStateDetector
 import dev.httpmarco.polocloud.agent.grpc.GrpcServerEndpoint
 import dev.httpmarco.polocloud.agent.i18n.I18nPolocloudAgent
 import dev.httpmarco.polocloud.agent.logging.Logger
@@ -20,6 +22,8 @@ class Agent {
 
     private val grpcServerEndpoint = GrpcServerEndpoint()
 
+    private val onlineStateDetector = DetectorFactoryThread.bindDetector(OnlineStateDetector())
+
     companion object {
         val instance = Agent()
     }
@@ -39,10 +43,12 @@ class Agent {
 
         logger.info("The agent is now &3successfully &7started and ready to use&8!")
 
+        this.onlineStateDetector.detect()
         this.runtime.postInitialize()
     }
 
     fun close() {
         this.grpcServerEndpoint.close()
+        this.onlineStateDetector.close()
     }
 }

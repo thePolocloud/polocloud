@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.agent.runtime.local.detecotor
+package dev.httpmarco.polocloud.agent.detector
 
 interface Detector {
 
