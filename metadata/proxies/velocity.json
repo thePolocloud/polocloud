@@ -3,5 +3,6 @@
   "type": "PROXY",
   "language": "JAVA",
   "url": "https://api.papermc.io/v2/projects/velocity/versions/%version%/builds/%buildId%/downloads/velocity-%version%-%buildId%.jar",
+  "arguments": [],
   "versions": []
 }

@@ -55,7 +55,10 @@ class LocalRuntimeFactory : RuntimeFactory {
         Files.writeString(service.path.resolve("eula.txt"), "eula=true")
 
         // basically current only the java command is supported yet
-        val commands = listOf("java", "-jar", applicationPath.name)
+        val commands = ArrayList<String>()
+
+        commands.addAll(listOf("java", "-jar", applicationPath.name))
+        commands.addAll(platform.arguments)
 
         service.process = ProcessBuilder().directory(service.path.toFile()).command(commands).start()
     }
