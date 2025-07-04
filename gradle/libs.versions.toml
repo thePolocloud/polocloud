@@ -7,7 +7,7 @@ version = "1.0"
 gson = "1.9.0"
 
 # configuration
-config = "3.8.0"
+config = "3.8.2"
 
 # networking
 grpc = "1.73.0"
