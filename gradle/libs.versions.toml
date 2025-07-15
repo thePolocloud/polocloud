@@ -37,8 +37,8 @@ json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", v
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 # configuration
-configurate-core = { group = "org.spongepowered", name = "configurate-core", version = "configurate" }
-configurate-yaml = { group = "org.spongepowered", name = "configurate-yaml", version.ref = "configurate" }
+4.2.0-core = { group = "org.spongepowered", name = "4.2.0-core", version = "4.2.0" }
+4.2.0-yaml = { group = "org.spongepowered", name = "4.2.0-yaml", version.ref = "4.2.0" }
 configurate-alt-toml = { group = "org.tomlj", name = "tomlj", version.ref = "tomlj" }
 
 # networking
@@ -67,7 +67,7 @@ velocity = { group = "com.velocitypowered", name = "velocity-api", version.ref =
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 
 [bundles]
-confirationPool = ["configurate-yaml", "configurate-core", "configurate-alt-toml"]
+confirationPool = ["4.2.0-yaml", "4.2.0-core", "4.2.0-alt-toml"]
 proto = ["grpc-protobuf", "grpc-stub", "grpc-services"]
 terminal = ["slf4j", "log4j-api", "log4j-core", "log4j-slf4j2-impl"]
 runtime = ["docker", "docker-http", "k8s"]
