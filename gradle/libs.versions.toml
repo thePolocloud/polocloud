@@ -18,7 +18,7 @@ grpc = "1.73.0"
 jline = "3.30.4"
 
 slf4j = "2.0.17"
-log4j = "2.25.0"
+log4j = "2.25.1"
 
 # runtime
 docker = "3.5.3"
