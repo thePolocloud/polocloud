@@ -1,7 +1,14 @@
-# Polocloud v3
+# Polocloud v3 
 
 [![Download](https://img.shields.io/github/downloads/HttpMarco/Polocloud/total?style=for-the-badge&logo=github&color=2ea043)](https://github.com/HttpMarco/polocloud/releases)
 [![Discord](https://img.shields.io/discord/1278460874679386244?label=Community&style=for-the-badge&logo=discord&color=7289da)](https://discord.gg/WGzUcuJax7)
+
+### 🌐 Translations
+
+This project is being translated into multiple languages with the help of [Crowdin](https://crowdin.com/project/polocloud).  
+You can contribute by helping us localize it!
+
+[![Crowdin](https://badges.crowdin.net/polocloud/localized.svg)](https://crowdin.com/project/polocloud)
 
 
 <details open="open">
@@ -67,3 +74,7 @@ It sets up the required namespace, service accounts, and roles.
 ```sh
 kubectl apply -f https://raw.githubusercontent.com/httpmarco/polocloud/master/scripts/init-cluster.yml
 ```
+
+🌐 Translations
+This project is being translated into multiple languages with the help of Crowdin.
+You can contribute by helping us localize it!
