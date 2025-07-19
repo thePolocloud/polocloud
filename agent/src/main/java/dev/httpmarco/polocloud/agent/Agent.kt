@@ -14,7 +14,7 @@ import dev.httpmarco.polocloud.platforms.tasks.PlatformTaskPool
 // global terminal instance for the agent
 // this is used to print messages to the console
 val logger = Logger()
-val i18n = I18nPolocloudAgent();
+val i18n = I18nPolocloudAgent()
 
 class Agent {
 
@@ -31,18 +31,17 @@ class Agent {
 
     init {
         // display the default log information
-        logger.info("Starting PoloCloud Agent...")
-
+        i18n.info("agent.starting")
         this.runtime = Runtime.create()
         this.grpcServerEndpoint.connect()
 
-        logger.info("Using runtime: ${runtime::class.simpleName}")
+        i18n.info("agent.starting.runtime", runtime::class.simpleName)
 
         val groups = runtime.groupStorage().items()
-        logger.info("Load groups&8 (&7${groups.size}&8): &7" + groups.joinToString(separator = "&8, &7") { it.data.name })
-        logger.info("Load ${PlatformPool.size()} platforms with ${PlatformTaskPool.size()} tasks&8.")
+        i18n.info("agent.starting.groups.count", groups.size, groups.joinToString(separator = ", ") { it.data.name })
+        i18n.info("agent.starting.platforms.count", PlatformPool.size(), PlatformTaskPool.size())
 
-        logger.info("The agent is now &3successfully &7started and ready to use&8!")
+        i18n.info("agent.starting.successful")
 
         this.onlineStateDetector.detect()
         this.runtime.postInitialize()
