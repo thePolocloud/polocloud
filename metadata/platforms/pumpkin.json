@@ -6,7 +6,6 @@
   "arguments": [
   ],
   "tasks": [
-    "PUMPKIN_CONFIG_TASK"
   ],
   "preTasks": [
     "BUILD_PUMPKIN_TASK"
@@ -14,9 +13,8 @@
   "flags": [],
   "versions": [
     {
-      "version": "1.21.8",
-      "commitHash": "6e7b56abc5ac116cdb8cd3febee7ae3d718e4461"
+      "version": "1.21.7",
+      "commitHash": "c01e0b93b94e5239308ad08faf6ae0db72d5b9bb"
     }
-  ],
-  "setFileName": false
+  ]
 }

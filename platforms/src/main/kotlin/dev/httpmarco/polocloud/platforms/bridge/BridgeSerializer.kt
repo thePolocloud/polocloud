@@ -1,29 +1,23 @@
 package dev.httpmarco.polocloud.platforms.bridge
 
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonElement
-import com.google.gson.JsonPrimitive
-import com.google.gson.JsonSerializationContext
-import com.google.gson.JsonSerializer
 import dev.httpmarco.polocloud.platforms.PlatformPool
-import java.lang.reflect.Type
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-class BridgeSerializer : JsonSerializer<Bridge>, JsonDeserializer<Bridge> {
+class BridgeSerializer : KSerializer<Bridge?> {
 
-    override fun deserialize(
-        json: JsonElement,
-        typeOfT: Type?,
-        context: JsonDeserializationContext?
-    ): Bridge? {
-        return PlatformPool.findBindBridge(json.asJsonPrimitive.asString)
+    override val descriptor = PrimitiveSerialDescriptor("bridge", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): Bridge? {
+        return PlatformPool.findBindBridge(decoder.decodeString())
     }
 
-    override fun serialize(
-        src: Bridge,
-        typeOfSrc: Type,
-        context: JsonSerializationContext
-    ): JsonElement? {
-        return JsonPrimitive(src.name)
+    override fun serialize(encoder: Encoder, value: Bridge?) {
+        if (value != null) {
+            encoder.encodeString(value.name)
+        }
     }
 }

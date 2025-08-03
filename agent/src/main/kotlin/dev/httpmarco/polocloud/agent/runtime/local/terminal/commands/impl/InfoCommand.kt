@@ -4,8 +4,9 @@ import com.sun.management.OperatingSystemMXBean
 import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.i18n
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.Command
-import dev.httpmarco.polocloud.common.math.convertBytesToMegabytes
 import java.lang.management.ManagementFactory
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Duration
 import kotlin.math.roundToInt
 
@@ -14,6 +15,7 @@ class InfoCommand : Command("info", "Used to display information about the agent
     val osBean: OperatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean() as OperatingSystemMXBean
 
     init {
+
         // call cpuUsage() to ensure the bean is initialized -> this is necessary because the bean might not be initialized yet when the command is executed
         cpuUsage()
 
@@ -43,14 +45,21 @@ class InfoCommand : Command("info", "Used to display information about the agent
         val runtime = Runtime.getRuntime()
         val usedBytes = runtime.totalMemory() - runtime.freeMemory()
 
-        return convertBytesToMegabytes(usedBytes)
+        return calculateMemory(usedBytes)
     }
 
     private fun maxMemory(): Double {
         val runtime = Runtime.getRuntime()
         val maxBytes = runtime.maxMemory()
 
-        return convertBytesToMegabytes(maxBytes)
+        return calculateMemory(maxBytes)
+    }
+
+    private fun calculateMemory(bytes: Long): Double {
+        val mb = bytes / 1024.0 / 1024.0
+        return BigDecimal(mb)
+            .setScale(2, RoundingMode.HALF_UP)
+            .toDouble()
     }
 
      fun formatDuration(millis: Long): String {

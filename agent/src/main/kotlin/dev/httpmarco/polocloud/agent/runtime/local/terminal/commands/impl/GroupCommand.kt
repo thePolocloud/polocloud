@@ -13,24 +13,16 @@ import dev.httpmarco.polocloud.agent.runtime.local.terminal.arguments.type.Keywo
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.arguments.type.TextArgument
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.setup.impl.GroupSetup
 
-class GroupCommand(private val groupStorage: RuntimeGroupStorage, private val terminal: JLine3Terminal) :
-    Command("group", "Manage all group actions") {
+class GroupCommand(private val groupStorage: RuntimeGroupStorage, private val terminal: JLine3Terminal) : Command("group", "Manage all group actions") {
 
     init {
         syntax(execution = {
-            if (groupStorage.findAll().isEmpty()) {
+            if (groupStorage.items().isEmpty()) {
                 i18n.info("agent.terminal.command.group.not-found")
                 return@syntax
             }
-            i18n.info("agent.terminal.command.group.found", groupStorage.findAll().size)
-            groupStorage.findAll().forEach {
-                i18n.info(
-                    "agent.terminal.command.group.list",
-                    it.name,
-                    it.minOnlineService,
-                    it.serviceCount()
-                )
-            }
+            i18n.info("agent.terminal.command.group.found", groupStorage.items().size)
+            groupStorage.items().forEach { i18n.info("agent.terminal.command.group.list", it.data.name, it.data.minOnlineService, it.serviceCount()) }
         }, KeywordArgument("list"))
 
         val groupArgument = GroupArgument()
@@ -38,16 +30,16 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage, private val te
         syntax(execution = { context ->
             val group = context.arg(groupArgument)
 
-            i18n.info("agent.terminal.command.group.info.header", group.name)
-            i18n.info("agent.terminal.command.group.info.line.1", group.minMemory)
-            i18n.info("agent.terminal.command.group.info.line.2", group.maxMemory)
-            i18n.info("agent.terminal.command.group.info.line.3", group.minOnlineService)
-            i18n.info("agent.terminal.command.group.info.line.4", group.maxOnlineService)
+            i18n.info("agent.terminal.command.group.info.header", group.data.name)
+            i18n.info("agent.terminal.command.group.info.line.1", group.data.minMemory)
+            i18n.info("agent.terminal.command.group.info.line.2", group.data.maxMemory)
+            i18n.info("agent.terminal.command.group.info.line.3", group.data.minOnlineService)
+            i18n.info("agent.terminal.command.group.info.line.4", group.data.maxOnlineService)
             i18n.info("agent.terminal.command.group.info.line.5", group.serviceCount())
-            i18n.info("agent.terminal.command.group.info.line.6", group.platform.name, group.platform.version)
+            i18n.info("agent.terminal.command.group.info.line.6", group.data.platform.group, group.data.platform.version)
             i18n.info("agent.terminal.command.group.info.line.7")
 
-            group.properties.forEach { (key, value) ->
+            group.data.properties.forEach { (key, value) ->
                 logger.info("   &8- &7$key&8: &f$value")
             }
 
@@ -71,50 +63,47 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage, private val te
             when (editType) {
                 GroupEditFlagArgument.TYPES.MIN_ONLINE_SERVICES -> {
                     val value = convertValueToInt(IntArgument("value", minValue = 0)) ?: return@syntax
-                    if (value > group.maxOnlineService) {
+                    if (value > group.data.maxOnlineService) {
                         i18n.info("agent.terminal.command.group.edit.warn.above-max", editType)
                         return@syntax
                     }
-                    group.updateMinOnlineServices(value)
+                    group.data.minOnlineService = value
                 }
-
                 GroupEditFlagArgument.TYPES.MAX_ONLINE_SERVICES -> {
                     val value = convertValueToInt(IntArgument("value", minValue = 0)) ?: return@syntax
-                    if (value < group.minOnlineService) {
+                    if (value < group.data.minOnlineService) {
                         i18n.info("agent.terminal.command.group.edit.warn.below-min", editType)
                         return@syntax
                     }
-                    group.updateMaxOnlineServices(value)
+                    group.data.maxOnlineService = value
                 }
-
                 GroupEditFlagArgument.TYPES.MIN_MEMORY -> {
                     val value = convertValueToInt(IntArgument("value", minValue = 1)) ?: return@syntax
-                    if (value > group.maxMemory) {
+                    if (value > group.data.maxMemory) {
                         i18n.info("agent.terminal.command.group.edit.warn.above-max", editType)
                         return@syntax
                     }
-                    group.updateMinOnlineServices(value)
+                    group.data.minMemory = value
                 }
-
                 GroupEditFlagArgument.TYPES.MAX_MEMORY -> {
                     val value = convertValueToInt(IntArgument("value", minValue = 1)) ?: return@syntax
-                    if (value < group.minMemory) {
+                    if (value < group.data.minMemory) {
                         i18n.info("agent.terminal.command.group.edit.warn.below-min", editType)
                         return@syntax
                     }
-                    group.updateMaxMemory(value)
+                    group.data.maxMemory = value
                 }
             }
 
             group.update()
-            i18n.info("agent.terminal.command.group.edit.successful", group.name, editType.name, stringValue)
+            i18n.info("agent.terminal.command.group.edit.successful", group.data.name, editType.name, stringValue)
         }, groupArgument, KeywordArgument("edit"), GroupEditFlagArgument(), TextArgument("value"))
 
         syntax(execution = { context ->
             val group = context.arg(groupArgument)
             i18n.info("agent.terminal.command.group.shutdown-all")
             group.shutdownAll()
-            i18n.info("agent.terminal.command.group.shutdown-all.successful", group.name)
+            i18n.info("agent.terminal.command.group.shutdown-all.successful", group.data.name)
         }, groupArgument, KeywordArgument("shutdownAll"))
 
         syntax(execution = { context ->
@@ -123,7 +112,7 @@ class GroupCommand(private val groupStorage: RuntimeGroupStorage, private val te
             Agent.runtime.groupStorage().destroy(group)
             group.shutdownAll()
 
-            i18n.info("agent.terminal.command.group.deleted", group.name)
+            i18n.info("agent.terminal.command.group.deleted", group.data.name)
         }, groupArgument, KeywordArgument("delete"))
 
         syntax(execution = {

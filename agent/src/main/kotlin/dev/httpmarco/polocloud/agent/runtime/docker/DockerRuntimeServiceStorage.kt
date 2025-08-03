@@ -1,77 +1,32 @@
 package dev.httpmarco.polocloud.agent.runtime.docker
 
+import dev.httpmarco.polocloud.agent.groups.Group
 import dev.httpmarco.polocloud.agent.runtime.RuntimeServiceStorage
-import dev.httpmarco.polocloud.agent.services.AbstractService
-import dev.httpmarco.polocloud.shared.service.SharedBootConfiguration
-import dev.httpmarco.polocloud.v1.GroupType
-import java.util.concurrent.CompletableFuture
+import dev.httpmarco.polocloud.agent.services.Service
+import java.util.UUID
 
-class DockerRuntimeServiceStorage : RuntimeServiceStorage<DockerService> {
-
-    override fun findAll(): List<DockerService> {
+class DockerRuntimeServiceStorage : RuntimeServiceStorage {
+    override fun deployService(service: Service) {
         TODO("Not yet implemented")
     }
 
-    override fun findAllAsync(): CompletableFuture<List<DockerService>> {
+    override fun findService(name: String): Service? {
         TODO("Not yet implemented")
     }
 
-    override fun find(name: String): DockerService? {
+    override fun findServiceByName(name: String): Service? {
         TODO("Not yet implemented")
     }
 
-    override fun findAsync(name: String): CompletableFuture<DockerService?> {
+    override fun findServicesByGroup(group: Group): List<Service> {
         TODO("Not yet implemented")
     }
 
-    override fun findByType(type: GroupType): List<DockerService> {
+    override fun items(): List<Service> {
         TODO("Not yet implemented")
     }
 
-    override fun findByTypeAsync(type: GroupType): CompletableFuture<List<DockerService>> {
-        TODO("Not yet implemented")
-    }
-
-    override fun findByGroup(group: dev.httpmarco.polocloud.shared.groups.Group): List<DockerService> {
-        TODO("Not yet implemented")
-    }
-
-    override fun findByGroupAsync(group: dev.httpmarco.polocloud.shared.groups.Group): CompletableFuture<List<DockerService>> {
-        TODO("Not yet implemented")
-    }
-
-    override fun findByGroup(group: String): List<DockerService> {
-        TODO("Not yet implemented")
-    }
-
-    override fun findByGroupAsync(group: String): CompletableFuture<List<DockerService>> {
-        TODO("Not yet implemented")
-    }
-
-    override fun bootInstanceWithConfiguration(
-        name: String,
-        configuration: (SharedBootConfiguration) -> Any
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override fun bootInstance(name: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun shutdownService(name: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun deployService(service: DockerService) {
-        TODO("Not yet implemented")
-    }
-
-    override fun dropService(service: DockerService) {
-        TODO("Not yet implemented")
-    }
-
-    override fun implementedService(abstractService: AbstractService): DockerService {
+    override fun dropService(service: Service) {
         TODO("Not yet implemented")
     }
 }

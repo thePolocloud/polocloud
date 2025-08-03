@@ -1,0 +1,65 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "aspen",
+  "name": "Polocloud",
+  "colors": {
+    "primary": "#2592c0",
+    "light": "#07C983",
+    "dark": "#15803D"
+  },
+  "favicon": ".img/img.png",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "index",
+              "quickstart",
+              "development"
+            ]
+          },
+          {
+            "group": "Removeable",
+            "pages": [
+              "essentials/markdown",
+              "essentials/code",
+              "essentials/images",
+              "essentials/settings",
+              "essentials/navigation",
+              "essentials/reusable-snippets"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Discord",
+          "href": "https://discord.gg/WGzUcuJax7",
+          "icon": "discord"
+        },
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/HttpMarco/polocloud",
+          "icon": "github"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "https://discord.gg/WGzUcuJax7"
+      }
+    ]
+  }
+}

@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     api(projects.proto)
-    compileOnly(libs.gson)
     implementation(projects.proto)
 }
 

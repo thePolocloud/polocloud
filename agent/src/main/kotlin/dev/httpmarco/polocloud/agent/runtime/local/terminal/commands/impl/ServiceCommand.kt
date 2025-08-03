@@ -13,17 +13,17 @@ import dev.httpmarco.polocloud.agent.runtime.local.terminal.arguments.type.TextA
 import kotlin.collections.component1
 import kotlin.collections.component2
 
-class ServiceCommand(private val serviceStorage: RuntimeServiceStorage<*>, terminal: JLine3Terminal) :
+class ServiceCommand(private val serviceStorage: RuntimeServiceStorage, terminal: JLine3Terminal) :
     Command("service", "Used to manage services", "ser") {
 
     init {
         syntax(execution = {
-            if (serviceStorage.findAll().isEmpty()) {
+            if (serviceStorage.items().isEmpty()) {
                 i18n.info("agent.terminal.command.service.not-found")
                 return@syntax
             }
-            i18n.info("agent.terminal.command.service.found", serviceStorage.findAll().size)
-            serviceStorage.findAll().forEach {
+            i18n.info("agent.terminal.command.service.found", serviceStorage.items().size)
+            serviceStorage.items().forEach {
                 i18n.info(
                     "agent.terminal.command.service.list",
                     it.name(),
@@ -42,12 +42,10 @@ class ServiceCommand(private val serviceStorage: RuntimeServiceStorage<*>, termi
 
             i18n.info("agent.terminal.command.service.info.header", service.name())
             i18n.info("agent.terminal.command.service.info.line.1", service.state)
-            i18n.info("agent.terminal.command.service.info.line.2", service.name())
+            i18n.info("agent.terminal.command.service.info.line.2", service.group.data.name)
             i18n.info("agent.terminal.command.service.info.line.3", service.port)
             i18n.info("agent.terminal.command.service.info.line.4", service.hostname)
             i18n.info("agent.terminal.command.service.info.line.5", service.playerCount, service.maxPlayerCount)
-            i18n.info("agent.terminal.command.service.info.line.memory", service.memoryUsage)
-            i18n.info("agent.terminal.command.service.info.line.cpuUsage", service.cpuUsage.toString())
             i18n.info("agent.terminal.command.service.info.line.6")
 
             service.properties.forEach { (key, value) ->

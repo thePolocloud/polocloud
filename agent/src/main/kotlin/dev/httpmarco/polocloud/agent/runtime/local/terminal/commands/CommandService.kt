@@ -4,7 +4,6 @@ import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.HelpCo
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.InfoCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.ReloadCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.ShutdownCommand
-import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.UpdaterCommand
 import java.util.*
 
 class CommandService {
@@ -12,7 +11,6 @@ class CommandService {
     val parser = CommandParser(this)
 
     init {
-        this.registerCommand(UpdaterCommand())
         this.registerCommand(ShutdownCommand())
         this.registerCommand(ReloadCommand())
         this.registerCommand(InfoCommand())

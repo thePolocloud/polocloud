@@ -1,16 +1,21 @@
 package dev.httpmarco.polocloud.agent.runtime
 
-import dev.httpmarco.polocloud.agent.groups.AbstractGroup
-import dev.httpmarco.polocloud.shared.groups.SharedGroupProvider
+import dev.httpmarco.polocloud.agent.groups.Group
 
-interface RuntimeGroupStorage : SharedGroupProvider<AbstractGroup>{
+interface RuntimeGroupStorage {
 
-    fun update(group: AbstractGroup)
+    fun items(): List<Group>
+
+    fun item(identifier: String): Group?
+
+    fun publish(group: Group)
+
+    fun destroy(group: Group)
+
+    fun present(identifier: String): Boolean
+
+    fun update(group: Group)
 
     fun reload()
-
-    fun destroy(abstractGroup: AbstractGroup)
-
-    fun publish(abstractGroup: AbstractGroup)
 
 }

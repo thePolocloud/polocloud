@@ -9,22 +9,19 @@ import dev.httpmarco.polocloud.agent.i18n.I18nPolocloudAgent
 import dev.httpmarco.polocloud.agent.logging.Logger
 import dev.httpmarco.polocloud.agent.runtime.Runtime
 import dev.httpmarco.polocloud.agent.runtime.local.LocalRuntime
+import dev.httpmarco.polocloud.agent.runtime.local.terminal.setup.impl.OnboardingSetup
 import dev.httpmarco.polocloud.agent.security.SecurityProvider
-import dev.httpmarco.polocloud.agent.services.AbstractService
-import dev.httpmarco.polocloud.common.version.polocloudVersion
 import dev.httpmarco.polocloud.platforms.PlatformPool
-import dev.httpmarco.polocloud.shared.PolocloudShared
-import dev.httpmarco.polocloud.shared.events.SharedEventProvider
-import dev.httpmarco.polocloud.shared.groups.SharedGroupProvider
-import dev.httpmarco.polocloud.shared.service.SharedServiceProvider
-import dev.httpmarco.polocloud.updater.Updater
+import kotlin.io.path.Path
+import kotlin.io.path.notExists
 
 // global terminal instance for the agent
 // this is used to print messages to the console
 val logger = Logger()
+val developmentMode = System.getProperty("polocloud.version", "false").toBoolean()
 val i18n = I18nPolocloudAgent()
 
-object Agent : PolocloudShared() {
+object Agent {
 
     val runtime: Runtime
     val eventService = EventService()
@@ -43,7 +40,6 @@ object Agent : PolocloudShared() {
             i18n.warn("agent.version.warn")
         }
 
-        this.checkForUpdates()
         this.runtime = Runtime.create()
         this.runtime.initialize()
     }
@@ -58,27 +54,14 @@ object Agent : PolocloudShared() {
         // this is done before the runtime is initialized
         this.config = this.runtime.configHolder().read("config", AgentConfig())
 
-        if (config.autoUpdate && Updater.newVersionAvailable()) {
-
-            if (this.runtime is LocalRuntime) {
-                this.runtime.terminal.clearScreen()
-            }
-
-            exitPolocloud(cleanShutdown = true, shouldUpdate = true)
-            return
-        }
-
         this.grpcServerEndpoint.connect(this.config.port)
 
         this.runtime.boot()
 
-        val groups = runtime.groupStorage().findAll()
+        val groups = runtime.groupStorage().items()
 
         i18n.info("agent.starting.runtime", runtime::class.simpleName)
-        i18n.info(
-            "agent.starting.groups.count",
-            groups.size,
-            groups.joinToString(separator = "&8, &7") { it.name })
+        i18n.info("agent.starting.groups.count", groups.size, groups.joinToString(separator = "&8, &7") { it.data.name })
         i18n.info("agent.starting.platforms.count", PlatformPool.size(), PlatformPool.versionSize())
         i18n.info("agent.starting.successful")
 
@@ -94,29 +77,5 @@ object Agent : PolocloudShared() {
         this.runtime.shutdown()
         this.grpcServerEndpoint.close()
         this.onlineStateDetector.close()
-    }
-
-    /**
-     * This method check for updates of the agent.
-     * If a new version is available, it will log the information.
-     */
-    fun checkForUpdates() {
-        if (Updater.newVersionAvailable()) {
-            logger.info("A new version of the agent is available: ${Updater.latestVersion()}")
-            return
-        }
-        logger.info("You are running the latest version of the agent.")
-    }
-
-    override fun eventProvider(): SharedEventProvider {
-        TODO("Not yet implemented")
-    }
-
-    override fun serviceProvider(): SharedServiceProvider<*> {
-        return runtime.serviceStorage()
-    }
-
-    override fun groupProvider(): SharedGroupProvider<*> {
-        return runtime.groupStorage()
     }
 }

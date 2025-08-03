@@ -1,10 +1,12 @@
 package dev.httpmarco.polocloud.platforms.metadata
 
-import com.google.gson.JsonObject
-import dev.httpmarco.polocloud.platforms.PLATFORM_GSON
+import dev.httpmarco.polocloud.common.json.PRETTY_JSON
 import dev.httpmarco.polocloud.platforms.PLATFORM_METADATA_URL
 import dev.httpmarco.polocloud.platforms.PLATFORM_PATH
 import dev.httpmarco.polocloud.platforms.exceptions.PlatformMetadataNotLoadableException
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
@@ -59,20 +61,18 @@ object MetadataTranslator {
      */
     private fun copyFromGitHub(): Boolean {
         val metadataUrl = PLATFORM_METADATA_URL + "metadata.json"
+        val jsonContext = PRETTY_JSON.parseToJsonElement(URI(metadataUrl).toURL().readText()).jsonObject
 
-        val jsonText = URI(metadataUrl).toURL().openStream().bufferedReader(Charsets.UTF_8).readText()
-        val jsonContext = PLATFORM_GSON.fromJson(jsonText, JsonObject::class.java)
-
-        val tasks = jsonContext["tasks"]?.asJsonArray ?: return false
-        val platforms = jsonContext["platforms"]?.asJsonArray ?: return false
+        val tasks = jsonContext["tasks"]?.jsonArray ?: return false
+        val platforms = jsonContext["platforms"]?.jsonArray ?: return false
 
         tasks.forEach {
-            val fileName = it.asJsonPrimitive.asString
+            val fileName = it.jsonPrimitive.content
             downloadAndWriteToLocal("tasks", fileName)
         }
 
         platforms.forEach {
-            val fileName = it.asJsonPrimitive.asString
+            val fileName = it.jsonPrimitive.content
             downloadAndWriteToLocal("platforms", fileName)
         }
         return true

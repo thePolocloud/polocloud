@@ -2,19 +2,9 @@
   "name": "BUILD_PUMPKIN_TASK",
   "steps": [
     {
-      "name": "Move download",
-      "description": "Moves the downloaded ZIP file",
-      "filename": "",
-      "action": {
-        "type": "PlatformFileMoveAction",
-        "oldPath": "download",
-        "newPath": "../download"
-      }
-    },
-    {
       "name": "Unzip repo",
       "description": "Unpacks the repo which was downloaded as zip",
-      "filename": "../download",
+      "filename": "download",
       "action": {
         "type": "PlatformFileUnzipAction"
       }
@@ -22,7 +12,7 @@
     {
       "name": "Delete repo zip file",
       "description": "Deletes the downloaded zip file of the repo",
-      "filename": "../download",
+      "filename": "download",
       "action": {
         "type": "PlatformFileDeleteAction"
       }
@@ -30,7 +20,7 @@
     {
       "name": "Build Pumpkin",
       "description": "Build the binary for Pumpkin",
-      "filename": "../Pumpkin-%version_commitHash%",
+      "filename": "Pumpkin-c01e0b93b94e5239308ad08faf6ae0db72d5b9bb",
       "action": {
         "type": "PlatformExecuteCommandAction",
         "command": "cargo build --release"
@@ -42,14 +32,14 @@
       "filename": "",
       "action": {
         "type": "PlatformFileMoveAction",
-        "oldPath": "../Pumpkin-%version_commitHash%/target/release/pumpkin%file_suffix%",
-        "newPath": "pumpkin-%version_version%%file_suffix%"
+        "oldPath": "Pumpkin-c01e0b93b94e5239308ad08faf6ae0db72d5b9bb/target/release/pumpkin",
+        "newPath": "pumpkin-1.21.7"
       }
     },
     {
-      "name": "Delete target folder",
-      "description": "Deletes the target (build) folder of pumpkin",
-      "filename": "../Pumpkin-%version_commitHash%/target",
+      "name": "Delete repo folder",
+      "description": "Deletes the unpacked folder of the repo",
+      "filename": "Pumpkin-c01e0b93b94e5239308ad08faf6ae0db72d5b9bb",
       "action": {
         "type": "PlatformDirectoryDeleteAction"
       }

@@ -2,7 +2,7 @@ package dev.httpmarco.polocloud.agent.runtime.local.terminal.screen
 
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.JLine3Terminal
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.LoggingColor
-import dev.httpmarco.polocloud.agent.services.AbstractService
+import dev.httpmarco.polocloud.agent.services.Service
 
 /**
  * This class is responsible for managing the screen recording of a service.
@@ -10,18 +10,18 @@ import dev.httpmarco.polocloud.agent.services.AbstractService
  */
 class ServiceScreenController(val terminal: JLine3Terminal) {
 
-    private var displayedAbstractService: AbstractService? = null
+    private var displayedService: Service? = null
 
-    fun screenRecordingOf(abstractService: AbstractService) {
-        displayedAbstractService = abstractService
+    fun screenRecordingOf(service: Service) {
+        displayedService = service
 
         terminal.clearScreen()
 
-        abstractService.logs(5000).forEach {
+        service.logs(5000).forEach {
             terminal.display(it)
         }
 
-        terminal.updatePrompt(LoggingColor.translate("&b${abstractService.name()} &8» &7"))
+        terminal.updatePrompt(LoggingColor.translate("&b${service.name()} &8» &7"))
     }
 
     fun stopCurrentRecording() {
@@ -30,25 +30,25 @@ class ServiceScreenController(val terminal: JLine3Terminal) {
             return
         }
 
-        this.displayedAbstractService = null
+        this.displayedService = null
 
         terminal.clearScreen()
         terminal.resetPrompt()
         // todo display the context before the recording
     }
 
-    fun isServiceRecoding(abstractService: AbstractService): Boolean {
-        return isRecoding() && displayedAbstractService!!.name() == abstractService.name()
+    fun isServiceRecoding(service: Service): Boolean {
+        return isRecoding() && displayedService!!.name() == service.name()
     }
 
     fun isRecoding(): Boolean {
-        return displayedAbstractService != null
+        return displayedService != null
     }
 
     fun redirectCommand(command: String) {
         if (!isRecoding()) {
             throw IllegalStateException("Cannot redirect command to service because no service is currently being recorded.")
         }
-        this.displayedAbstractService?.executeCommand(command)
+        this.displayedService?.executeCommand(command)
     }
 }

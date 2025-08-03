@@ -1,15 +1,18 @@
 package dev.httpmarco.polocloud.agent.runtime.local.terminal
 
+import dev.httpmarco.polocloud.agent.Agent
+import dev.httpmarco.polocloud.agent.polocloudVersion
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.CommandService
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.ClearCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.screen.ServiceScreenController
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.setup.SetupController
-import dev.httpmarco.polocloud.common.version.polocloudVersion
 import org.jline.reader.LineReader
 import org.jline.reader.LineReaderBuilder
 import org.jline.reader.impl.LineReaderImpl
 import org.jline.terminal.TerminalBuilder
+import org.jline.utils.AttributedStringBuilder
 import org.jline.utils.InfoCmp
+import org.jline.utils.Status
 import java.nio.charset.StandardCharsets
 
 

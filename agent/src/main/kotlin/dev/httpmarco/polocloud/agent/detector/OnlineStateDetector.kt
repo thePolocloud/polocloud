@@ -1,17 +1,19 @@
 package dev.httpmarco.polocloud.agent.detector
 
-import com.google.gson.JsonObject
 import dev.httpmarco.polocloud.agent.Agent
+import dev.httpmarco.polocloud.agent.events.definitions.ServiceOnlineEvent
 import dev.httpmarco.polocloud.agent.i18n
-import dev.httpmarco.polocloud.common.json.GSON
-import dev.httpmarco.polocloud.shared.events.definitions.ServiceOnlineEvent
-import dev.httpmarco.polocloud.shared.service.Service
-import dev.httpmarco.polocloud.v1.services.ServiceState
+import dev.httpmarco.polocloud.v1.ServiceState
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.ByteArrayOutputStream
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.ConnectException
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.nio.charset.StandardCharsets
@@ -19,7 +21,7 @@ import java.nio.charset.StandardCharsets
 class OnlineStateDetector : Detector {
 
     override fun tick() {
-        val services = Agent.runtime.serviceStorage().findAll()
+        val services = Agent.runtime.serviceStorage().items()
 
         services.forEach { service ->
             val host = "127.0.0.1"
@@ -28,6 +30,15 @@ class OnlineStateDetector : Detector {
             try {
                 Socket().use { socket ->
                     socket.connect(InetSocketAddress(host, port), 500)
+
+                    if (service.state == ServiceState.STARTING) {
+                        service.state = ServiceState.ONLINE
+
+                        // call the services all the events
+                        Agent.eventService.call(ServiceOnlineEvent(service))
+
+                        i18n.info("agent.detector.service.online", service.name())
+                    }
 
                     val out = socket.getOutputStream()
                     val input = socket.getInputStream()
@@ -50,35 +61,24 @@ class OnlineStateDetector : Detector {
                     try {
                         readVarInt(input) // packet length
                         readVarInt(input) // packet ID
-                    } catch (_: Throwable) {
+                    }catch (_: Throwable) {
                         // if the packet length or ID cannot be read, the service is not online
                         return@forEach
                     }
-
-                    this.callOnline(service)
 
                     val jsonLength = readVarInt(input)
                     val jsonData = ByteArray(jsonLength)
                     input.readFully(jsonData)
 
-                    val json : JsonObject = GSON.fromJson(String(jsonData), JsonObject::class.java)
+                    val json = Json.parseToJsonElement(String(jsonData, StandardCharsets.UTF_8)).jsonObject
 
-                    val players = json["players"]?.asJsonObject
-
-                    service.updatePlayerCount(players?.get("online")?.asJsonPrimitive?.asInt ?: -1)
-                    service.updateMaxPlayerCount(players?.get("max")?.asJsonPrimitive?.asInt ?: -1)
+                    val players = json["players"]?.jsonObject
+                    service.playerCount = players?.get("online")?.jsonPrimitive?.intOrNull ?: -1
+                    service.maxPlayerCount = players?.get("max")?.jsonPrimitive?.intOrNull ?: -1
                 }
-            } catch (_: Throwable) {
+            } catch (_: ConnectException) {
                 // ignore connection errors, the service is not online yet
             }
-        }
-    }
-
-    private fun callOnline(service: Service) {
-        if (service.state == ServiceState.STARTING) {
-            service.state = ServiceState.ONLINE
-            Agent.eventService.call(ServiceOnlineEvent(service))
-            i18n.info("agent.detector.service.online", service.name())
         }
     }
 

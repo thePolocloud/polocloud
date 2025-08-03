@@ -12,9 +12,6 @@
     "SPIGOT_SERVER_PROPERTIES",
     "PAPER_PROXY_SUPPORT_TASK"
   ],
-  "preTasks": [
-    "LOAD_PAPER_DEPENDENCIES_TASK"
-  ],
   "versions": [
     {
       "version": "1.21.8",

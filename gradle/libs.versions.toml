@@ -6,12 +6,11 @@ version = "1.0"
 nexus-publish = "2.0.0"
 
 # libraries
+json = "1.9.0"
 gson = "2.13.1"
-oshi="6.8.2"
 
 # configuration
 configurate = "4.2.0"
-yaml = "2.4"
 tomlj = "1.1.1"
 
 # networking
@@ -38,14 +37,13 @@ lombok = "1.18.38"
 [libraries]
 
 # libraries
+json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "json" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
-oshi = { group = "com.github.oshi", name = "oshi-core", version.ref = "oshi" }
 
 # configuration
-configurate-core = { group = "org.spongepowered", name = "configurate-core", version.ref = "configurate" }
+configurate-core = { group = "org.spongepowered", name = "configurate-core", version = "configurate" }
 configurate-yaml = { group = "org.spongepowered", name = "configurate-yaml", version.ref = "configurate" }
 configurate-alt-toml = { group = "org.tomlj", name = "tomlj", version.ref = "tomlj" }
-snake-yaml = { group = "org.yaml", name = "snakeyaml", version.ref = "yaml" }
 
 # networking
 grpc-netty = { group = "io.grpc", name = "grpc-netty", version.ref = "grpc" }
@@ -79,7 +77,7 @@ lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" 
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish" }
 
 [bundles]
-confirationPool = ["configurate-yaml", "configurate-core", "configurate-alt-toml", "snake-yaml"]
+confirationPool = ["configurate-yaml", "configurate-core", "configurate-alt-toml"]
 proto = ["grpc-protobuf", "grpc-stub", "grpc-services"]
 terminal = ["slf4j", "log4j-api", "log4j-core", "log4j-slf4j2-impl"]
 runtime = ["docker", "docker-http", "k8s"]

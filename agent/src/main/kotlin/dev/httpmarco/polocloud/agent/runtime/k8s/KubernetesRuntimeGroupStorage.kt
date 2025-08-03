@@ -1,49 +1,42 @@
 package dev.httpmarco.polocloud.agent.runtime.k8s
 
-import dev.httpmarco.polocloud.agent.groups.AbstractGroup
+import dev.httpmarco.polocloud.agent.groups.Group
 import dev.httpmarco.polocloud.agent.runtime.RuntimeGroupStorage
-import dev.httpmarco.polocloud.shared.platform.PlatformIndex
 import io.fabric8.kubernetes.client.KubernetesClient
-import java.util.concurrent.CompletableFuture
 
 class KubernetesRuntimeGroupStorage(private val kubeClient: KubernetesClient) : RuntimeGroupStorage {
 
-    override fun update(abstractGroup: AbstractGroup) {
-        TODO("Not yet implemented")
-    }
-
-    override fun reload() {
-        TODO("Not yet implemented")
-    }
-
-    override fun destroy(abstractGroup: AbstractGroup) {
-        TODO("Not yet implemented")
-    }
-
-    override fun publish(abstractGroup: AbstractGroup) {
-        TODO("Not yet implemented")
-    }
-
-    override fun findAll(): List<AbstractGroup> {
+    override fun items(): List<Group> {
         return kubeClient
             .resources(KubernetesGroup::class.java)
             .list()
             .getItems()
             .stream()
-            // todo
-            .map({ group -> AbstractGroup(group.name, 0, 0, 0, 0, 0.0, PlatformIndex("", ""), emptyList(), hashMapOf()) })
+            .map({ group -> Group(group.spec) })
             .toList()
     }
 
-    override fun findAllAsync(): CompletableFuture<List<AbstractGroup>> {
+    override fun item(identifier: String): Group? {
         TODO("Not yet implemented")
     }
 
-    override fun find(name: String): AbstractGroup? {
+    override fun publish(group: Group) {
         TODO("Not yet implemented")
     }
 
-    override fun findAsync(name: String): CompletableFuture<AbstractGroup?> {
+    override fun destroy(group: Group) {
+        kubeClient.resources(KubernetesGroup::class.java).withName(group.data.name).delete()
+    }
+
+    override fun present(identifier: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun update(group: Group) {
+        TODO("Not yet implemented")
+    }
+
+    override fun reload() {
         TODO("Not yet implemented")
     }
 }

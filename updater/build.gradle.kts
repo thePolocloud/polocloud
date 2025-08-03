@@ -2,21 +2,17 @@ plugins {
     kotlin("jvm") version "2.2.0"
 }
 
+group = "dev.httpmarco.polocloud"
+version = "3.0.0.BETA"
+
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     testImplementation(kotlin("test"))
-    compileOnly(projects.common)
 }
 
-tasks.jar {
-    manifest {
-        attributes(
-            "Main-Class" to "dev.httpmarco.polocloud.updater.UpdaterRuntime",
-            "polocloud-version" to version
-        )
-    }
-    archiveFileName.set("polocloud-updater-$version.jar")
-}
-
-kotlin {
-    jvmToolchain(21)
+tasks.test {
+    useJUnitPlatform()
 }

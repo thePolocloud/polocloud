@@ -22,8 +22,6 @@ class GrpcServerEndpoint {
     }
 
     fun close() {
-        if (::server.isInitialized) {
-            server.shutdown()
-        }
+        server.shutdown()
     }
 }

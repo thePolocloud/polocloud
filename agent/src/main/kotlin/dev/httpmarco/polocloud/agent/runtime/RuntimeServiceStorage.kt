@@ -1,22 +1,21 @@
 package dev.httpmarco.polocloud.agent.runtime
 
-import dev.httpmarco.polocloud.agent.services.AbstractService
-import dev.httpmarco.polocloud.shared.service.SharedServiceProvider
+import dev.httpmarco.polocloud.agent.groups.Group
+import dev.httpmarco.polocloud.agent.services.Service
+import java.util.UUID
 
-interface RuntimeServiceStorage<S : AbstractService> : SharedServiceProvider<S> {
+interface RuntimeServiceStorage {
 
-    fun deployService(service: S)
+    fun deployService(service: Service)
 
-    fun deployAbstractService(abstractService: AbstractService) {
-        deployService(implementedService(abstractService))
-    }
+    fun findService(name: String): Service?
 
-    fun dropService(service: S)
+    fun findServiceByName(name: String): Service?
 
-    fun dropAbstractService(abstractService: AbstractService) {
-        dropService(implementedService(abstractService))
-    }
+    fun findServicesByGroup(group: Group) : List<Service>
 
-    fun implementedService(abstractService: AbstractService) : S
+    fun items(): List<Service>
+
+    fun dropService(service: Service)
 
 }

@@ -2,6 +2,8 @@ package dev.httpmarco.polocloud.platforms.tasks.actions
 
 import dev.httpmarco.polocloud.platforms.PlatformParameters
 import dev.httpmarco.polocloud.platforms.tasks.PlatformTaskStep
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.nio.file.Path
 import java.util.zip.ZipFile
 import kotlin.io.path.createDirectory
@@ -9,6 +11,8 @@ import kotlin.io.path.createParentDirectories
 import kotlin.io.path.notExists
 import kotlin.io.path.outputStream
 
+@Serializable
+@SerialName("PlatformFileUnzipAction")
 class PlatformFileUnzipAction : PlatformAction() {
     override fun run(
         file: Path,
@@ -28,9 +32,7 @@ class PlatformFileUnzipAction : PlatformAction() {
                     println(ex.message)
                 }
                 if (entry.isDirectory) {
-                    if (newFile.notExists()) {
-                        newFile.createDirectory()
-                    }
+                    newFile.createDirectory()
                 } else {
 
                     zip.getInputStream(entry).use { input ->

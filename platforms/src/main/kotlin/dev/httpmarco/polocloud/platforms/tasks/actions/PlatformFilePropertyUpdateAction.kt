@@ -2,99 +2,97 @@ package dev.httpmarco.polocloud.platforms.tasks.actions
 
 import dev.httpmarco.polocloud.platforms.PlatformParameters
 import dev.httpmarco.polocloud.platforms.tasks.PlatformTaskStep
-import org.tomlj.Toml
-import org.tomlj.TomlTable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader
-import org.yaml.snakeyaml.Yaml
+import org.tomlj.Toml
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.FileReader
-import java.io.FileWriter
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 
-class PlatformFilePropertyUpdateAction(
-    private val key: String,
-    private val value: String
-) : PlatformAction() {
+@Serializable
+@SerialName("PlatformFilePropertyUpdateAction")
+class PlatformFilePropertyUpdateAction(private val key: String, private val value: String) : PlatformAction() {
 
-    override fun run(file: Path, step: PlatformTaskStep, environment: PlatformParameters) {
+    override fun run(
+        file: Path,
+        step: PlatformTaskStep,
+        environment: PlatformParameters
+    ) {
         file.parent.createDirectories()
+
         val translatedValue = environment.modifyValueWithEnvironment(value)
-        val parsedValue = parseValue(translatedValue)
 
-        when {
-            step.filename.endsWith(".properties") -> handleProperties(file, parsedValue.toString())
-            step.filename.endsWith(".yml") -> handleYaml(file, parsedValue)
-            step.filename.endsWith(".toml") -> handleToml(file, parsedValue)
-        }
-    }
-
-    private fun handleProperties(file: Path, value: String) {
-        val properties = Properties().apply {
+        if (step.filename.endsWith(".properties")) {
+            val properties = Properties()
             if (file.exists()) {
-                FileInputStream(file.toFile()).use { load(it) }
+                FileInputStream(file.toFile()).use { input -> properties.load(input) }
             }
-            setProperty(key, value)
+
+            properties.setProperty(key, translatedValue)
+
+            FileOutputStream(file.toFile()).use { output ->
+                properties.store(
+                    output,
+                    "Update configuration property: $key"
+                )
+            }
+        } else if (step.filename.endsWith(".yml")) {
+            val loader = YamlConfigurationLoader.builder()
+                .path(file)
+                .build()
+
+            val root = if (file.exists()) loader.load() else loader.createNode()
+            val path = key.split(".")
+
+            val nodePath = path.map {
+                it.toIntOrNull() ?: it
+            }.toTypedArray()
+
+            val targetNode = root.node(*nodePath)
+
+            if (translatedValue == "true" || translatedValue == "false") {
+                targetNode.set(translatedValue.toBoolean())
+            } else if (translatedValue.toIntOrNull() != null) {
+                targetNode.set(translatedValue.toInt())
+            } else {
+                targetNode.set(translatedValue)
+            }
+
+            loader.save(root)
+        } else if (step.filename.endsWith(".toml")) {
+            val pathList = key.split(".")
+            val fileText = if (file.exists()) file.toFile().readText() else ""
+            val toml = Toml.parse(fileText)
+
+            val existingMap = toml.toMap().toMutableMap()
+
+            fun setValue(map: MutableMap<String, Any?>, keys: List<String>, value: Any?) {
+                if (keys.size == 1) {
+                    map[keys[0]] = value
+                } else {
+                    val subMap = map.getOrPut(keys[0]) {
+                        mutableMapOf<String, Any?>()
+                    } as? MutableMap<String, Any?> ?: error("Conflict at key: ${keys[0]}")
+                    setValue(subMap, keys.drop(1), value)
+                }
+            }
+            val valueToSet: Any = when {
+                translatedValue.equals("true", ignoreCase = true) -> true
+                translatedValue.equals("false", ignoreCase = true) -> false
+                translatedValue.toIntOrNull() != null -> translatedValue.toInt()
+                else -> translatedValue
+            }
+            setValue(existingMap, pathList, valueToSet)
+            val newTomlContent = buildToml(existingMap)
+            file.toFile().writeText(newTomlContent)
         }
-
-        FileOutputStream(file.toFile()).use {
-            properties.store(it, "Updated configuration property: $key")
-        }
     }
 
-    private fun handleYaml(file: Path, value: Any?) {
-        if (isNukkitConfig(file)) {
-            handleSnakeYaml(file, value)
-            return
-        }
-
-        handleConfigurateYaml(file, value)
-    }
-
-    private fun handleConfigurateYaml(file: Path, value: Any?) {
-        val loader = YamlConfigurationLoader.builder().path(file).build()
-        val root = if (file.exists()) loader.load() else loader.createNode()
-        val path = key.split(".").map { it.toIntOrNull() ?: it }.toTypedArray()
-
-        root.node(*path).set(value)
-        loader.save(root)
-    }
-
-    private fun handleSnakeYaml(file: Path, value: Any?) {
-        val yaml = Yaml()
-        val data: MutableMap<String, Any?> = if (file.exists()) {
-            FileReader(file.toFile()).use { yaml.load(it) as? MutableMap<String, Any?> } ?: mutableMapOf()
-        } else {
-            mutableMapOf()
-        }
-
-        data.withNestedValue(key.split("."), value)
-
-        FileWriter(file.toFile()).use { yaml.dump(data, it) }
-    }
-
-    private fun handleToml(file: Path, value: Any?) {
-        val fileText = if (file.exists()) file.toFile().readText() else ""
-        val toml = Toml.parse(fileText)
-        val existingMap = toml.toMap().toMutableMap()
-
-        existingMap.withNestedValue(key.split("."), value)
-
-        val newTomlContent = buildToml(existingMap)
-        file.toFile().writeText(newTomlContent)
-    }
-
-    private fun parseValue(input: String): Any = when {
-        input.equals("true", ignoreCase = true) -> true
-        input.equals("false", ignoreCase = true) -> false
-        input.toIntOrNull() != null -> input.toInt()
-        else -> input
-    }
-
-    private fun buildToml(map: Map<String, Any?>, prefix: String = ""): String {
+    fun buildToml(map: Map<String, Any?>, prefix: String = ""): String {
         val builder = StringBuilder()
         for ((key, value) in map) {
             val fullKey = if (prefix.isNotEmpty()) "$prefix.$key" else key
@@ -105,26 +103,5 @@ class PlatformFilePropertyUpdateAction(
             }
         }
         return builder.toString()
-    }
-
-    private fun MutableMap<String, Any?>.withNestedValue(keys: List<String>, value: Any?): MutableMap<String, Any?> {
-        if (keys.isEmpty()) return this
-
-        val key = keys.first()
-        if (keys.size == 1) {
-            this[key] = value
-        } else {
-            val child = when (val current = this[key]) {
-                is TomlTable -> current.toMap().toMutableMap()
-                is MutableMap<*, *> -> current as MutableMap<String, Any?>
-                else -> mutableMapOf()
-            }
-            this[key] = child.withNestedValue(keys.drop(1), value)
-        }
-        return this
-    }
-
-    private fun isNukkitConfig(file: Path): Boolean {
-        return file.fileName.toString().equals("nukkit.yml", ignoreCase = true)
     }
 }

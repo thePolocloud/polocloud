@@ -9,19 +9,18 @@ dependencies {
     implementation(libs.bundles.proto)
     implementation(libs.grpc.netty)
     compileOnly(projects.proto)
-    compileOnly(projects.shared)
 
     implementation(libs.bundles.terminal)
     implementation(libs.bundles.runtime)
     implementation(libs.bundles.jline)
 
+    implementation(libs.json)
     implementation(libs.gson)
-    implementation(libs.oshi)
+
 
     implementation(libs.bundles.confirationPool)
     compileOnly(projects.platforms)
     compileOnly(projects.common)
-    compileOnly(projects.updater)
     compileOnly(projects.bridges.bridgeApi)
 }
 

@@ -31,10 +31,9 @@ class GateBridge(hostname: String, port: Int) : BridgeInstance<Server>() {
         return TODO()
     }
 
-    override fun registerService(identifier: Server, fallback: Boolean) {
+    override fun registerService(identifier: Server) {
         TODO("Not yet implemented")
     }
-
 
     override fun unregisterService(identifier: Server) {
         TODO("Not yet implemented")

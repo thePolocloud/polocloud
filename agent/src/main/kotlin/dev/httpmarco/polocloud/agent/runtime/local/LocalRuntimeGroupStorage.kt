@@ -1,13 +1,13 @@
 package dev.httpmarco.polocloud.agent.runtime.local
 
-import dev.httpmarco.polocloud.agent.groups.AbstractGroup
+import dev.httpmarco.polocloud.agent.groups.Group
 import dev.httpmarco.polocloud.agent.i18n
+import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.agent.runtime.RuntimeGroupStorage
-import dev.httpmarco.polocloud.common.json.GSON
-import dev.httpmarco.polocloud.common.json.PRETTY_GSON
+import dev.httpmarco.polocloud.common.json.PRETTY_JSON
+import kotlinx.serialization.json.Json
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.CompletableFuture
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
@@ -17,7 +17,7 @@ private val STORAGE_PATH = Path("local/groups")
 
 class LocalRuntimeGroupStorage : RuntimeGroupStorage {
 
-    private lateinit var cachedAbstractGroups: ArrayList<AbstractGroup>
+    private lateinit var cachedGroups: ArrayList<Group>
 
     init {
         this.initialize()
@@ -27,45 +27,51 @@ class LocalRuntimeGroupStorage : RuntimeGroupStorage {
         STORAGE_PATH.createDirectories()
 
         // load all groups from the storage path
-        cachedAbstractGroups = ArrayList(STORAGE_PATH.listDirectoryEntries("*.json").stream().map {
-            return@map GSON.fromJson(Files.readString(it), AbstractGroup::class.java)
+        cachedGroups = ArrayList(STORAGE_PATH.listDirectoryEntries("*.json").stream().map {
+            return@map Group(Json.decodeFromString(Files.readString(it)))
         }.toList())
     }
 
-    override fun publish(abstractGroup: AbstractGroup) {
-        Files.writeString(groupPath(abstractGroup), PRETTY_GSON.toJson(abstractGroup))
-        this.cachedAbstractGroups.add(abstractGroup)
+    /**
+     * Return all cached Items
+     */
+    override fun items(): List<Group> {
+        return this.cachedGroups
     }
 
-    override fun destroy(abstractGroup: AbstractGroup) {
-        this.cachedAbstractGroups.remove(abstractGroup)
-        this.groupPath(abstractGroup).deleteIfExists()
+    /**
+     * Return the cached Item with the given identifier
+     */
+    override fun item(identifier: String): Group? {
+        return this.cachedGroups.stream().filter { it.data.name == identifier }.findFirst().orElse(null)
     }
 
-    override fun update(group: AbstractGroup) {
+    override fun publish(group: Group) {
+        Files.writeString(groupPath(group), PRETTY_JSON.encodeToString(group.data))
+        this.cachedGroups.add(group)
+    }
+
+    override fun destroy(group: Group) {
+        this.cachedGroups.remove(group)
+        this.groupPath(group).deleteIfExists()
+    }
+
+    override fun present(identifier: String): Boolean {
+        return this.cachedGroups.any { it.data.name == identifier }
+    }
+
+    override fun update(group: Group) {
         // overwrite the existing group file with the new data
-        Files.writeString(groupPath(group), PRETTY_GSON.toJson(group))
+        Files.writeString(groupPath(group), PRETTY_JSON.encodeToString(group.data))
     }
 
     override fun reload() {
         i18n.info("agent.local-runtime.group-storage.reload")
         this.initialize()
-        i18n.info("agent.local-runtime.group-storage.collect", this.cachedAbstractGroups.size)
+        i18n.info("agent.local-runtime.group-storage.collect", this.cachedGroups.size)
     }
 
-    private fun groupPath(abstractGroup: AbstractGroup): Path {
-        return STORAGE_PATH.resolve(abstractGroup.name + ".json")
+    private fun groupPath(group: Group): Path {
+        return STORAGE_PATH.resolve(group.data.name + ".json")
     }
-
-    override fun findAll(): List<AbstractGroup> {
-        return this.cachedAbstractGroups
-    }
-
-    override fun findAllAsync() = CompletableFuture.completedFuture<List<AbstractGroup>>(findAll())
-
-    override fun find(name: String): AbstractGroup? {
-        return this.cachedAbstractGroups.stream().filter { it.name == name }.findFirst().orElse(null)
-    }
-
-    override fun findAsync(name: String) = CompletableFuture.completedFuture<AbstractGroup?>(find(name))
 }

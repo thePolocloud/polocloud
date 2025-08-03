@@ -28,7 +28,7 @@ class Logger {
     fun throwable(throwable: Throwable) {
         // Handle other exceptions that may occur during reading
         logger.error("An error occurred thread: ${throwable.message}")
-        println(throwable.stackTrace.size)
+
         // for a better debugging experience, we print the stack trace
         throwable.stackTrace.forEach {
             logger.error("  at ${it.className}.${it.methodName}(${it.fileName}:${it.lineNumber})")
@@ -68,6 +68,7 @@ class Logger {
             Agent.runtime.terminal.display(message)
             return
         }
+
         println(message)
     }
 }

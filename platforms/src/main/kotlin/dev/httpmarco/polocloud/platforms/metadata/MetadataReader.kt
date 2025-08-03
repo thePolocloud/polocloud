@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.platforms.metadata
 
-import dev.httpmarco.polocloud.platforms.PLATFORM_GSON
+import dev.httpmarco.polocloud.common.json.PRETTY_JSON
+import dev.httpmarco.polocloud.platforms.JSON
 import dev.httpmarco.polocloud.platforms.PLATFORM_PATH
 import dev.httpmarco.polocloud.platforms.Platform
 import dev.httpmarco.polocloud.platforms.PlatformPool
@@ -27,7 +28,7 @@ object MetadataReader {
         }
 
         path.listDirectoryEntries().forEach {
-            PlatformTaskPool.attach(PLATFORM_GSON.fromJson(Files.readString(it), PlatformTask::class.java))
+            PlatformTaskPool.attach(JSON.decodeFromString<PlatformTask>(Files.readString(it)))
         }
         return true
     }
@@ -40,7 +41,7 @@ object MetadataReader {
         }
 
         path.listDirectoryEntries().forEach {
-            PlatformPool.attach(PLATFORM_GSON.fromJson(Files.readString(it), Platform::class.java))
+            PlatformPool.attach(PRETTY_JSON.decodeFromString<Platform>(Files.readString(it)))
         }
         return true
     }

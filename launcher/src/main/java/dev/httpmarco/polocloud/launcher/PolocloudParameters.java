@@ -12,7 +12,7 @@ public final class PolocloudParameters {
     public static String VERSION_ENV_ID = "polocloud-version";
     public static Path LIB_DIRECTORY = Path.of("local/libs");
     public static Path DEPENDENCY_DIRECTORY = Path.of("local/dependencies");
-    public static String[] REQUIRED_LIBS = {"proto", "agent", "common", "platforms", "updater","bridge-velocity",  "bridge-bungeecord"};
+    public static String[] REQUIRED_LIBS = {"proto", "agent", "common", "platforms", "bridge-velocity",  "bridge-bungeecord"};
     public static String BOOT_LIB = "agent";
 
     /**

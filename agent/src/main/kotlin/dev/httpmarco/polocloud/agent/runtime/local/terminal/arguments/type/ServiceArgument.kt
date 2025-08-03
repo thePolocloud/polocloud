@@ -3,21 +3,20 @@ package dev.httpmarco.polocloud.agent.runtime.local.terminal.arguments.type
 import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.arguments.TerminalArgument
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.arguments.InputContext
-import dev.httpmarco.polocloud.agent.services.AbstractService
-import dev.httpmarco.polocloud.shared.service.Service
+import dev.httpmarco.polocloud.agent.services.Service
 
-class ServiceArgument(key: String = "service") : TerminalArgument<AbstractService>(key) {
+class ServiceArgument(key: String = "service") : TerminalArgument<Service>(key) {
 
-    override fun buildResult(input: String, context: InputContext): AbstractService {
+    override fun buildResult(input: String, context: InputContext): Service {
         // null check is done in the predication method
-        return Agent.runtime.serviceStorage().find(input)!!
+        return Agent.runtime.serviceStorage().findService(input)!!
     }
 
     override fun defaultArgs(context: InputContext): MutableList<String> {
-        return Agent.runtime.serviceStorage().findAll().stream().map { it.name() }.toList()
+        return Agent.runtime.serviceStorage().items().stream().map { it.name() }.toList()
     }
 
     override fun predication(rawInput: String): Boolean {
-        return Agent.runtime.serviceStorage().find(rawInput) != null
+        return Agent.runtime.serviceStorage().findService(rawInput) != null
     }
 }

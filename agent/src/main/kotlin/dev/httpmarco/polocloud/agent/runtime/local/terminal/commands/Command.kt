@@ -18,4 +18,8 @@ abstract class Command(val name: String, val description: String, vararg val ali
     fun defaultExecution(execution: CommandExecution) {
         this.defaultExecution = execution
     }
+
+    fun hasSyntaxCommands(): Boolean {
+        return this.commandSyntaxes.isNotEmpty()
+    }
 }

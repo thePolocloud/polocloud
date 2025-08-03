@@ -1,25 +1,22 @@
 package dev.httpmarco.polocloud.agent.events
 
+import com.google.gson.GsonBuilder
 import dev.httpmarco.polocloud.agent.Agent
+import dev.httpmarco.polocloud.agent.events.serializer.ServiceDefinitionSerializer
 import dev.httpmarco.polocloud.agent.i18n
-import dev.httpmarco.polocloud.agent.services.AbstractService
-import dev.httpmarco.polocloud.shared.events.Event
-import dev.httpmarco.polocloud.shared.events.SharedEventProvider
-import dev.httpmarco.polocloud.shared.service.Service
+import dev.httpmarco.polocloud.agent.services.Service
 import dev.httpmarco.polocloud.v1.proto.EventProviderOuterClass
-import io.grpc.stub.ServerCallStreamObserver
 import io.grpc.stub.StreamObserver
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
-import kotlin.reflect.KClass
 
-class EventService : SharedEventProvider() {
+class EventService {
 
     private val events = ConcurrentHashMap<String, List<EventSubscription>>()
 
     fun attach(event: String, serviceName: String, observer: StreamObserver<EventProviderOuterClass.EventContext>) {
 
-        val service = Agent.runtime.serviceStorage().find(serviceName)
+        val service = Agent.runtime.serviceStorage().findService(serviceName)
 
         if (service == null) {
             i18n.warn("agent.events.service.not-found", serviceName, event)
@@ -29,9 +26,27 @@ class EventService : SharedEventProvider() {
 
         events.computeIfAbsent(event) { CopyOnWriteArrayList() }.let {
             it as MutableList
-            it.add(EventSubscription(service,
-                observer as ServerCallStreamObserver<EventProviderOuterClass.EventContext>
-            ))
+            it.add(EventSubscription(service, observer))
+        }
+    }
+
+    fun call(event: Event) {
+        if (!events.containsKey(event.javaClass.simpleName)) {
+            return
+        }
+
+        events[event.javaClass.simpleName]?.forEach {
+            val eventName = event.javaClass.simpleName
+
+            it.sub.onNext(
+                EventProviderOuterClass.EventContext.newBuilder().setEventName(eventName)
+                    .setEventData(
+                        GsonBuilder().registerTypeHierarchyAdapter(
+                            Service::class.java,
+                            ServiceDefinitionSerializer()
+                        ).registerTypeAdapter(Service::class.java, ServiceDefinitionSerializer()).create().toJson(event)
+                    ).build()
+            )
         }
     }
 
@@ -43,30 +58,5 @@ class EventService : SharedEventProvider() {
 
     fun registeredAmount(): Int {
         return events.values.sumOf { it.size }
-    }
-
-    override fun call(event: Event) {
-        if (!events.containsKey(event.javaClass.simpleName)) {
-            return
-        }
-
-        events[event.javaClass.simpleName]?.forEach {
-            if(!it.sub.isCancelled) {
-                it.sub.onNext(
-                    EventProviderOuterClass.EventContext
-                        .newBuilder()
-                        .setEventName(event.javaClass.simpleName)
-                        .setEventData(gsonSerilaizer.toJson(event))
-                        .build()
-                )
-            }
-        }
-    }
-
-    override fun <T : Event> subscribe(
-        eventType: KClass<T>,
-        result: (T) -> Any
-    ) {
-        TODO("Not yet implemented")
     }
 }
