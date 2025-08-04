@@ -2,6 +2,7 @@ import { Client, REST, Routes } from 'discord.js';
 import { Logger } from '../utils/Logger';
 import { Command } from '../interfaces/Command';
 import { GitHubStatsCommand } from "../commands/GitHubStatsCommand";
+import { ServerInfoCommand } from "../commands/ServerInfoCommand";
 
 export class CommandManager {
     private commands: Map<string, Command> = new Map();
@@ -14,7 +15,9 @@ export class CommandManager {
     public async loadCommands(): Promise<void> {
         try {
             const githubStatsCommand = new GitHubStatsCommand();
+            const serverInfoCommand = new ServerInfoCommand();
 
+            this.commands.set(serverInfoCommand.data.name, serverInfoCommand);
             this.commands.set(githubStatsCommand.data.name, githubStatsCommand);
 
 
