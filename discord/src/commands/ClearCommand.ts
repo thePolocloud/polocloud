@@ -3,12 +3,13 @@ import {
     SlashCommandBuilder,
     PermissionFlagsBits,
     TextChannel,
-    EmbedBuilder,
+    ContainerBuilder,
+    MessageFlags,
     Colors
 } from 'discord.js';
 import { Command } from '../interfaces/Command';
 import { Logger } from '../utils/Logger';
-import { BOT_CONFIG, GITHUB_CONFIG } from '../config/constants';
+import { BOT_CONFIG } from '../config/constants';
 
 export class ClearCommand implements Command {
     public data = new SlashCommandBuilder()
@@ -22,7 +23,7 @@ export class ClearCommand implements Command {
                 .setMinValue(1)
                 .setMaxValue(100)
         )
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
 
     private logger: Logger;
 
@@ -52,7 +53,9 @@ export class ClearCommand implements Command {
                 return;
             }
 
-            const messages = await channel.messages.fetch({ limit: amount + 1 });
+
+            const messages = await channel.messages.fetch({ limit: amount + 1 }); //
+
 
             const deletableMessages = messages.filter(msg => {
                 const messageAge = Date.now() - msg.createdTimestamp;
@@ -69,55 +72,96 @@ export class ClearCommand implements Command {
             const deletedCount = deletedMessages.size;
             const tooOldCount = messages.size - deletedCount;
 
-            const embed = new EmbedBuilder()
-                .setTitle('🧹 Messages deleted')
-                .setColor(Colors.Green)
-                .addFields(
-                    {
-                        name: '✅ Successfully deleted',
-                        value: `${deletedCount} ${deletedCount === 1 ? 'message' : 'messages'}`,
-                        inline: true
-                    }
-                )
-                .setTimestamp()
-                .setFooter({
-                    text: BOT_CONFIG.NAME,
-                    iconURL: GITHUB_CONFIG.AVATAR_URL
-                });
+            const container = this.createSuccessContainer(deletedCount, tooOldCount);
 
-            if (tooOldCount > 0) {
-                embed.addFields({
-                    name: '⚠️ Not deleted',
-                    value: `${tooOldCount} ${tooOldCount === 1 ? 'message' : 'messages'} (older than 14 days)`,
-                    inline: true
-                });
-            }
-
-            await interaction.editReply({ embeds: [embed] });
+            await interaction.editReply({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2
+            });
 
             this.logger.info(`User ${interaction.user.tag} deleted ${deletedCount} messages in channel #${channel.name} (${channel.id})`);
 
         } catch (error) {
             this.logger.error('Error executing Clear command:', error);
 
-            const errorEmbed = new EmbedBuilder()
-                .setTitle('Error')
-                .setDescription('Error deleting messages. Please try again later.')
-                .setColor(Colors.Red)
-                .setTimestamp()
-                .setFooter({
-                    text: BOT_CONFIG.NAME,
-                    iconURL: GITHUB_CONFIG.AVATAR_URL
-                });
+            const errorContainer = this.createErrorContainer();
 
             if (!interaction.replied && !interaction.deferred) {
                 await interaction.reply({
-                    embeds: [errorEmbed],
+                    components: [errorContainer],
+                    flags: MessageFlags.IsComponentsV2,
                     ephemeral: true
                 });
             } else {
-                await interaction.editReply({ embeds: [errorEmbed] });
+                await interaction.editReply({
+                    components: [errorContainer],
+                    flags: MessageFlags.IsComponentsV2
+                });
             }
         }
+    }
+
+    private createSuccessContainer(deletedCount: number, tooOldCount: number): ContainerBuilder {
+        const container = new ContainerBuilder()
+            .setAccentColor(Colors.Green);
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`# 🧹 Messages Deleted\n\nSuccessfully cleared messages from this channel`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        const successText = `## ✅ Successfully Deleted\n\n\`${deletedCount} ${deletedCount === 1 ? 'message' : 'messages'}\``;
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(successText)
+        );
+
+        if (tooOldCount > 0) {
+            container.addSeparatorComponents(
+                separator => separator
+            );
+
+            const warningText = `## ⚠️ Not Deleted\n\n\`${tooOldCount} ${tooOldCount === 1 ? 'message' : 'messages'} (older than 14 days)\``;
+            container.addTextDisplayComponents(
+                textDisplay => textDisplay
+                    .setContent(warningText)
+            );
+        }
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`**${BOT_CONFIG.NAME}** • ${new Date().toLocaleString('de-DE')}`)
+        );
+
+        return container;
+    }
+
+    private createErrorContainer(): ContainerBuilder {
+        const container = new ContainerBuilder()
+            .setAccentColor(Colors.Red);
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`# ❌ Error\n\nAn error occurred while deleting messages. Please try again later.`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`**${BOT_CONFIG.NAME}** • ${new Date().toLocaleString('de-DE')}`)
+        );
+
+        return container;
     }
 }
