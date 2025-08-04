@@ -29,6 +29,10 @@ export const TICKET_CONFIG = {
 } as const;
 
 
+export const CONTRIBUTORS_CONFIG = {
+    UPDATE_INTERVAL: 60 * 60 * 1000 // 1 hour in milliseconds
+} as const;
+
 export const BOT_CONFIG = {
     NAME: 'PoloCloud Discord Bot',
     STATUS: 'PoloCloud Stats'

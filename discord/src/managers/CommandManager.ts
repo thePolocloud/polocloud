@@ -3,8 +3,9 @@ import { GitHubStatsEmbedCommand } from '../commands/GitHubStatsEmbedCommand';
 import { RemoveGitHubStatsEmbedCommand } from '../commands/RemoveGitHubStatsEmbedCommand';
 import { BStatsEmbedCommand } from '../commands/BStatsEmbedCommand';
 import { RemoveBStatsEmbedCommand } from '../commands/RemoveBStatsEmbedCommand';
+import { ContributorsEmbedCommand } from '../commands/ContributorsEmbedCommand';
+import { RemoveContributorsEmbedCommand } from '../commands/RemoveContributorsEmbedCommand';
 import { ServerInfoCommand } from '../commands/ServerInfoCommand';
-import { ContributorsCommand } from '../commands/ContributorsCommand';
 import { ClearCommand } from '../commands/ClearCommand';
 import { TicketCommand } from '../commands/TicketCommand';
 import { KickCommand } from '../commands/KickCommand';
@@ -13,6 +14,7 @@ import { ReleaseCommand } from '../commands/ReleaseCommand';
 import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
 import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
 import { TicketService } from '../services/ticket/TicketService';
+import { ContributorsUpdateService } from "../services/contributors/ContributorsUpdateService";
 import { Logger } from '../utils/Logger';
 import { Command } from '../interfaces/Command';
 
@@ -20,18 +22,22 @@ export class CommandManager {
     private commands: Map<string, Command> = new Map();
     private logger: Logger;
 
-    constructor(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService, ticketService: TicketService) {
+    constructor(
+        githubStatsUpdateService: GitHubStatsUpdateService,
+        bStatsUpdateService: BStatsUpdateService,
+        contributorsUpdateService: ContributorsUpdateService,
+        ticketService: TicketService)
+    {
         this.logger = new Logger('CommandManager');
-        this.loadCommands(githubStatsUpdateService, bStatsUpdateService, ticketService);
+        this.loadCommands(githubStatsUpdateService, bStatsUpdateService, ticketService, contributorsUpdateService);
     }
 
-    private loadCommands(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService, ticketService: TicketService): void {
+    private loadCommands(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService, ticketService: TicketService, contributorsUpdateService: ContributorsUpdateService): void {
         try {
             // Load all commands
             const serverInfoCommand = new ServerInfoCommand();
             const clearCommand = new ClearCommand();
             const ticketCommand = new TicketCommand(ticketService);
-            const contributorsCommand = new ContributorsCommand();
             const kickCommand = new KickCommand();
             const banCommand = new BanCommand();
             const releaseCommand = new ReleaseCommand();
@@ -44,17 +50,22 @@ export class CommandManager {
             const bStatsEmbedCommand = new BStatsEmbedCommand(bStatsUpdateService);
             const removeBStatsEmbedCommand = new RemoveBStatsEmbedCommand(bStatsUpdateService);
 
+            // Load Contributors emebd commands
+            const contributorsEmbedCommand = new ContributorsEmbedCommand(contributorsUpdateService);
+            const removeContriburosEmbedCommand = new RemoveContributorsEmbedCommand(contributorsUpdateService);
+
             this.commands.set(releaseCommand.data.name, releaseCommand)
             this.commands.set(banCommand.data.name, banCommand);
             this.commands.set(kickCommand.data.name, kickCommand)
             this.commands.set(serverInfoCommand.data.name, serverInfoCommand);
             this.commands.set(clearCommand.data.name, clearCommand);
-            this.commands.set(contributorsCommand.data.name, contributorsCommand);
             this.commands.set(ticketCommand.data.name, ticketCommand);
             this.commands.set(githubStatsEmbedCommand.data.name, githubStatsEmbedCommand);
             this.commands.set(removeGitHubStatsEmbedCommand.data.name, removeGitHubStatsEmbedCommand);
             this.commands.set(bStatsEmbedCommand.data.name, bStatsEmbedCommand);
             this.commands.set(removeBStatsEmbedCommand.data.name, removeBStatsEmbedCommand);
+            this.commands.set(contributorsEmbedCommand.data.name, contributorsEmbedCommand);
+            this.commands.set(removeContriburosEmbedCommand.data.name, removeContriburosEmbedCommand);
 
             this.logger.info(`${this.commands.size} commands loaded`);
         } catch (error) {
@@ -82,20 +93,36 @@ export class CommandManager {
         }
     }
 
-    public async executeCommand(interaction: ChatInputCommandInteraction): Promise<void> {
-        const commandName = interaction.commandName;
-        const command = this.commands.get(commandName);
+    public async handleCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+        try {
+            const command = this.commands.get(interaction.commandName);
 
-        if (!command) {
-            this.logger.warn(`Unknown command: ${commandName}`);
-            await interaction.reply({
-                content: 'This command is not available.',
-                ephemeral: true,
-            });
-            return;
+            if (!command) {
+                this.logger.warn(`Command not found: ${interaction.commandName}`);
+                await interaction.reply({
+                    content: 'This command is not available.',
+                    ephemeral: true
+                });
+                return;
+            }
+
+            await command.execute(interaction);
+        } catch (error) {
+            this.logger.error(`Error executing command ${interaction.commandName}:`, error);
+
+            try {
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.editReply('An error occurred while executing this command. Please try again later.');
+                } else {
+                    await interaction.reply({
+                        content: 'An error occurred while executing this command. Please try again later.',
+                        ephemeral: true
+                    });
+                }
+            } catch (replyError) {
+                this.logger.error('Error sending error reply:', replyError);
+            }
         }
-
-        await command.execute(interaction);
     }
 
     public getCommand(name: string): Command | undefined {

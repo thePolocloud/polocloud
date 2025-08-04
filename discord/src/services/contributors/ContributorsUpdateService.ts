@@ -1,8 +1,13 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, Colors, ContainerBuilder, MessageFlags } from 'discord.js';
-import { Command } from '../interfaces/Command';
-import { Logger } from '../utils/Logger';
+import { Client, TextChannel, ContainerBuilder, MessageFlags, Colors } from 'discord.js';
+import { Logger} from "../../utils/Logger";
+import { CONTRIBUTORS_CONFIG, GITHUB_CONFIG } from "../../config/constants";
 import axios from 'axios';
-import { GITHUB_CONFIG } from '../config/constants';
+
+interface StoredContributorsContainer {
+    guildId: string;
+    channelId: string;
+    messageId: string;
+}
 
 interface GitHubContributor {
     login: string;
@@ -13,37 +18,94 @@ interface GitHubContributor {
     commits?: number;
 }
 
-export class ContributorsCommand implements Command {
-    public data = new SlashCommandBuilder()
-        .setName('contributors')
-        .setDescription('Shows all contributors from the PoloCloud GitHub repository');
-
+export class ContributorsUpdateService {
+    private client: Client;
     private logger: Logger;
+    private updateInterval: NodeJS.Timeout | null = null;
+    private storedContainers: Map<string, StoredContributorsContainer> = new Map();
 
-    constructor() {
-        this.logger = new Logger('ContributorsCommand');
+    constructor(client: Client) {
+        this.client = client;
+        this.logger = new Logger('ContributorsUpdateService');
     }
 
-    public async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+    public start(): void {
+        this.updateInterval = setInterval(async () => {
+            await this.updateAllContainers();
+        }, CONTRIBUTORS_CONFIG.UPDATE_INTERVAL);
+
+        this.logger.info('Contributors Update Service started');
+    }
+
+    public stop(): void {
+        if (this.updateInterval) {
+            clearInterval(this.updateInterval);
+            this.updateInterval = null;
+        }
+        this.logger.info('Contributors Update Service stopped');
+    }
+
+    public async addContainer(guildId: string, channelId: string, messageId: string): Promise<void> {
+        const key = `${guildId}-${channelId}`;
+        this.storedContainers.set(key, { guildId, channelId, messageId });
+        this.logger.info(`Added Contributors container for tracking: ${key}`);
+    }
+
+    public async removeContainer(guildId: string, channelId: string): Promise<void> {
+        const key = `${guildId}-${channelId}`;
+        this.storedContainers.delete(key);
+        this.logger.info(`Removed Contributors container from tracking: ${key}`);
+    }
+
+    private async updateAllContainers(): Promise<void> {
+        this.logger.info('Starting Contributors container update...');
+
+        for (const [key, container] of this.storedContainers) {
+            try {
+                await this.updateContainer(container);
+            } catch (error) {
+                this.logger.error(`Failed to update Contributors container ${key}:`, error);
+            }
+        }
+
+        this.logger.info('Contributors container update completed');
+    }
+
+    private async updateContainer(container: StoredContributorsContainer): Promise<void> {
         try {
-            await interaction.deferReply();
+            const guild = await this.client.guilds.fetch(container.guildId);
+            const channel = await guild.channels.fetch(container.channelId) as TextChannel;
+
+            if (!channel) {
+                this.logger.warn(`Channel ${container.channelId} not found in guild ${container.guildId}`);
+                return;
+            }
+
+            const message = await channel.messages.fetch(container.messageId);
+            if (!message) {
+                this.logger.warn(`Message ${container.messageId} not found in channel ${container.channelId}`);
+                return;
+            }
 
             const contributors = await this.fetchContributorsWithCommits();
 
             if (contributors.length === 0) {
-                await interaction.editReply('No contributors found or unable to fetch data.');
+                this.logger.warn('No contributors found, skipping update');
                 return;
             }
 
-            const container = this.createContributorsContainer(contributors);
+            const newContainer = this.createContributorsContainer(contributors);
 
-            await interaction.editReply({
-                components: [container],
+            await message.edit({
+                components: [newContainer],
                 flags: MessageFlags.IsComponentsV2
             });
+
+            this.logger.info(`Updated Contributors container in guild ${container.guildId}, channel ${container.channelId}`);
+
         } catch (error) {
-            this.logger.error('Error executing Contributors command:', error);
-            await interaction.editReply('Error fetching contributors. Please try again later.');
+            this.logger.error(`Error updating Contributors container:`, error);
+            throw error;
         }
     }
 
