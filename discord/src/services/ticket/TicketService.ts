@@ -3,7 +3,6 @@ import {
     CategoryChannel,
     PermissionFlagsBits,
     ChannelType,
-    EmbedBuilder,
     Colors,
     ActionRowBuilder,
     ButtonBuilder,
@@ -13,10 +12,12 @@ import {
     StringSelectMenuOptionBuilder,
     ModalBuilder,
     TextInputBuilder,
-    TextInputStyle
+    TextInputStyle,
+    ContainerBuilder,
+    MessageFlags
 } from 'discord.js';
-import { Logger } from '../../utils/Logger';
-import { TICKET_CONFIG, BOT_CONFIG, GITHUB_CONFIG } from '../../config/constants';
+import { Logger} from "../../utils/Logger";
+import { TICKET_CONFIG, BOT_CONFIG } from '../../config/constants';
 
 interface TicketData {
     id: string;
@@ -35,17 +36,24 @@ export class TicketService {
         this.logger = new Logger('TicketService');
     }
 
-    public async createTicketEmbed(channel: TextChannel): Promise<void> {
+    public async createTicketContainer(channel: TextChannel): Promise<void> {
         try {
-            const embed = new EmbedBuilder()
-                .setTitle('🎫 Support Tickets')
-                .setDescription('Select a category below and click the button. A team member will take care of you right away.')
-                .setColor(Colors.Blue)
-                .setTimestamp()
-                .setFooter({
-                    text: BOT_CONFIG.NAME,
-                    iconURL: GITHUB_CONFIG.AVATAR_URL
-                });
+            const container = new ContainerBuilder()
+                .setAccentColor(Colors.Blue);
+            
+            container.addTextDisplayComponents(
+                textDisplay => textDisplay
+                    .setContent(`# 🎫 Support Tickets\n\nSelect a category below and click the button. A team member will take care of you right away.`)
+            );
+
+            container.addSeparatorComponents(
+                separator => separator
+            );
+            
+            container.addTextDisplayComponents(
+                textDisplay => textDisplay
+                    .setContent(`**${BOT_CONFIG.NAME}** • ${new Date().toLocaleString('de-DE')}`)
+            );
 
             const categorySelect = new ActionRowBuilder<StringSelectMenuBuilder>()
                 .addComponents(
@@ -63,10 +71,14 @@ export class TicketService {
                         )
                 );
 
-            await channel.send({ embeds: [embed], components: [categorySelect] });
-            this.logger.info(`Ticket embed created in channel #${channel.name}`);
+            await channel.send({
+                components: [container, categorySelect],
+                flags: MessageFlags.IsComponentsV2
+            });
+
+            this.logger.info(`Ticket container created in channel #${channel.name}`);
         } catch (error) {
-            this.logger.error('Error creating ticket embed:', error);
+            this.logger.error('Error creating ticket container:', error);
         }
     }
 
@@ -84,8 +96,8 @@ export class TicketService {
                 return;
             }
 
-            const category = interaction.values[0];
-
+            const category = interaction.values[0]; 
+            
             const validCategory = TICKET_CONFIG.CATEGORIES.find(cat => cat.value === category);
             if (!validCategory) {
                 await interaction.reply({
@@ -94,7 +106,7 @@ export class TicketService {
                 });
                 return;
             }
-
+            
             const modal = new ModalBuilder()
                 .setCustomId(`ticket_modal_${category}`)
                 .setTitle(`Create ${validCategory.label} Ticket`);
@@ -135,7 +147,7 @@ export class TicketService {
             const category = interaction.customId.replace('ticket_modal_', '');
             const subject = interaction.fields.getTextInputValue('ticket_subject');
             const description = interaction.fields.getTextInputValue('ticket_description');
-
+            
             const validCategory = TICKET_CONFIG.CATEGORIES.find(cat => cat.value === category);
             if (!validCategory) {
                 await interaction.reply({
@@ -144,7 +156,7 @@ export class TicketService {
                 });
                 return;
             }
-
+            
             const guild = interaction.guild;
             const categoryChannel = guild.channels.cache.get(TICKET_CONFIG.CATEGORY_ID) as CategoryChannel;
 
@@ -156,7 +168,7 @@ export class TicketService {
                 return;
             }
 
-            const ticketId = `${TICKET_CONFIG.TICKET_PREFIX}${Math.floor(Math.random() * 9000) + 1000}`;
+            const ticketId = `${TICKET_CONFIG.TICKET_PREFIX}${Math.floor(Math.random() * 9000) + 1000}`; // 4-digit number
             const channelName = `${ticketId}-${interaction.user.username}`;
 
             const ticketChannel = await guild.channels.create({
@@ -174,7 +186,7 @@ export class TicketService {
                     }
                 ]
             });
-
+            
             if (TICKET_CONFIG.SUPPORT_ROLE_ID) {
                 await ticketChannel.permissionOverwrites.create(TICKET_CONFIG.SUPPORT_ROLE_ID, {
                     ViewChannel: true,
@@ -183,7 +195,7 @@ export class TicketService {
                     ManageMessages: true
                 });
             }
-
+            
             const ticketData: TicketData = {
                 id: ticketId,
                 userId: interaction.user.id,
@@ -193,21 +205,8 @@ export class TicketService {
                 status: 'open'
             };
             this.tickets.set(ticketId, ticketData);
-
-            const ticketEmbed = new EmbedBuilder()
-                .setTitle(`🎫 Ticket #${ticketId}`)
-                .setDescription(`**Category:** ${validCategory.emoji} ${validCategory.label}\n**Subject:** ${subject}`)
-                .addFields(
-                    { name: '📝 Description', value: description, inline: false },
-                    { name: '👤 Created by', value: `<@${interaction.user.id}>`, inline: true },
-                    { name: '📅 Created', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
-                )
-                .setColor(Colors.Green)
-                .setTimestamp()
-                .setFooter({
-                    text: BOT_CONFIG.NAME,
-                    iconURL: GITHUB_CONFIG.AVATAR_URL
-                });
+            
+            const ticketContainer = this.createTicketDisplayContainer(ticketId, validCategory, subject, description, interaction.user.id);
 
             const closeButton = new ActionRowBuilder<ButtonBuilder>()
                 .addComponents(
@@ -218,7 +217,10 @@ export class TicketService {
                         .setStyle(ButtonStyle.Danger)
                 );
 
-            await ticketChannel.send({ embeds: [ticketEmbed], components: [closeButton] });
+            await ticketChannel.send({
+                components: [ticketContainer, closeButton],
+                flags: MessageFlags.IsComponentsV2
+            });
 
             await interaction.reply({
                 content: `✅ Ticket created successfully! Please check <#${ticketChannel.id}>`,
@@ -234,6 +236,46 @@ export class TicketService {
                 ephemeral: true
             });
         }
+    }
+
+    private createTicketDisplayContainer(ticketId: string, category: any, subject: string, description: string, userId: string): ContainerBuilder {
+        const container = new ContainerBuilder()
+            .setAccentColor(Colors.Green);
+        
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`# 🎫 Ticket #${ticketId}\n\n**Category:** ${category.emoji} ${category.label}\n**Subject:** ${subject}`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+        
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📝 Description\n\n${description}`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+        
+        const detailsText = `## 📊 Details\n\n**Created by:** <@${userId}>\n**Created:** <t:${Math.floor(Date.now() / 1000)}:R>\n`;
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(detailsText)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+        
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`**${BOT_CONFIG.NAME}** • ${new Date().toLocaleString('de-DE')}`)
+        );
+
+        return container;
     }
 
     public async handleCloseTicket(interaction: ButtonInteraction): Promise<void> {
@@ -286,17 +328,13 @@ export class TicketService {
                 }
             ]);
 
-            const embed = new EmbedBuilder()
-                .setTitle('🔒 Ticket Closed')
-                .setDescription(`This ticket has been closed by ${interaction.user.tag}\n\nChannel has been moved to archive and will be automatically deleted in 14 days.`)
-                .setColor(Colors.Red)
-                .setTimestamp()
-                .setFooter({
-                    text: BOT_CONFIG.NAME,
-                    iconURL: GITHUB_CONFIG.AVATAR_URL
-                });
+            const closedContainer = this.createTicketClosedContainer(interaction.user.tag);
 
-            await interaction.reply({ embeds: [embed] });
+            await interaction.reply({
+                components: [closedContainer],
+                flags: MessageFlags.IsComponentsV2
+            });
+
             this.logger.info(`Ticket ${ticketId} closed and moved to archive by ${interaction.user.tag}`);
 
             setTimeout(async () => {
@@ -318,6 +356,36 @@ export class TicketService {
                 ephemeral: true
             });
         }
+    }
+
+    private createTicketClosedContainer(closedBy: string): ContainerBuilder {
+        const container = new ContainerBuilder()
+            .setAccentColor(Colors.Red);
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`# 🔒 Ticket Closed\n\nThis ticket has been closed by **${closedBy}**`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📁 Archive Status\n\nChannel has been moved to archive and will be automatically deleted in **14 days**.`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`**${BOT_CONFIG.NAME}** • ${new Date().toLocaleString('de-DE')}`)
+        );
+
+        return container;
     }
 
     public getTicketStats(): { total: number; open: number; closed: number } {
