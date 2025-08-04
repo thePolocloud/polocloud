@@ -1,4 +1,4 @@
-import { Client, TextChannel, ContainerBuilder, MessageFlags, Colors } from 'discord.js';
+import { Client, TextChannel, ContainerBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, Colors } from 'discord.js';
 import { Logger} from "../../utils/Logger";
 import { CONTRIBUTORS_CONFIG, GITHUB_CONFIG } from "../../config/constants";
 import axios from 'axios';
@@ -96,8 +96,17 @@ export class ContributorsUpdateService {
 
             const newContainer = this.createContributorsContainer(contributors);
 
+            const githubButton = new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setLabel('GitHub Repository')
+                        .setURL('https://github.com/HttpMarco/polocloud')
+                        .setEmoji('🔗')
+                        .setStyle(ButtonStyle.Link)
+                );
+
             await message.edit({
-                components: [newContainer],
+                components: [newContainer, githubButton],
                 flags: MessageFlags.IsComponentsV2
             });
 
@@ -233,10 +242,6 @@ export class ContributorsUpdateService {
             separator => separator
         );
 
-        container.addTextDisplayComponents(
-            textDisplay => textDisplay
-                .setContent(`## 🔗 Repository\n\n[View on GitHub](${GITHUB_CONFIG.REPO_URL})`)
-        );
 
         return container;
     }

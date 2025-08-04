@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, TextChannel, ContainerBuilder, MessageFlags, Colors } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, TextChannel, ContainerBuilder, MessageFlags, Colors, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
 import { Command } from '../../interfaces/Command';
 import { Logger } from '../../utils/Logger';
 import { ContributorsUpdateService } from '../../services/contributors/ContributorsUpdateService';
@@ -78,8 +78,17 @@ export class ContributorsEmbedCommand implements Command {
 
             const container = this.createContributorsContainer(contributors);
 
+            const githubButton = new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setLabel('GitHub Repository')
+                        .setURL('https://github.com/HttpMarco/polocloud')
+                        .setEmoji('🔗')
+                        .setStyle(ButtonStyle.Link)
+                );
+
             const message = await channel.send({
-                components: [container],
+                components: [container, githubButton],
                 flags: MessageFlags.IsComponentsV2
             });
 
@@ -219,10 +228,6 @@ export class ContributorsEmbedCommand implements Command {
             separator => separator
         );
 
-        container.addTextDisplayComponents(
-            textDisplay => textDisplay
-                .setContent(`## 🔗 Repository\n\n[View on GitHub](${GITHUB_CONFIG.REPO_URL})`)
-        );
 
         return container;
     }

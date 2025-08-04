@@ -54,7 +54,7 @@ export class ClearCommand implements Command {
             }
 
 
-            const messages = await channel.messages.fetch({ limit: amount + 1 }); //
+            const messages = await channel.messages.fetch({ limit: amount + 1 }); 
 
 
             const deletableMessages = messages.filter(msg => {
@@ -150,7 +150,7 @@ export class ClearCommand implements Command {
 
         container.addTextDisplayComponents(
             textDisplay => textDisplay
-                .setContent(`# ❌ Error\n\nAn error occurred while deleting messages. Please try again later.`)
+                .setContent(`# Error\n\nAn error occurred while deleting messages. Please try again later.`)
         );
 
         container.addSeparatorComponents(
