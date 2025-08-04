@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, Colors, PermissionFlagsBits, GuildMember } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder, Colors, PermissionFlagsBits, GuildMember, ContainerBuilder, MessageFlags } from 'discord.js';
 import { Command } from '../interfaces/Command';
 import { Logger } from '../utils/Logger';
 
@@ -51,12 +51,12 @@ export class BanCommand implements Command {
             const guild = interaction.guild;
 
             if (!guild) {
-                await interaction.editReply(' This command can only be used in a server.');
+                await interaction.editReply('This command can only be used in a server.');
                 return;
             }
 
             if (!targetUser) {
-                await interaction.editReply(' Please specify a valid user to ban.');
+                await interaction.editReply('Please specify a valid user to ban.');
                 return;
             }
 
@@ -66,7 +66,7 @@ export class BanCommand implements Command {
             if (duration) {
                 const parsedDuration = this.parseDuration(duration);
                 if (parsedDuration === null) {
-                    await interaction.editReply(' Invalid duration format. Use formats like: 7d, 24h, 30m, 1w, 2mo, 1y');
+                    await interaction.editReply('Invalid duration format. Use formats like: 7d, 24h, 30m, 1w, 2mo, 1y');
                     return;
                 }
                 banDuration = parsedDuration;
@@ -74,12 +74,12 @@ export class BanCommand implements Command {
             }
 
             if (targetUser.id === interaction.user.id) {
-                await interaction.editReply(' You cannot ban yourself.');
+                await interaction.editReply('You cannot ban yourself.');
                 return;
             }
 
             if (targetUser.id === interaction.client.user?.id) {
-                await interaction.editReply(' I cannot ban myself.');
+                await interaction.editReply('I cannot ban myself.');
                 return;
             }
 
@@ -91,51 +91,23 @@ export class BanCommand implements Command {
             }
 
             if (!targetMember.bannable) {
-                await interaction.editReply(' I cannot ban this user. They may have higher permissions than me.');
+                await interaction.editReply('I cannot ban this user. They may have higher permissions than me.');
                 return;
             }
 
             const commandMember = interaction.member as GuildMember;
             if (targetMember.roles.highest.position >= commandMember.roles.highest.position) {
-                await interaction.editReply(' You cannot ban this user. They have equal or higher permissions than you.');
+                await interaction.editReply('You cannot ban this user. They have equal or higher permissions than you.');
                 return;
             }
 
             try {
-                const notificationEmbed = new EmbedBuilder()
-                    .setTitle(banDuration ? '⏰ You have been temporarily banned' : '🔨 You have been banned')
-                    .setDescription(`You have been ${banDuration ? 'temporarily banned' : 'banned'} from **${guild.name}**.`)
-                    .setColor(Colors.DarkRed)
-                    .setThumbnail(guild.iconURL({ size: 256 }))
-                    .addFields(
-                        {
-                            name: '🛡️ Moderator',
-                            value: `**${interaction.user.tag}**`,
-                            inline: true
-                        },
-                        {
-                            name: '📅 Date & Time',
-                            value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
-                            inline: true
-                        },
-                        {
-                            name: '⏱️ Duration',
-                            value: durationText,
-                            inline: true
-                        },
-                        {
-                            name: '📝 Reason',
-                            value: reason.length > 0 ? `\`\`\`${reason}\`\`\`` : '*No reason provided*',
-                            inline: false
-                        }
-                    )
-                    .setTimestamp()
-                    .setFooter({
-                        text: `PoloCloud Discord Bot • Ban Notification`,
-                        iconURL: interaction.client.user?.displayAvatarURL()
-                    });
+                const notificationContainer = this.createBanNotificationContainer(targetUser, interaction, reason, durationText, guild);
 
-                await targetUser.send({ embeds: [notificationEmbed] }).catch(() => {
+                await targetUser.send({
+                    components: [notificationContainer],
+                    flags: MessageFlags.IsComponentsV2
+                }).catch(() => {
                     this.logger.info(`Could not send ban notification to ${targetUser.tag} - DMs likely disabled`);
                 });
             } catch (error) {
@@ -158,50 +130,12 @@ export class BanCommand implements Command {
                 }, banDuration);
             }
 
-            const embed = new EmbedBuilder()
-                .setTitle(banDuration ? '⏰ User Successfully Temporarily Banned' : '🔨 User Successfully Banned')
-                .setDescription(`**${targetUser.tag}** has been ${banDuration ? 'temporarily banned' : 'banned'} from the server.`)
-                .setColor(Colors.DarkRed)
-                .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
-                .addFields(
-                    {
-                        name: '👤 Banned User',
-                        value: `**${targetUser.tag}**\n\`${targetUser.id}\``,
-                        inline: true
-                    },
-                    {
-                        name: '🛡️ Moderator',
-                        value: `**${interaction.user.tag}**\n\`${interaction.user.id}\``,
-                        inline: true
-                    },
-                    {
-                        name: '📅 Date & Time',
-                        value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
-                        inline: true
-                    },
-                    {
-                        name: '⏱️ Duration',
-                        value: durationText,
-                        inline: true
-                    },
-                    {
-                        name: '🗑️ Message Deletion',
-                        value: deleteMessageDays > 0 ? `\`${deleteMessageDays} days\`` : '`No messages deleted`',
-                        inline: true
-                    },
-                    {
-                        name: '📝 Reason',
-                        value: reason.length > 0 ? `\`\`\`${reason}\`\`\`` : '*No reason provided*',
-                        inline: false
-                    }
-                )
-                .setTimestamp()
-                .setFooter({
-                    text: `PoloCloud Discord Bot • Ban Action`,
-                    iconURL: interaction.client.user?.displayAvatarURL()
-                });
+            const container = this.createBanSuccessContainer(targetUser, interaction, reason, durationText, deleteMessageDays);
 
-            await interaction.editReply({ embeds: [embed] });
+            await interaction.editReply({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2
+            });
 
             this.logger.info(`User ${targetUser.tag} (${targetUser.id}) was ${banDuration ? 'temporarily banned' : 'banned'} by ${interaction.user.tag} (${interaction.user.id}) for reason: ${reason}${banDuration ? ` (Duration: ${durationText})` : ''}`);
 
@@ -209,11 +143,78 @@ export class BanCommand implements Command {
             this.logger.error('Error executing Ban command:', error);
 
             if (error instanceof Error && error.message.includes('Missing Permissions')) {
-                await interaction.editReply(' I do not have permission to ban users in this server.');
+                await interaction.editReply('I do not have permission to ban users in this server.');
             } else {
-                await interaction.editReply(' An error occurred while trying to ban the user. Please try again later.');
+                await interaction.editReply('An error occurred while trying to ban the user. Please try again later.');
             }
         }
+    }
+
+    private createBanSuccessContainer(targetUser: any, interaction: any, reason: string, durationText: string, deleteMessageDays: number): ContainerBuilder {
+        const container = new ContainerBuilder()
+            .setAccentColor(Colors.DarkRed);
+
+        const isTemporary = durationText !== 'Permanent';
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`# ${isTemporary ? '⏰' : '🔨'} User Successfully ${isTemporary ? 'Temporarily ' : ''}Banned\n\n**${targetUser.tag}** has been ${isTemporary ? 'temporarily banned' : 'banned'} from the server.`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 👤 Banned User\n\n**${targetUser.tag}**\n\`${targetUser.id}\``)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 🛡️ Moderator\n\n**${interaction.user.tag}**\n\`${interaction.user.id}\``)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📅 Date & Time\n\n<t:${Math.floor(Date.now() / 1000)}:F>`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## ⏱️ Duration\n\n${durationText}`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 🗑️ Message Deletion\n\n${deleteMessageDays > 0 ? `\`${deleteMessageDays} days\`` : '`No messages deleted`'}`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📝 Reason\n\n${reason.length > 0 ? `\`\`\`${reason}\`\`\`` : '*No reason provided*'}`)
+        );
+
+        return container;
     }
 
     private parseDuration(duration: string): number | null {
@@ -257,7 +258,7 @@ export class BanCommand implements Command {
         try {
             const guild = interaction.guild;
             if (!guild) {
-                await interaction.editReply(' This command can only be used in a server.');
+                await interaction.editReply('This command can only be used in a server.');
                 return;
             }
 
@@ -277,56 +278,67 @@ export class BanCommand implements Command {
                 }, banDuration);
             }
 
-            const embed = new EmbedBuilder()
-                .setTitle(banDuration ? '⏰ User Successfully Temporarily Banned' : '🔨 User Successfully Banned')
-                .setDescription(`**${targetUser.tag}** has been ${banDuration ? 'temporarily banned' : 'banned'} from the server.`)
-                .setColor(Colors.DarkRed)
-                .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
-                .addFields(
-                    {
-                        name: '👤 Banned User',
-                        value: `**${targetUser.tag}**\n\`${targetUser.id}\``,
-                        inline: true
-                    },
-                    {
-                        name: '🛡️ Moderator',
-                        value: `**${interaction.user.tag}**\n\`${interaction.user.id}\``,
-                        inline: true
-                    },
-                    {
-                        name: '📅 Date & Time',
-                        value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
-                        inline: true
-                    },
-                    {
-                        name: '⏱️ Duration',
-                        value: durationText,
-                        inline: true
-                    },
-                    {
-                        name: 'ℹ️ Status',
-                        value: '`User was not in server`',
-                        inline: true
-                    },
-                    {
-                        name: '📝 Reason',
-                        value: reason.length > 0 ? `\`\`\`${reason}\`\`\`` : '*No reason provided*',
-                        inline: false
-                    }
-                )
-                .setTimestamp()
-                .setFooter({
-                    text: `PoloCloud Discord Bot • Ban Action`,
-                    iconURL: interaction.client.user?.displayAvatarURL()
-                });
+            const container = this.createBanSuccessContainer(targetUser, interaction, reason, durationText, deleteMessageDays);
 
-            await interaction.editReply({ embeds: [embed] });
+            await interaction.editReply({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2
+            });
 
             this.logger.info(`User ${targetUser.tag} (${targetUser.id}) was ${banDuration ? 'temporarily banned' : 'banned'} by ${interaction.user.tag} (${interaction.user.id}) for reason: ${reason} (User was not in server)${banDuration ? ` (Duration: ${durationText})` : ''}`);
 
         } catch (error) {
             this.logger.error('Error banning user not in server:', error);
-            await interaction.editReply(' An error occurred while trying to ban the user. Please try again later.');
+            await interaction.editReply('An error occurred while trying to ban the user. Please try again later.');
         }
+    }
+
+    private createBanNotificationContainer(targetUser: any, interaction: any, reason: string, durationText: string, guild: any): ContainerBuilder {
+        const container = new ContainerBuilder()
+            .setAccentColor(Colors.DarkRed);
+
+        const isTemporary = durationText !== 'Permanent';
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`# ${isTemporary ? '⏰' : '��'} Ban Notification\n\n**${targetUser.tag}** has been ${isTemporary ? 'temporarily banned' : 'banned'} from **${guild.name}**.`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 🛡️ Moderator\n\n**${interaction.user.tag}**\n\`${interaction.user.id}\``)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📅 Date & Time\n\n<t:${Math.floor(Date.now() / 1000)}:F>`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## ⏱️ Duration\n\n${durationText}`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📝 Reason\n\n${reason.length > 0 ? `\`\`\`${reason}\`\`\`` : '*No reason provided*'}`)
+        );
+
+        return container;
     }
 }

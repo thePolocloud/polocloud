@@ -1,8 +1,8 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, Colors } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder, Colors, ContainerBuilder, MessageFlags } from 'discord.js';
 import { Command } from '../interfaces/Command';
 import { Logger } from '../utils/Logger';
 import axios from 'axios';
-import { GITHUB_CONFIG, BOT_CONFIG } from '../config/constants';
+import { GITHUB_CONFIG } from '../config/constants';
 
 interface GitHubContributor {
     login: string;
@@ -31,16 +31,19 @@ export class ContributorsCommand implements Command {
             const contributors = await this.fetchContributorsWithCommits();
 
             if (contributors.length === 0) {
-                await interaction.editReply(' No contributors found or unable to fetch data.');
+                await interaction.editReply('No contributors found or unable to fetch data.');
                 return;
             }
 
-            const embed = this.createContributorsEmbed(contributors);
+            const container = this.createContributorsContainer(contributors);
 
-            await interaction.editReply({ embeds: [embed] });
+            await interaction.editReply({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2
+            });
         } catch (error) {
             this.logger.error('Error executing Contributors command:', error);
-            await interaction.editReply(' Error fetching contributors. Please try again later.');
+            await interaction.editReply('Error fetching contributors. Please try again later.');
         }
     }
 
@@ -133,13 +136,18 @@ export class ContributorsCommand implements Command {
         }
     }
 
-    private createContributorsEmbed(contributors: GitHubContributor[]): EmbedBuilder {
-        const embed = new EmbedBuilder()
-            .setTitle('👥 PoloCloud Contributors')
-            .setDescription(`All contributors to the **PoloCloud** GitHub repository`)
-            .setColor(Colors.Blue)
-            .setTimestamp()
-            .setFooter({ text: BOT_CONFIG.NAME, iconURL: GITHUB_CONFIG.AVATAR_URL });
+    private createContributorsContainer(contributors: GitHubContributor[]): ContainerBuilder {
+        const container = new ContainerBuilder()
+            .setAccentColor(Colors.Blue);
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`# 👥 PoloCloud Contributors\n\nAll contributors to the **PoloCloud** GitHub repository`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
 
         const sortedContributors = contributors.sort((a, b) => {
             const aCommits = a.commits || a.contributions;
@@ -154,18 +162,20 @@ export class ContributorsCommand implements Command {
             return `${rankEmoji} **${contributor.login}** - \`${commitCount} commits\``;
         }).join('\n');
 
-        embed.addFields({
-            name: `📊 Contributors (${contributors.length})`,
-            value: contributorsList || 'No contributors found',
-            inline: false
-        });
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📊 Contributors (${contributors.length})\n\n${contributorsList || 'No contributors found'}`)
+        );
 
-        embed.addFields({
-            name: '🔗 Repository',
-            value: `[View on GitHub](${GITHUB_CONFIG.REPO_URL})`,
-            inline: false
-        });
+        container.addSeparatorComponents(
+            separator => separator
+        );
 
-        return embed;
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 🔗 Repository\n\n[View on GitHub](${GITHUB_CONFIG.REPO_URL})`)
+        );
+
+        return container;
     }
 }

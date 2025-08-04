@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, Colors, PermissionFlagsBits, GuildMember } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder, Colors, PermissionFlagsBits, GuildMember, ContainerBuilder, MessageFlags } from 'discord.js';
 import { Command } from '../interfaces/Command';
 import { Logger } from '../utils/Logger';
 
@@ -73,35 +73,12 @@ export class KickCommand implements Command {
             }
 
             try {
-                const notificationEmbed = new EmbedBuilder()
-                    .setTitle('🚫 You have been kicked')
-                    .setDescription(`You have been kicked from **${guild.name}**.`)
-                    .setColor(Colors.Red)
-                    .setThumbnail(guild.iconURL({ size: 256 }))
-                    .addFields(
-                        {
-                            name: '🛡️ Moderator',
-                            value: `**${interaction.user.tag}**`,
-                            inline: true
-                        },
-                        {
-                            name: '📅 Date & Time',
-                            value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
-                            inline: true
-                        },
-                        {
-                            name: '📝 Reason',
-                            value: reason.length > 0 ? `\`\`\`${reason}\`\`\`` : '*No reason provided*',
-                            inline: false
-                        }
-                    )
-                    .setTimestamp()
-                    .setFooter({
-                        text: `PoloCloud Discord Bot • Kick Notification`,
-                        iconURL: interaction.client.user?.displayAvatarURL()
-                    });
+                const notificationContainer = this.createKickNotificationContainer(targetUser, interaction, reason, guild);
 
-                await targetUser.send({ embeds: [notificationEmbed] }).catch(() => {
+                await targetUser.send({
+                    components: [notificationContainer],
+                    flags: MessageFlags.IsComponentsV2
+                }).catch(() => {
                     this.logger.info(`Could not send kick notification to ${targetUser.tag} - DMs likely disabled`);
                 });
             } catch (error) {
@@ -110,40 +87,12 @@ export class KickCommand implements Command {
 
             await targetMember.kick(reason);
 
-            const embed = new EmbedBuilder()
-                .setTitle('👢 User Successfully Kicked')
-                .setDescription(`**${targetUser.tag}** has been kicked from the server.`)
-                .setColor(Colors.Red)
-                .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
-                .addFields(
-                    {
-                        name: '👤 Kicked User',
-                        value: `**${targetUser.tag}**\n\`${targetUser.id}\``,
-                        inline: true
-                    },
-                    {
-                        name: '🛡️ Staff',
-                        value: `**${interaction.user.tag}**\n\`${interaction.user.id}\``,
-                        inline: true
-                    },
-                    {
-                        name: '📅 Date & Time',
-                        value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
-                        inline: true
-                    },
-                    {
-                        name: '📝 Reason',
-                        value: reason.length > 0 ? `\`\`\`${reason}\`\`\`` : '*No reason provided*',
-                        inline: false
-                    }
-                )
-                .setTimestamp()
-                .setFooter({
-                    text: `PoloCloud Discord Bot • Kick Action`,
-                    iconURL: interaction.client.user?.displayAvatarURL()
-                });
+            const container = this.createKickSuccessContainer(targetUser, interaction, reason);
 
-            await interaction.editReply({ embeds: [embed] });
+            await interaction.editReply({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2
+            });
 
             this.logger.info(`User ${targetUser.tag} (${targetUser.id}) was kicked by ${interaction.user.tag} (${interaction.user.id}) for reason: ${reason}`);
 
@@ -156,5 +105,83 @@ export class KickCommand implements Command {
                 await interaction.editReply('An error occurred while trying to kick the user. Please try again later.');
             }
         }
+    }
+
+    private createKickSuccessContainer(targetUser: any, interaction: any, reason: string): ContainerBuilder {
+        const container = new ContainerBuilder()
+            .setAccentColor(Colors.Red);
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`# 👢 User Successfully Kicked\n\n**${targetUser.tag}** has been kicked from the server.`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 👤 Kicked User\n\n**${targetUser.tag}**\n\`${targetUser.id}\``)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 🛡️ Moderator\n\n**${interaction.user.tag}**\n\`${interaction.user.id}\``)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📅 Date & Time\n\n<t:${Math.floor(Date.now() / 1000)}:F>`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📝 Reason\n\n${reason.length > 0 ? `\`\`\`${reason}\`\`\`` : '*No reason provided*'}`)
+        );
+
+        return container;
+    }
+
+    private createKickNotificationContainer(targetUser: any, interaction: any, reason: string, guild: any): ContainerBuilder {
+        const container = new ContainerBuilder()
+            .setAccentColor(Colors.Red);
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`# 🚫 Kick Notification\n\n**${targetUser.tag}** has been kicked from **${guild.name}** for the following reason:`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📝 Reason\n\n\`\`\`${reason}\`\`\`\n\nThis notification was sent by **${interaction.user.tag}**`)
+        );
+
+        container.addSeparatorComponents(
+            separator => separator
+        );
+
+        container.addTextDisplayComponents(
+            textDisplay => textDisplay
+                .setContent(`## 📅 Date & Time\n\n<t:${Math.floor(Date.now() / 1000)}:F>`)
+        );
+
+        return container;
     }
 }
