@@ -31,6 +31,10 @@ async function main(): Promise<void> {
             });
         });
 
+        client.on('interactionCreate', async (interaction) => {
+            await bot.handleInteraction(interaction);
+        });
+
         // Start bot
         await client.login(process.env['DISCORD_TOKEN']);
 
