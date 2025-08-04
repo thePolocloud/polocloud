@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, TextChannel, ContainerBuilder, MessageFlags, Colors } from 'discord.js';
-import { Command } from '../interfaces/Command';
-import { Logger } from '../utils/Logger';
-import { ContributorsUpdateService } from '../services/contributors/ContributorsUpdateService';
-import { GITHUB_CONFIG } from '../config/constants';
+import { Command } from '../../interfaces/Command';
+import { Logger } from '../../utils/Logger';
+import { ContributorsUpdateService } from '../../services/contributors/ContributorsUpdateService';
+import { GITHUB_CONFIG } from '../../config/constants';
 import axios from 'axios';
 
 interface GitHubContributor {

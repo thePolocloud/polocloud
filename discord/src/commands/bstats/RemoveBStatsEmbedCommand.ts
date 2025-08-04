@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel, PermissionFlagsBits } from 'discord.js';
-import { Command } from '../interfaces/Command';
-import { Logger } from '../utils/Logger';
-import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
+import { Command } from '../../interfaces/Command';
+import { Logger } from '../../utils/Logger';
+import { BStatsUpdateService } from '../../services/bstats/BStatsUpdateService';
 
 export class RemoveBStatsEmbedCommand implements Command {
     public data = new SlashCommandBuilder()

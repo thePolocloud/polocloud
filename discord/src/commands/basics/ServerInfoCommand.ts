@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder, Colors } from 'discord.js';
-import { Command } from '../interfaces/Command';
-import { Logger } from '../utils/Logger';
+import { Command } from '../../interfaces/Command';
+import { Logger } from '../../utils/Logger';
 
 export class ServerInfoCommand implements Command {
     public data = new SlashCommandBuilder()

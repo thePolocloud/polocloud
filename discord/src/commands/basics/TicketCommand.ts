@@ -6,10 +6,10 @@ import {
     EmbedBuilder,
     Colors
 } from 'discord.js';
-import { Command } from '../interfaces/Command';
-import { Logger } from '../utils/Logger';
-import { BOT_CONFIG, GITHUB_CONFIG, TICKET_CONFIG } from '../config/constants';
-import { TicketService } from '../services/ticket/TicketService';
+import { Command } from '../../interfaces/Command';
+import { Logger } from '../../utils/Logger';
+import { BOT_CONFIG, GITHUB_CONFIG, TICKET_CONFIG } from '../../config/constants';
+import { TicketService } from '../../services/ticket/TicketService';
 
 export class TicketCommand implements Command {
     public data = new SlashCommandBuilder()

@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, TextChannel, ContainerBuilder, MessageFlags } from 'discord.js';
-import { Command } from '../interfaces/Command';
-import { Logger } from '../utils/Logger';
-import { ContributorsUpdateService } from '../services/contributors/ContributorsUpdateService';
+import { Command } from '../../interfaces/Command';
+import { Logger } from '../../utils/Logger';
+import { ContributorsUpdateService } from '../../services/contributors/ContributorsUpdateService';
 
 export class RemoveContributorsEmbedCommand implements Command {
     public data = new SlashCommandBuilder()

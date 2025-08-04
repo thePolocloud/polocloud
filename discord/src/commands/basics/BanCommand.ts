@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, Colors, PermissionFlagsBits, GuildMember, ContainerBuilder, MessageFlags } from 'discord.js';
-import { Command } from '../interfaces/Command';
-import { Logger } from '../utils/Logger';
+import { Command } from '../../interfaces/Command';
+import { Logger } from '../../utils/Logger';
 
 export class BanCommand implements Command {
     public data = new SlashCommandBuilder()

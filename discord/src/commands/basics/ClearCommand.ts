@@ -7,9 +7,9 @@ import {
     MessageFlags,
     Colors
 } from 'discord.js';
-import { Command } from '../interfaces/Command';
-import { Logger } from '../utils/Logger';
-import { BOT_CONFIG } from '../config/constants';
+import { Command } from '../../interfaces/Command';
+import { Logger } from '../../utils/Logger';
+import { BOT_CONFIG } from '../../config/constants';
 
 export class ClearCommand implements Command {
     public data = new SlashCommandBuilder()

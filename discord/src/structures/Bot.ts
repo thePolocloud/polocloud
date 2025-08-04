@@ -4,7 +4,7 @@ import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateSe
 import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
 import { TicketService } from '../services/ticket/TicketService';
 import { ContributorsUpdateService } from "../services/contributors/ContributorsUpdateService";
-import { ReleaseCommand } from '../commands/ReleaseCommand';
+import { ReleaseCommand } from '../commands/basics/ReleaseCommand';
 import { Logger } from '../utils/Logger';
 
 export class Bot {

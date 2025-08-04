@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, TextChannel } from 'discord.js';
-import { Command } from '../interfaces/Command';
-import { Logger } from '../utils/Logger';
-import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
+import { Command } from '../../interfaces/Command';
+import { Logger } from '../../utils/Logger';
+import { GitHubStatsUpdateService } from '../../services/github/GitHubStatsUpdateService';
 
 export class RemoveGitHubStatsEmbedCommand implements Command {
     public data = new SlashCommandBuilder()
