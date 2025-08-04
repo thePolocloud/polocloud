@@ -4,6 +4,7 @@ import { RemoveGitHubStatsEmbedCommand } from '../commands/RemoveGitHubStatsEmbe
 import { BStatsEmbedCommand } from '../commands/BStatsEmbedCommand';
 import { RemoveBStatsEmbedCommand } from '../commands/RemoveBStatsEmbedCommand';
 import { ServerInfoCommand } from '../commands/ServerInfoCommand';
+import { ClearCommand } from '../commands/ClearCommand';
 import { GitHubStatsUpdateService } from '../services/GitHubStatsUpdateService';
 import { BStatsUpdateService } from '../services/BStatsUpdateService';
 import { Logger } from '../utils/Logger';
@@ -22,6 +23,7 @@ export class CommandManager {
         try {
             // Load all commands
             const serverInfoCommand = new ServerInfoCommand();
+            const clearCommand = new ClearCommand();
 
             // Load GitHub stats embed commands
             const githubStatsEmbedCommand = new GitHubStatsEmbedCommand(githubStatsUpdateService);
@@ -31,6 +33,7 @@ export class CommandManager {
             const bStatsEmbedCommand = new BStatsEmbedCommand(bStatsUpdateService);
             const removeBStatsEmbedCommand = new RemoveBStatsEmbedCommand(bStatsUpdateService);
 
+            this.commands.set(clearCommand.data.name, clearCommand);
             this.commands.set(serverInfoCommand.data.name, serverInfoCommand);
             this.commands.set(githubStatsEmbedCommand.data.name, githubStatsEmbedCommand);
             this.commands.set(removeGitHubStatsEmbedCommand.data.name, removeGitHubStatsEmbedCommand);
