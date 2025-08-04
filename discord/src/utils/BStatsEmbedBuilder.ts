@@ -31,7 +31,7 @@ export class BStatsEmbedBuilder {
 
         } else {
             embed.addFields({
-                name: '❌ No Data Available',
+                name: 'No Data Available',
                 value: '`No statistics could be loaded from bStats.org`',
                 inline: false
             });

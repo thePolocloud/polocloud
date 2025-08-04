@@ -14,6 +14,21 @@ export const BSTATS_CONFIG = {
     UPDATE_INTERVAL: 15 * 60 * 1000 // 15 minutes in milliseconds
 } as const;
 
+export const TICKET_CONFIG = {
+    get CHANNEL_ID() { return process.env['TICKET_CHANNEL_ID'] || ''; },
+    get CATEGORY_ID() { return process.env['TICKET_CATEGORY_ID'] || ''; },
+    get ARCHIVE_CATEGORY_ID() { return process.env['TICKET_ARCHIVE_CATEGORY_ID'] || ''; },
+    get SUPPORT_ROLE_ID() { return process.env['TICKET_SUPPORT_ROLE_ID'] || ''; },
+    MAX_TICKETS_PER_USER: 3,
+    TICKET_PREFIX: 'ticket-',
+    CATEGORIES: [
+        { label: 'General Support', value: 'general', emoji: '❓', description: 'General questions and support' },
+        { label: 'Technical Issues', value: 'technical', emoji: '🔧', description: 'Technical problems and bugs' },
+        { label: 'Bug Report', value: 'bug', emoji: '🐛', description: 'Report bugs and issues' }
+    ]
+} as const;
+
+
 export const BOT_CONFIG = {
     NAME: 'PoloCloud Discord Bot',
     STATUS: 'PoloCloud Stats'

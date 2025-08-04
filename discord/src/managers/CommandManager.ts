@@ -5,8 +5,10 @@ import { BStatsEmbedCommand } from '../commands/BStatsEmbedCommand';
 import { RemoveBStatsEmbedCommand } from '../commands/RemoveBStatsEmbedCommand';
 import { ServerInfoCommand } from '../commands/ServerInfoCommand';
 import { ClearCommand } from '../commands/ClearCommand';
+import { TicketCommand } from '../commands/TicketCommand';
 import { GitHubStatsUpdateService } from '../services/GitHubStatsUpdateService';
 import { BStatsUpdateService } from '../services/BStatsUpdateService';
+import { TicketService } from '../services/TicketService';
 import { Logger } from '../utils/Logger';
 import { Command } from '../interfaces/Command';
 
@@ -14,16 +16,17 @@ export class CommandManager {
     private commands: Map<string, Command> = new Map();
     private logger: Logger;
 
-    constructor(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService) {
+    constructor(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService, ticketService: TicketService) {
         this.logger = new Logger('CommandManager');
-        this.loadCommands(githubStatsUpdateService, bStatsUpdateService);
+        this.loadCommands(githubStatsUpdateService, bStatsUpdateService, ticketService);
     }
 
-    private loadCommands(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService): void {
+    private loadCommands(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService, ticketService: TicketService): void {
         try {
             // Load all commands
             const serverInfoCommand = new ServerInfoCommand();
             const clearCommand = new ClearCommand();
+            const ticketCommand = new TicketCommand(ticketService);
 
             // Load GitHub stats embed commands
             const githubStatsEmbedCommand = new GitHubStatsEmbedCommand(githubStatsUpdateService);
@@ -33,8 +36,9 @@ export class CommandManager {
             const bStatsEmbedCommand = new BStatsEmbedCommand(bStatsUpdateService);
             const removeBStatsEmbedCommand = new RemoveBStatsEmbedCommand(bStatsUpdateService);
 
-            this.commands.set(clearCommand.data.name, clearCommand);
             this.commands.set(serverInfoCommand.data.name, serverInfoCommand);
+            this.commands.set(clearCommand.data.name, clearCommand);
+            this.commands.set(ticketCommand.data.name, ticketCommand);
             this.commands.set(githubStatsEmbedCommand.data.name, githubStatsEmbedCommand);
             this.commands.set(removeGitHubStatsEmbedCommand.data.name, removeGitHubStatsEmbedCommand);
             this.commands.set(bStatsEmbedCommand.data.name, bStatsEmbedCommand);
