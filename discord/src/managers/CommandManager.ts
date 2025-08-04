@@ -6,9 +6,9 @@ import { RemoveBStatsEmbedCommand } from '../commands/RemoveBStatsEmbedCommand';
 import { ServerInfoCommand } from '../commands/ServerInfoCommand';
 import { ClearCommand } from '../commands/ClearCommand';
 import { TicketCommand } from '../commands/TicketCommand';
-import { GitHubStatsUpdateService } from '../services/GitHubStatsUpdateService';
-import { BStatsUpdateService } from '../services/BStatsUpdateService';
-import { TicketService } from '../services/TicketService';
+import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
+import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
+import { TicketService } from '../services/ticket/TicketService';
 import { Logger } from '../utils/Logger';
 import { Command } from '../interfaces/Command';
 

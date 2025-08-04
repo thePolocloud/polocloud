@@ -1,5 +1,5 @@
 import { EmbedBuilder, Colors } from 'discord.js';
-import { BStatsData } from '../services/BStatsService';
+import { BStatsData } from '../services/bstats/BStatsService';
 import { BSTATS_CONFIG, BOT_CONFIG, GITHUB_CONFIG } from '../config/constants';
 
 export class BStatsEmbedBuilder {

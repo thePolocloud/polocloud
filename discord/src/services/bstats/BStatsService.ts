@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { Logger } from '../utils/Logger';
-import { BSTATS_CONFIG } from '../config/constants';
+import { Logger } from '../../utils/Logger';
+import { BSTATS_CONFIG } from '../../config/constants';
 
 export interface BStatsData {
     servers: {

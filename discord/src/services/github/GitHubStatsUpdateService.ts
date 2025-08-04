@@ -1,8 +1,8 @@
 import { Client, TextChannel } from 'discord.js';
-import { Logger } from '../utils/Logger';
+import { Logger } from '../../utils/Logger';
 import { GitHubStatsService } from './GitHubStatsService';
-import { GitHubEmbedBuilder } from '../utils/GitHubEmbedBuilder';
-import { GITHUB_CONFIG } from '../config/constants';
+import { GitHubEmbedBuilder } from '../../utils/GitHubEmbedBuilder';
+import { GITHUB_CONFIG } from '../../config/constants';
 
 interface StoredGitHubEmbed {
     guildId: string;

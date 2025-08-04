@@ -1,13 +1,13 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, TextChannel } from 'discord.js';
 import { Command } from '../interfaces/Command';
 import { Logger } from '../utils/Logger';
-import { GitHubStatsUpdateService } from '../services/GitHubStatsUpdateService';
+import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
 
 export class RemoveGitHubStatsEmbedCommand implements Command {
     public data = new SlashCommandBuilder()
         .setName('removegithubstatsembed')
         .setDescription('Removes and deletes the GitHub stats embed from the current channel')
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
     private logger: Logger;
     private updateService: GitHubStatsUpdateService;

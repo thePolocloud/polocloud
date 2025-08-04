@@ -22,7 +22,7 @@ export class ClearCommand implements Command {
                 .setMinValue(1)
                 .setMaxValue(100)
         )
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
     private logger: Logger;
 

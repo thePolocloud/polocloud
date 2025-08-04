@@ -1,5 +1,5 @@
 import { EmbedBuilder, Colors } from 'discord.js';
-import { GitHubStats } from '../services/GitHubStatsService';
+import { GitHubStats } from '../services/github/GitHubStatsService';
 import { GITHUB_CONFIG, BOT_CONFIG } from '../config/constants';
 
 export class GitHubEmbedBuilder {

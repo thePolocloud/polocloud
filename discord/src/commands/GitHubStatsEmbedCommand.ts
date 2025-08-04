@@ -1,15 +1,15 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel, PermissionFlagsBits } from 'discord.js';
 import { Command } from '../interfaces/Command';
 import { Logger } from '../utils/Logger';
-import { GitHubStatsUpdateService } from '../services/GitHubStatsUpdateService';
-import { GitHubStatsService } from '../services/GitHubStatsService';
+import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
+import { GitHubStatsService } from '../services/github/GitHubStatsService';
 import { GitHubEmbedBuilder } from '../utils/GitHubEmbedBuilder';
 
 export class GitHubStatsEmbedCommand implements Command {
     public data = new SlashCommandBuilder()
         .setName('githubstatsembed')
         .setDescription('Creates a permanent GitHub stats embed in the current channel')
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
     private logger: Logger;
     private updateService: GitHubStatsUpdateService;

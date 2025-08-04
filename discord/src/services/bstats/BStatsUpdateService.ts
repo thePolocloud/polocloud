@@ -1,8 +1,8 @@
 import { Client, TextChannel } from 'discord.js';
-import { Logger } from '../utils/Logger';
+import { Logger } from '../../utils/Logger';
 import { BStatsService, BStatsData } from './BStatsService';
-import { BStatsEmbedBuilder } from '../utils/BStatsEmbedBuilder';
-import { BSTATS_CONFIG } from '../config/constants';
+import { BStatsEmbedBuilder } from '../../utils/BStatsEmbedBuilder';
+import { BSTATS_CONFIG } from '../../config/constants';
 
 interface StoredBStatsEmbed {
     guildId: string;

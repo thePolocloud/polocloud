@@ -1,9 +1,10 @@
 import { Client, GatewayIntentBits, Events, Interaction } from 'discord.js';
 import { CommandManager } from '../managers/CommandManager';
-import { GitHubStatsUpdateService } from '../services/GitHubStatsUpdateService';
-import { BStatsUpdateService } from '../services/BStatsUpdateService';
-import { TicketService } from '../services/TicketService';
+import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
+import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
+import { TicketService } from '../services/ticket/TicketService';
 import { Logger } from '../utils/Logger';
+import { BOT_CONFIG } from '../config/constants';
 
 export class Bot {
     public client: Client;
@@ -38,6 +39,7 @@ export class Bot {
     private setupEventHandlers(): void {
         this.client.on(Events.ClientReady, () => {
             this.logger.info(`Logged in as ${this.client.user?.tag}`);
+            this.client.user?.setActivity(BOT_CONFIG.STATUS, { type: 1 });
             this.githubStatsUpdateService.start();
             this.bStatsUpdateService.start();
         });

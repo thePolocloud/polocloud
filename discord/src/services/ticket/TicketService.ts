@@ -15,8 +15,8 @@ import {
     TextInputBuilder,
     TextInputStyle
 } from 'discord.js';
-import { Logger } from '../utils/Logger';
-import { TICKET_CONFIG, BOT_CONFIG, GITHUB_CONFIG } from '../config/constants';
+import { Logger } from '../../utils/Logger';
+import { TICKET_CONFIG, BOT_CONFIG, GITHUB_CONFIG } from '../../config/constants';
 
 interface TicketData {
     id: string;
@@ -201,7 +201,6 @@ export class TicketService {
                     { name: '📝 Description', value: description, inline: false },
                     { name: '👤 Created by', value: `<@${interaction.user.id}>`, inline: true },
                     { name: '📅 Created', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
-                    { name: '📊 Status', value: '🟢 Open', inline: true }
                 )
                 .setColor(Colors.Green)
                 .setTimestamp()

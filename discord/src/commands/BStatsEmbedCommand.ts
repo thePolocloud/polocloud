@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel, PermissionFlagsBits } from 'discord.js';
 import { Command } from '../interfaces/Command';
 import { Logger } from '../utils/Logger';
-import { BStatsUpdateService } from '../services/BStatsUpdateService';
-import { BStatsService } from '../services/BStatsService';
+import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
+import { BStatsService } from '../services/bstats/BStatsService';
 import { BStatsEmbedBuilder } from '../utils/BStatsEmbedBuilder';
 
 export class BStatsEmbedCommand implements Command {
@@ -20,7 +20,7 @@ export class BStatsEmbedCommand implements Command {
                     { name: 'All (Combined)', value: 'all' }
                 )
         )
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
     private logger: Logger;
     private updateService: BStatsUpdateService;
