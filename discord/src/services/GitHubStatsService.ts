@@ -40,19 +40,14 @@ export class GitHubStatsService {
             const repoResponse = await axios.get(GITHUB_CONFIG.REPO_URL, { headers });
             const repoData = repoResponse.data;
 
-            // GitHub API for Languages
             const languagesResponse = await axios.get(`${GITHUB_CONFIG.REPO_URL}/languages`, { headers });
 
-            // GitHub API for Pull Requests (open)
             const pullRequestsResponse = await axios.get(`${GITHUB_CONFIG.REPO_URL}/pulls?state=open`, { headers });
 
-            // GitHub API for Contributors
             const contributorsResponse = await axios.get(`${GITHUB_CONFIG.REPO_URL}/contributors`, { headers });
 
-            // GitHub API for Branches
             const branchesResponse = await axios.get(`${GITHUB_CONFIG.REPO_URL}/branches`, { headers });
 
-            // Use repository updated_at for last commit if we can't fetch commits due to rate limit
             let lastCommitDate: string;
             try {
                 const commitsResponse = await axios.get(`${GITHUB_CONFIG.REPO_URL}/commits?per_page=1`, { headers });

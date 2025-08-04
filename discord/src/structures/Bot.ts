@@ -1,99 +1,82 @@
-import { Client, Interaction, ChatInputCommandInteraction } from 'discord.js';
+import { Client, GatewayIntentBits, ActivityType } from 'discord.js';
 import { CommandManager } from '../managers/CommandManager';
-import { GitHubStatsUpdateService } from '../services/GitHubStatsUpdateService';
 import { Logger } from '../utils/Logger';
+import { GitHubStatsUpdateService } from '../services/GitHubStatsUpdateService';
+import { BStatsUpdateService } from '../services/BStatsUpdateService';
 
 export class Bot {
-    private client: Client;
+    public client: Client;
     private commandManager: CommandManager;
-    private githubStatsUpdateService: GitHubStatsUpdateService;
     private logger: Logger;
+    private githubStatsUpdateService: GitHubStatsUpdateService;
+    private bStatsUpdateService: BStatsUpdateService;
 
-    constructor(client: Client) {
-        this.client = client;
-        this.commandManager = new CommandManager();
-        this.githubStatsUpdateService = new GitHubStatsUpdateService(client);
+    constructor() {
+        this.client = new Client({
+            intents: [
+                GatewayIntentBits.Guilds,
+                GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.MessageContent,
+            ],
+        });
+
         this.logger = new Logger('Bot');
+        this.githubStatsUpdateService = new GitHubStatsUpdateService(this.client);
+        this.bStatsUpdateService = new BStatsUpdateService(this.client);
+        this.commandManager = new CommandManager(this.githubStatsUpdateService, this.bStatsUpdateService);
 
-        this.initializeCommands();
+        this.setupEventHandlers();
     }
 
-    private async initializeCommands(): Promise<void> {
-        try {
-            await this.commandManager.loadCommands(this.githubStatsUpdateService);
-            await this.commandManager.registerCommands(this.client);
-            this.logger.info('Commands loaded and registered successfully');
-        } catch (error) {
-            this.logger.error('Error loading commands:', error);
-        }
+    private setupEventHandlers(): void {
+        this.client.on('ready', () => {
+            this.logger.info(`Logged in as ${this.client.user?.tag}`);
+            this.client.user?.setActivity('PoloCloud Stats', { type: ActivityType.Watching });
+        });
+
+        this.client.on('interactionCreate', async (interaction) => {
+            if (!interaction.isChatInputCommand()) return;
+
+            try {
+                await this.commandManager.executeCommand(interaction);
+            } catch (error) {
+                this.logger.error('Error handling command:', error);
+                const reply = {
+                    content: 'An error occurred while executing this command.',
+                    ephemeral: true,
+                };
+
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.editReply(reply);
+                } else {
+                    await interaction.reply(reply);
+                }
+            }
+        });
     }
 
     public async start(): Promise<void> {
         try {
-            // Start the GitHub stats update service
+            await this.client.login(process.env['DISCORD_TOKEN']!);
+            await this.commandManager.registerCommands();
             this.githubStatsUpdateService.start();
-            this.logger.info('GitHub Stats Update Service started');
+            this.bStatsUpdateService.start();
+            this.logger.info('Bot started successfully');
         } catch (error) {
-            this.logger.error('Error starting services:', error);
+            this.logger.error('Failed to start bot:', error);
+            throw error;
         }
     }
 
     public async stop(): Promise<void> {
         try {
-            // Stop the GitHub stats update service
             this.githubStatsUpdateService.stop();
-            this.logger.info('GitHub Stats Update Service stopped');
+            this.bStatsUpdateService.stop();
+            await this.client.destroy();
+            this.logger.info('Bot stopped successfully');
         } catch (error) {
-            this.logger.error('Error stopping services:', error);
-        }
-    }
-
-    public async handleInteraction(interaction: Interaction): Promise<void> {
-        try {
-            if (interaction.isChatInputCommand()) {
-                await this.handleCommand(interaction);
-            }
-        } catch (error) {
-            this.logger.error('Error processing interaction:', error);
-
-            if (interaction.isRepliable()) {
-                await interaction.reply({
-                    content: 'An error occurred. Please try again later.',
-                    ephemeral: true,
-                });
-            }
-        }
-    }
-
-    private async handleCommand(interaction: ChatInputCommandInteraction): Promise<void> {
-        const commandName = interaction.commandName;
-        const command = this.commandManager.getCommand(commandName);
-
-        if (!command) {
-            this.logger.warn(`Unknown command: ${commandName}`);
-            await interaction.reply({
-                content: 'This command is not available.',
-                ephemeral: true,
-            });
-            return;
-        }
-
-        try {
-            await command.execute(interaction);
-        } catch (error) {
-            this.logger.error(`Error executing command ${commandName}:`, error);
-
-            if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({
-                    content: 'An error occurred while executing the command.',
-                    ephemeral: true,
-                });
-            } else {
-                await interaction.followUp({
-                    content: 'An error occurred while executing the command.',
-                    ephemeral: true,
-                });
-            }
+            this.logger.error('Error stopping bot:', error);
+            throw error;
         }
     }
 }

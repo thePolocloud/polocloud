@@ -30,6 +30,7 @@ export class ServerInfoCommand implements Command {
             const boostLevel = guild.premiumTier;
             const boostCount = guild.premiumSubscriptionCount || 0;
 
+
             const embed = new EmbedBuilder()
                 .setTitle(`📊 ${guild.name}`)
                 .setDescription(guild.description || 'No description available')
@@ -41,21 +42,18 @@ export class ServerInfoCommand implements Command {
                     iconURL: 'https://github.com/HttpMarco/polocloud/blob/master/.img/img.png?raw=true'
                 });
 
-            // Server information
             embed.addFields({
                 name: '📋 Server Information',
                 value: `\`Owner: ${owner.user.tag}\`\n\`Server ID: ${guild.id}\`\n\`Created: <t:${Math.floor(guild.createdTimestamp / 1000)}:R>\``,
                 inline: false
             });
 
-            // Member statistics
             embed.addFields({
                 name: '👥 Member Statistics',
                 value: `\`Members: ${memberCount.toLocaleString('de-DE')}\`\n\`Channels: ${channelCount}\`\n\`Roles: ${roleCount}\`\n\`Emojis: ${emojiCount}\``,
                 inline: false
             });
 
-            // Server features
             embed.addFields({
                 name: '🚀 Server Features',
                 value: `\`Boosts: Level ${boostLevel}\`\n\`Boosts: ${boostCount}\`\n\`Verification: ${this.getVerificationLevel(guild.verificationLevel)}\``,

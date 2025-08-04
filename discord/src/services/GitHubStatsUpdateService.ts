@@ -1,10 +1,10 @@
 import { Client, TextChannel } from 'discord.js';
 import { Logger } from '../utils/Logger';
-import { GitHubStatsService, GitHubStats } from './GitHubStatsService';
+import { GitHubStatsService } from './GitHubStatsService';
 import { GitHubEmbedBuilder } from '../utils/GitHubEmbedBuilder';
 import { GITHUB_CONFIG } from '../config/constants';
 
-interface StoredEmbed {
+interface StoredGitHubEmbed {
     guildId: string;
     channelId: string;
     messageId: string;
@@ -14,7 +14,7 @@ export class GitHubStatsUpdateService {
     private client: Client;
     private logger: Logger;
     private updateInterval: NodeJS.Timeout | null = null;
-    private storedEmbeds: Map<string, StoredEmbed> = new Map();
+    private storedEmbeds: Map<string, StoredGitHubEmbed> = new Map();
     private githubStatsService: GitHubStatsService;
 
     constructor(client: Client) {
@@ -24,7 +24,6 @@ export class GitHubStatsUpdateService {
     }
 
     public start(): void {
-        // Update every 10 minutes
         this.updateInterval = setInterval(async () => {
             await this.updateAllEmbeds();
         }, GITHUB_CONFIG.UPDATE_INTERVAL);
@@ -43,30 +42,30 @@ export class GitHubStatsUpdateService {
     public async addEmbed(guildId: string, channelId: string, messageId: string): Promise<void> {
         const key = `${guildId}-${channelId}`;
         this.storedEmbeds.set(key, { guildId, channelId, messageId });
-        this.logger.info(`Added embed for tracking: ${key}`);
+        this.logger.info(`Added GitHub embed for tracking: ${key}`);
     }
 
     public async removeEmbed(guildId: string, channelId: string): Promise<void> {
         const key = `${guildId}-${channelId}`;
         this.storedEmbeds.delete(key);
-        this.logger.info(`Removed embed from tracking: ${key}`);
+        this.logger.info(`Removed GitHub embed from tracking: ${key}`);
     }
 
     private async updateAllEmbeds(): Promise<void> {
-        this.logger.info('Starting GitHub stats embed update...');
+        this.logger.info('Starting GitHub embed update...');
 
         for (const [key, embed] of this.storedEmbeds) {
             try {
                 await this.updateEmbed(embed);
             } catch (error) {
-                this.logger.error(`Failed to update embed ${key}:`, error);
+                this.logger.error(`Failed to update GitHub embed ${key}:`, error);
             }
         }
 
-        this.logger.info('GitHub stats embed update completed');
+        this.logger.info('GitHub embed update completed');
     }
 
-    private async updateEmbed(embed: StoredEmbed): Promise<void> {
+    private async updateEmbed(embed: StoredGitHubEmbed): Promise<void> {
         try {
             const guild = await this.client.guilds.fetch(embed.guildId);
             const channel = await guild.channels.fetch(embed.channelId) as TextChannel;
@@ -86,10 +85,10 @@ export class GitHubStatsUpdateService {
             const newEmbed = GitHubEmbedBuilder.createGitHubStatsEmbed(stats);
 
             await message.edit({ embeds: [newEmbed] });
-            this.logger.info(`Updated embed in guild ${embed.guildId}, channel ${embed.channelId}`);
+            this.logger.info(`Updated GitHub embed in guild ${embed.guildId}, channel ${embed.channelId}`);
 
         } catch (error) {
-            this.logger.error(`Error updating embed:`, error);
+            this.logger.error(`Error updating GitHub embed:`, error);
             throw error;
         }
     }
