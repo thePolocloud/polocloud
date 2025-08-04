@@ -309,7 +309,7 @@ export class TicketService {
                 } catch (error) {
                     this.logger.error(`Error deleting archived channel ${ticketId}:`, error);
                 }
-            }, 14 * 24 * 60 * 60 * 1000); // 14 days in milliseconds
+            }, 14 * 24 * 60 * 60 * 1000);
 
         } catch (error) {
             this.logger.error('Error closing ticket:', error);

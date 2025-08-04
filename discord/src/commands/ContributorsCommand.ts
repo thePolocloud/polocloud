@@ -31,7 +31,7 @@ export class ContributorsCommand implements Command {
             const contributors = await this.fetchContributorsWithCommits();
 
             if (contributors.length === 0) {
-                await interaction.editReply('❌ No contributors found or unable to fetch data.');
+                await interaction.editReply(' No contributors found or unable to fetch data.');
                 return;
             }
 
@@ -40,7 +40,7 @@ export class ContributorsCommand implements Command {
             await interaction.editReply({ embeds: [embed] });
         } catch (error) {
             this.logger.error('Error executing Contributors command:', error);
-            await interaction.editReply('❌ Error fetching contributors. Please try again later.');
+            await interaction.editReply(' Error fetching contributors. Please try again later.');
         }
     }
 
@@ -55,22 +55,17 @@ export class ContributorsCommand implements Command {
                 headers['Authorization'] = `token ${process.env['GITHUB_TOKEN']}`;
             }
 
-            // First get all contributors
             const contributorsResponse = await axios.get(`${GITHUB_CONFIG.REPO_URL}/contributors?per_page=100`, { headers });
             const contributors = contributorsResponse.data;
 
-            // Fetch accurate commit counts for each contributor
             const contributorsWithCommits = await Promise.all(
                 contributors.map(async (contributor: GitHubContributor) => {
                     try {
-                        // Try to get the exact commit count using the commits endpoint
-                        // This should match what GitHub.com shows
                         const commitsResponse = await axios.get(
                             `${GITHUB_CONFIG.REPO_URL}/commits?author=${contributor.login}&per_page=1`,
                             { headers }
                         );
 
-                        // Check if there are any commits at all
                         if (commitsResponse.data.length === 0) {
                             return {
                                 ...contributor,
@@ -78,12 +73,10 @@ export class ContributorsCommand implements Command {
                             };
                         }
 
-                        // Get the total count from the Link header
                         const linkHeader = commitsResponse.headers['link'];
-                        let totalCommits = contributor.contributions; // fallback
+                        let totalCommits = contributor.contributions;
 
                         if (linkHeader) {
-                            // Parse the Link header to get the last page number
                             const links = linkHeader.split(',');
                             const lastLink = links.find((link: string) => link.includes('rel="last"'));
                             if (lastLink) {
@@ -94,7 +87,6 @@ export class ContributorsCommand implements Command {
                             }
                         }
 
-                        // If we couldn't get the count from headers, try manual counting
                         if (totalCommits === contributor.contributions) {
                             let manualCount = 0;
                             let page = 1;
@@ -114,7 +106,7 @@ export class ContributorsCommand implements Command {
                                 if (pageCommits.length < perPage) break;
                                 page++;
 
-                                if (page > 20) break; // Safety limit
+                                if (page > 20) break;
                             }
 
                             totalCommits = manualCount;
@@ -149,14 +141,12 @@ export class ContributorsCommand implements Command {
             .setTimestamp()
             .setFooter({ text: BOT_CONFIG.NAME, iconURL: GITHUB_CONFIG.AVATAR_URL });
 
-        // Sort contributors by commit count (descending)
         const sortedContributors = contributors.sort((a, b) => {
             const aCommits = a.commits || a.contributions;
             const bCommits = b.commits || b.contributions;
             return bCommits - aCommits;
         });
 
-        // Create contributor list with commit count
         const contributorsList = sortedContributors.map((contributor, index) => {
             const rank = index + 1;
             const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
@@ -170,7 +160,6 @@ export class ContributorsCommand implements Command {
             inline: false
         });
 
-        // Add repository link
         embed.addFields({
             name: '🔗 Repository',
             value: `[View on GitHub](${GITHUB_CONFIG.REPO_URL})`,

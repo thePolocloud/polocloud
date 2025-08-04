@@ -7,6 +7,9 @@ import { ServerInfoCommand } from '../commands/ServerInfoCommand';
 import { ContributorsCommand } from '../commands/ContributorsCommand';
 import { ClearCommand } from '../commands/ClearCommand';
 import { TicketCommand } from '../commands/TicketCommand';
+import { KickCommand } from '../commands/KickCommand';
+import { BanCommand } from "../commands/BanCommand";
+import { ReleaseCommand } from '../commands/ReleaseCommand';
 import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
 import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
 import { TicketService } from '../services/ticket/TicketService';
@@ -29,6 +32,9 @@ export class CommandManager {
             const clearCommand = new ClearCommand();
             const ticketCommand = new TicketCommand(ticketService);
             const contributorsCommand = new ContributorsCommand();
+            const kickCommand = new KickCommand();
+            const banCommand = new BanCommand();
+            const releaseCommand = new ReleaseCommand();
 
             // Load GitHub stats embed commands
             const githubStatsEmbedCommand = new GitHubStatsEmbedCommand(githubStatsUpdateService);
@@ -38,6 +44,9 @@ export class CommandManager {
             const bStatsEmbedCommand = new BStatsEmbedCommand(bStatsUpdateService);
             const removeBStatsEmbedCommand = new RemoveBStatsEmbedCommand(bStatsUpdateService);
 
+            this.commands.set(releaseCommand.data.name, releaseCommand)
+            this.commands.set(banCommand.data.name, banCommand);
+            this.commands.set(kickCommand.data.name, kickCommand)
             this.commands.set(serverInfoCommand.data.name, serverInfoCommand);
             this.commands.set(clearCommand.data.name, clearCommand);
             this.commands.set(contributorsCommand.data.name, contributorsCommand);

@@ -3,6 +3,7 @@ import { CommandManager } from '../managers/CommandManager';
 import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
 import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
 import { TicketService } from '../services/ticket/TicketService';
+import { ReleaseCommand } from '../commands/ReleaseCommand';
 import { Logger } from '../utils/Logger';
 import { BOT_CONFIG } from '../config/constants';
 
@@ -86,6 +87,8 @@ export class Bot {
     private async handleModalSubmit(interaction: any): Promise<void> {
         if (interaction.customId.startsWith('ticket_modal_')) {
             await this.ticketService.handleTicketModal(interaction);
+        } else if (interaction.customId === 'release_modal') {
+            await ReleaseCommand.handleModalSubmit(interaction);
         }
     }
 
