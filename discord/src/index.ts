@@ -1,11 +1,12 @@
 import { Client, GatewayIntentBits, ActivityType } from 'discord.js';
-import { config } from "dotenv";
-import { Bot } from "./structures/Bot";
-import { Logger } from "./utils/Logger";
+import { config } from 'dotenv';
+import { Bot } from './structures/Bot';
+import { Logger } from './utils/Logger';
 
+// Load environment variables
 config();
 
-const logger = new Logger('Main')
+const logger = new Logger('Main');
 
 async function main(): Promise<void> {
     try {
@@ -21,21 +22,20 @@ async function main(): Promise<void> {
 
         const bot = new Bot(client);
 
-        // Event Handlers
-        client.on('ready', () => {
+        client.on('ready', async () => {
             logger.info(`Bot is online as ${client.user?.tag}`);
 
-            // Set bot status
             client.user?.setActivity(process.env['BOT_STATUS'] || 'PoloCloud', {
                 type: ActivityType.Watching,
             });
+
+            await bot.start();
         });
 
         client.on('interactionCreate', async (interaction) => {
             await bot.handleInteraction(interaction);
         });
 
-        // Start bot
         await client.login(process.env['DISCORD_TOKEN']);
 
     } catch (error) {
@@ -44,13 +44,16 @@ async function main(): Promise<void> {
     }
 }
 
-process.on('SIGINT', () => {
+// Graceful Shutdown
+process.on('SIGINT', async () => {
     logger.info('Bot is shutting down...');
+    // TODO: Add bot.stop() when available
     process.exit(0);
 });
 
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
     logger.info('Bot is shutting down...');
+    // TODO: Add bot.stop() when available
     process.exit(0);
 });
 

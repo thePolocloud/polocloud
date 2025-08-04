@@ -1,15 +1,18 @@
-import {ChatInputCommandInteraction, Client, Interaction} from 'discord.js';
+import { Client, Interaction, ChatInputCommandInteraction } from 'discord.js';
+import { CommandManager } from '../managers/CommandManager';
+import { GitHubStatsUpdateService } from '../services/GitHubStatsUpdateService';
 import { Logger } from '../utils/Logger';
-import { CommandManager } from "../managers/CommandManager";
 
 export class Bot {
     private client: Client;
     private commandManager: CommandManager;
+    private githubStatsUpdateService: GitHubStatsUpdateService;
     private logger: Logger;
 
     constructor(client: Client) {
         this.client = client;
         this.commandManager = new CommandManager();
+        this.githubStatsUpdateService = new GitHubStatsUpdateService(client);
         this.logger = new Logger('Bot');
 
         this.initializeCommands();
@@ -17,11 +20,31 @@ export class Bot {
 
     private async initializeCommands(): Promise<void> {
         try {
-            await this.commandManager.loadCommands();
+            await this.commandManager.loadCommands(this.githubStatsUpdateService);
             await this.commandManager.registerCommands(this.client);
             this.logger.info('Commands loaded and registered successfully');
         } catch (error) {
             this.logger.error('Error loading commands:', error);
+        }
+    }
+
+    public async start(): Promise<void> {
+        try {
+            // Start the GitHub stats update service
+            this.githubStatsUpdateService.start();
+            this.logger.info('GitHub Stats Update Service started');
+        } catch (error) {
+            this.logger.error('Error starting services:', error);
+        }
+    }
+
+    public async stop(): Promise<void> {
+        try {
+            // Stop the GitHub stats update service
+            this.githubStatsUpdateService.stop();
+            this.logger.info('GitHub Stats Update Service stopped');
+        } catch (error) {
+            this.logger.error('Error stopping services:', error);
         }
     }
 
