@@ -225,14 +225,14 @@ export class BanCommand implements Command {
         const unit = match[2].toLowerCase();
 
         switch (unit) {
-            case 's': return value * 1000; // seconds
-            case 'm': return value * 60 * 1000; // minutes
-            case 'h': return value * 60 * 60 * 1000; // hours
-            case 'd': return value * 24 * 60 * 60 * 1000; // days
-            case 'w': return value * 7 * 24 * 60 * 60 * 1000; // weeks
-            case 'o': return value * 30 * 24 * 60 * 60 * 1000; // months (30 days)
-            case 'y': return value * 365 * 24 * 60 * 60 * 1000; // years
-            default: return null;
+            case 's': return value * 1000;
+            case 'm': return value * 60 * 1000;
+            case 'h': return value * 60 * 60 * 1000;
+            case 'd': return value * 24 * 60 * 60 * 1000;
+            case 'w': return value * 7 * 24 * 60 * 60 * 1000;
+            case 'o': return value * 30 * 24 * 60 * 60 * 1000;
+            case 'y': return value * 365 * 24 * 60 * 60 * 1000;
+            default: return value * 1000;
         }
     }
 
@@ -300,7 +300,7 @@ export class BanCommand implements Command {
         const isTemporary = durationText !== 'Permanent';
         container.addTextDisplayComponents(
             textDisplay => textDisplay
-                .setContent(`# ${isTemporary ? '⏰' : '��'} Ban Notification\n\n**${targetUser.tag}** has been ${isTemporary ? 'temporarily banned' : 'banned'} from **${guild.name}**.`)
+                .setContent(`# ${isTemporary ? '⏰' : '🔨'} Ban Notification\n\n**${targetUser.tag}** has been ${isTemporary ? 'temporarily banned' : 'banned'} from **${guild.name}**.`)
         );
 
         container.addSeparatorComponents(

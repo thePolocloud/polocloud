@@ -21,8 +21,4 @@ export class Logger {
     public error(message: string, ...args: unknown[]): void {
         console.log(this.formatMessage('ERROR', message), ...args);
     }
-
-    public debug(message: string, ...args: unknown[]): void {
-        console.log(this.formatMessage('DEBUG', message), ...args);
-    }
 }

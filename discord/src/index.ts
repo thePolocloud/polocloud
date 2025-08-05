@@ -5,12 +5,13 @@ import { Logger } from './utils/Logger';
 config();
 
 const logger = new Logger('Main');
+let bot: Bot;
 
 async function main(): Promise<void> {
     try {
         logger.info('Starting PoloCloud Discord Bot...');
 
-        const bot = new Bot();
+        bot = new Bot();
         await bot.start();
 
     } catch (error) {
@@ -19,16 +20,19 @@ async function main(): Promise<void> {
     }
 }
 
-// Graceful Shutdown
 process.on('SIGINT', async () => {
-    logger.info('Bot is shutting down...');
-    // TODO: Add bot.stop() when available
+    console.log('\nReceived SIGINT. Shutting down gracefully...');
+    if (bot) {
+        await bot.stop();
+    }
     process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-    logger.info('Bot is shutting down...');
-    // TODO: Add bot.stop() when available
+    console.log('\nReceived SIGTERM. Shutting down gracefully...');
+    if (bot) {
+        await bot.stop();
+    }
     process.exit(0);
 });
 

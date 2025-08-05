@@ -168,7 +168,7 @@ export class TicketService {
                 return;
             }
 
-            const ticketId = `${TICKET_CONFIG.TICKET_PREFIX}${Math.floor(Math.random() * 9000) + 1000}`; // 4-digit number
+            const ticketId = `${TICKET_CONFIG.TICKET_PREFIX}${Math.floor(Math.random() * 9000) + 1000}`;
             const channelName = `${ticketId}-${interaction.user.username}`;
 
             const ticketChannel = await guild.channels.create({

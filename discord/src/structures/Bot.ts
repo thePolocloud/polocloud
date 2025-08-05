@@ -3,6 +3,7 @@ import { CommandManager } from '../managers/CommandManager';
 import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
 import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
 import { TicketService } from '../services/ticket/TicketService';
+import { ApplyService } from '../services/apply/ApplyService';
 import { ContributorsUpdateService } from "../services/contributors/ContributorsUpdateService";
 import { ReleaseCommand } from '../commands/basics/ReleaseCommand';
 import { Logger } from '../utils/Logger';
@@ -14,6 +15,7 @@ export class Bot {
     private bStatsUpdateService: BStatsUpdateService;
     private contributorsUpdateService: ContributorsUpdateService;
     private ticketService: TicketService;
+    private applyService: ApplyService;
     private logger: Logger;
 
     constructor() {
@@ -30,11 +32,13 @@ export class Bot {
         this.bStatsUpdateService = new BStatsUpdateService(this.client);
         this.contributorsUpdateService = new ContributorsUpdateService(this.client);
         this.ticketService = new TicketService();
+        this.applyService = new ApplyService();
         this.commandManager = new CommandManager(
             this.githubStatsUpdateService,
             this.bStatsUpdateService,
             this.contributorsUpdateService,
-            this.ticketService
+            this.ticketService,
+            this.applyService
         );
 
         this.setupEventHandlers();
@@ -48,14 +52,22 @@ export class Bot {
                 } else if (interaction.isButton()) {
                     if (interaction.customId.startsWith('close_ticket_')) {
                         await this.ticketService.handleCloseTicket(interaction);
+                    } else if (interaction.customId.startsWith('approve_application_')) {
+                        await this.applyService.handleApproveApplication(interaction);
+                    } else if (interaction.customId.startsWith('reject_application_')) {
+                        await this.applyService.handleRejectApplication(interaction);
                     }
                 } else if (interaction.isStringSelectMenu()) {
                     if (interaction.customId === 'ticket_category_select') {
                         await this.ticketService.handleCategorySelect(interaction);
+                    } else if (interaction.customId === 'apply_category_select') {
+                        await this.applyService.handleCategorySelect(interaction);
                     }
                 } else if (interaction.isModalSubmit()) {
                     if (interaction.customId.startsWith('ticket_modal_')) {
                         await this.ticketService.handleTicketModal(interaction);
+                    } else if (interaction.customId.startsWith('apply_modal_')) {
+                        await this.applyService.handleApplicationModal(interaction);
                     } else if (interaction.customId === 'release_modal') {
                         await ReleaseCommand.handleModalSubmit(interaction);
                     }
@@ -80,8 +92,6 @@ export class Bot {
         this.client.on(Events.ClientReady, () => {
             this.logger.info(`Logged in as ${this.client.user?.tag}`);
 
-            this.githubStatsUpdateService.start();
-            this.bStatsUpdateService.start();
             this.contributorsUpdateService.start();
         });
     }
