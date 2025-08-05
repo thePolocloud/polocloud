@@ -1,19 +1,22 @@
 import { REST, Routes, ChatInputCommandInteraction } from 'discord.js';
-import { GitHubStatsEmbedCommand } from '../commands/github/GitHubStatsEmbedCommand';
-import { RemoveGitHubStatsEmbedCommand } from '../commands/github/RemoveGitHubStatsEmbedCommand';
-import { BStatsEmbedCommand } from '../commands/bstats/BStatsEmbedCommand';
-import { RemoveBStatsEmbedCommand } from '../commands/bstats/RemoveBStatsEmbedCommand';
+import { GitHubStatsContainerCommand } from '../commands/github/GitHubStatsContainerCommand';
+import { RemoveGitHubStatsContainerCommand } from '../commands/github/RemoveGitHubStatsContainerCommand';
+import { BStatsContainerCommand } from '../commands/bstats/BStatsContainerCommand';
+import { RemoveBStatsContainerCommand } from '../commands/bstats/RemoveBStatsContainerCommand';
 import { ContributorsEmbedCommand } from '../commands/contributors/ContributorsEmbedCommand';
 import { RemoveContributorsEmbedCommand } from '../commands/contributors/RemoveContributorsEmbedCommand';
 import { ServerInfoCommand } from '../commands/basics/ServerInfoCommand';
 import { ClearCommand } from '../commands/basics/ClearCommand';
 import { TicketCommand } from '../commands/basics/TicketCommand';
+import { ApplyCommand } from '../commands/basics/ApplyCommand';
+import { EmojiListCommand } from '../commands/basics/EmojiListCommand';
 import { KickCommand } from '../commands/basics/KickCommand';
 import { BanCommand } from "../commands/basics/BanCommand";
 import { ReleaseCommand } from '../commands/basics/ReleaseCommand';
 import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
 import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
 import { TicketService } from '../services/ticket/TicketService';
+import { ApplyService } from '../services/apply/ApplyService';
 import { ContributorsUpdateService } from "../services/contributors/ContributorsUpdateService";
 import { Logger } from '../utils/Logger';
 import { Command } from '../interfaces/Command';
@@ -26,31 +29,30 @@ export class CommandManager {
         githubStatsUpdateService: GitHubStatsUpdateService,
         bStatsUpdateService: BStatsUpdateService,
         contributorsUpdateService: ContributorsUpdateService,
-        ticketService: TicketService)
+        ticketService: TicketService,
+        applyService: ApplyService)
     {
         this.logger = new Logger('CommandManager');
-        this.loadCommands(githubStatsUpdateService, bStatsUpdateService, ticketService, contributorsUpdateService);
+        this.loadCommands(githubStatsUpdateService, bStatsUpdateService, ticketService, applyService, contributorsUpdateService);
     }
 
-    private loadCommands(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService, ticketService: TicketService, contributorsUpdateService: ContributorsUpdateService): void {
+    private loadCommands(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService, ticketService: TicketService, applyService: ApplyService, contributorsUpdateService: ContributorsUpdateService): void {
         try {
-            // Load all commands
             const serverInfoCommand = new ServerInfoCommand();
             const clearCommand = new ClearCommand();
             const ticketCommand = new TicketCommand(ticketService);
+            const applyCommand = new ApplyCommand(applyService);
+            const emojiListCommand = new EmojiListCommand();
             const kickCommand = new KickCommand();
             const banCommand = new BanCommand();
             const releaseCommand = new ReleaseCommand();
 
-            // Load GitHub stats embed commands
-            const githubStatsEmbedCommand = new GitHubStatsEmbedCommand(githubStatsUpdateService);
-            const removeGitHubStatsEmbedCommand = new RemoveGitHubStatsEmbedCommand(githubStatsUpdateService);
+            const githubStatsEmbedCommand = new GitHubStatsContainerCommand(githubStatsUpdateService);
+            const removeGitHubStatsEmbedCommand = new RemoveGitHubStatsContainerCommand(githubStatsUpdateService);
 
-            // Load bStats embed commands
-            const bStatsEmbedCommand = new BStatsEmbedCommand(bStatsUpdateService);
-            const removeBStatsEmbedCommand = new RemoveBStatsEmbedCommand(bStatsUpdateService);
+            const bStatsEmbedCommand = new BStatsContainerCommand(bStatsUpdateService);
+            const removeBStatsEmbedCommand = new RemoveBStatsContainerCommand(bStatsUpdateService);
 
-            // Load Contributors emebd commands
             const contributorsEmbedCommand = new ContributorsEmbedCommand(contributorsUpdateService);
             const removeContriburosEmbedCommand = new RemoveContributorsEmbedCommand(contributorsUpdateService);
 
@@ -60,6 +62,8 @@ export class CommandManager {
             this.commands.set(serverInfoCommand.data.name, serverInfoCommand);
             this.commands.set(clearCommand.data.name, clearCommand);
             this.commands.set(ticketCommand.data.name, ticketCommand);
+            this.commands.set(applyCommand.data.name, applyCommand);
+            this.commands.set(emojiListCommand.data.name, emojiListCommand);
             this.commands.set(githubStatsEmbedCommand.data.name, githubStatsEmbedCommand);
             this.commands.set(removeGitHubStatsEmbedCommand.data.name, removeGitHubStatsEmbedCommand);
             this.commands.set(bStatsEmbedCommand.data.name, bStatsEmbedCommand);
