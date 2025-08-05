@@ -33,7 +33,7 @@ export class RemoveGitHubStatsContainerCommand implements Command {
                 return;
             }
 
-            const messageId = await this.updateService.removeEmbed(guild.id, channel.id);
+            const messageId = await this.updateService.removeContainer(interaction.guildId!, channel.id);
 
             if (messageId) {
                 try {
