@@ -1,14 +1,14 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel, PermissionFlagsBits } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel, PermissionFlagsBits, MessageFlags } from 'discord.js';
 import { Command } from '../../interfaces/Command';
 import { Logger } from '../../utils/Logger';
 import { BStatsUpdateService } from '../../services/bstats/BStatsUpdateService';
 import { BStatsService } from '../../services/bstats/BStatsService';
-import { BStatsEmbedBuilder } from '../../utils/BStatsEmbedBuilder';
+import { BStatsContainerBuilder } from '../../utils/BStatsContainerBuilder';
 
-export class BStatsEmbedCommand implements Command {
+export class BStatsContainerCommand implements Command {
     public data = new SlashCommandBuilder()
-        .setName('bstatsembed')
-        .setDescription('Creates a permanent bStats embed in the current channel')
+        .setName('bstatscontainer')
+        .setDescription('Creates a permanent bStats container in the current channel')
         .addStringOption(option =>
             option
                 .setName('platform')
@@ -27,7 +27,7 @@ export class BStatsEmbedCommand implements Command {
     private bStatsService: BStatsService;
 
     constructor(updateService: BStatsUpdateService) {
-        this.logger = new Logger('BStatsEmbedCommand');
+        this.logger = new Logger('BStatsContainerCommand');
         this.updateService = updateService;
         this.bStatsService = new BStatsService();
     }
@@ -64,24 +64,19 @@ export class BStatsEmbedCommand implements Command {
                     return;
             }
 
-            const embed = BStatsEmbedBuilder.createBStatsEmbed(stats, title);
-            const message = await channel.send({ embeds: [embed] });
+            const container = BStatsContainerBuilder.createBStatsContainer(stats, title);
+            const message = await channel.send({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2
+            });
 
-            await this.updateService.addEmbed(interaction.guildId!, channel.id, message.id, platform);
+            await this.updateService.addContainer(interaction.guildId!, channel.id, message.id, platform);
 
-            await interaction.editReply(`bStats embed created successfully! [View Message](${message.url})\n\nThe embed will automatically update every 15 minutes.`);
+            await interaction.editReply(`bStats container created successfully! [View Message](${message.url})\n\nThe container will automatically update every 15 minutes.`);
 
         } catch (error) {
-            this.logger.error('Error executing BStatsEmbed command:', error);
-
-            if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({
-                    content: 'Error creating bStats embed. Please try again later.',
-                    ephemeral: true
-                });
-            } else {
-                await interaction.editReply('Error creating bStats embed. Please try again later.');
-            }
+            this.logger.error('Error executing BStatsContainer command:', error);
+            await interaction.editReply('Error creating bStats container. Please try again later.');
         }
     }
 }
