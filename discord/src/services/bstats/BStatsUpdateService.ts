@@ -1,21 +1,14 @@
 import { Client, TextChannel, MessageFlags } from 'discord.js';
 import { Logger } from '../../utils/Logger';
-import { BStatsService, BStatsData } from './BStatsService';
 import { BStatsContainerBuilder } from '../../utils/BStatsContainerBuilder';
-import { BSTATS_CONFIG } from '../../config/constants';
-
-interface StoredBStatsContainer {
-    guildId: string;
-    channelId: string;
-    messageId: string;
-    platform: string;
-}
+import { BStatsServiceData, StoredBStatsContainer } from '../../interfaces/BStats';
+import { BStatsService } from './BStatsService';
 
 export class BStatsUpdateService {
-    private client: Client;
-    private logger: Logger;
-    private updateInterval?: NodeJS.Timeout;
     private storedContainers: StoredBStatsContainer[] = [];
+    private logger: Logger;
+    private client: Client;
+    private updateInterval?: NodeJS.Timeout;
     private bStatsService: BStatsService;
 
     constructor(client: Client) {
@@ -30,23 +23,27 @@ export class BStatsUpdateService {
             this.updateAllContainers().catch(error => {
                 this.logger.error('Error in update interval:', error);
             });
-        }, BSTATS_CONFIG.UPDATE_INTERVAL);
+        }, 900000);
     }
 
-    public async addContainer(guildId: string, channelId: string, messageId: string, platform: string): Promise<void> {
-        const container: StoredBStatsContainer = {
+    public addContainer(guildId: string, channelId: string, messageId: string, platform: string): void {
+        const existingContainer = this.storedContainers.find(
+            container => container.guildId === guildId && container.channelId === channelId && container.platform === platform
+        );
+
+        if (existingContainer) {
+            this.removeContainer(guildId, channelId, platform);
+        }
+
+        this.storedContainers.push({
             guildId,
             channelId,
             messageId,
-            platform
-        };
+            platform,
+            lastUpdate: Date.now()
+        });
 
-        this.storedContainers = this.storedContainers.filter(
-            existing => !(existing.guildId === guildId && existing.channelId === channelId && existing.platform === platform)
-        );
-
-        this.storedContainers.push(container);
-        this.logger.info(`Added bStats container: ${platform} in guild ${guildId}, channel ${channelId}`);
+        this.logger.info(`Added bStats container for guild ${guildId}, channel ${channelId}, platform ${platform}`);
     }
 
     public async removeContainer(guildId: string, channelId: string, platform: string): Promise<string | null> {
@@ -82,21 +79,21 @@ export class BStatsUpdateService {
 
     private async updateContainer(container: StoredBStatsContainer): Promise<void> {
         try {
-            const guild = await this.client.guilds.fetch(container.guildId);
-            const channel = await guild.channels.fetch(container.channelId) as TextChannel;
-
+            const channel = await this.client.channels.fetch(container.channelId) as TextChannel;
             if (!channel) {
-                this.logger.warn(`Channel ${container.channelId} not found in guild ${container.guildId}`);
+                this.logger.warn(`Channel ${container.channelId} not found, removing container`);
+                this.removeContainer(container.guildId, container.channelId, container.platform);
                 return;
             }
 
             const message = await channel.messages.fetch(container.messageId);
             if (!message) {
-                this.logger.warn(`Message ${container.messageId} not found in channel ${container.channelId}`);
+                this.logger.warn(`Message ${container.messageId} not found, removing container`);
+                this.removeContainer(container.guildId, container.channelId, container.platform);
                 return;
             }
 
-            let stats: BStatsData;
+            let stats: BStatsServiceData;
             let title: string;
 
             switch (container.platform) {
@@ -113,7 +110,8 @@ export class BStatsUpdateService {
                     title = '☁️ PoloCloud Combined';
                     break;
                 default:
-                    this.logger.warn(`Unknown platform: ${container.platform}`);
+                    this.logger.warn(`Unknown platform ${container.platform}, removing container`);
+                    this.removeContainer(container.guildId, container.channelId, container.platform);
                     return;
             }
 
@@ -124,10 +122,8 @@ export class BStatsUpdateService {
                 flags: MessageFlags.IsComponentsV2
             });
             this.logger.info(`Updated bStats container in guild ${container.guildId}, channel ${container.channelId}, platform ${container.platform}`);
-
         } catch (error) {
-            this.logger.error(`Error updating bStats container:`, error);
-            throw error;
+            this.logger.error(`Error updating bStats container for guild ${container.guildId}, channel ${container.channelId}, platform ${container.platform}:`, error);
         }
     }
 
