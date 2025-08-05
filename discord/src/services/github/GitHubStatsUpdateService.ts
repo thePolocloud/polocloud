@@ -1,10 +1,10 @@
-import { Client, TextChannel } from 'discord.js';
+import { Client, TextChannel, MessageFlags } from 'discord.js';
 import { Logger } from '../../utils/Logger';
 import { GitHubStatsService } from './GitHubStatsService';
-import { GitHubEmbedBuilder } from '../../utils/GitHubEmbedBuilder';
+import { GitHubContainerBuilder } from '../../utils/GitHubContainerBuilder';
 import { GITHUB_CONFIG } from '../../config/constants';
 
-interface StoredGitHubEmbed {
+interface StoredGitHubContainer {
     guildId: string;
     channelId: string;
     messageId: string;
@@ -13,83 +13,106 @@ interface StoredGitHubEmbed {
 export class GitHubStatsUpdateService {
     private client: Client;
     private logger: Logger;
-    private updateInterval: NodeJS.Timeout | null = null;
-    private storedEmbeds: Map<string, StoredGitHubEmbed> = new Map();
+    private updateInterval?: NodeJS.Timeout;
+    private storedContainers: StoredGitHubContainer[] = [];
     private githubStatsService: GitHubStatsService;
 
     constructor(client: Client) {
         this.client = client;
         this.logger = new Logger('GitHubStatsUpdateService');
         this.githubStatsService = new GitHubStatsService();
+        this.startUpdateInterval();
     }
 
-    public start(): void {
-        this.updateInterval = setInterval(async () => {
-            await this.updateAllEmbeds();
+    private startUpdateInterval(): void {
+        this.updateInterval = setInterval(() => {
+            this.updateAllContainers().catch(error => {
+                this.logger.error('Error in update interval:', error);
+            });
         }, GITHUB_CONFIG.UPDATE_INTERVAL);
+    }
 
-        this.logger.info('GitHub Stats Update Service started');
+    public async addEmbed(guildId: string, channelId: string, messageId: string): Promise<void> {
+        const container: StoredGitHubContainer = {
+            guildId,
+            channelId,
+            messageId
+        };
+
+        this.storedContainers = this.storedContainers.filter(
+            existing => !(existing.guildId === guildId && existing.channelId === channelId)
+        );
+
+        this.storedContainers.push(container);
+        this.logger.info(`Added GitHub container in guild ${guildId}, channel ${channelId}`);
+    }
+
+    public async removeEmbed(guildId: string, channelId: string): Promise<string | null> {
+        const container = this.storedContainers.find(
+            c => c.guildId === guildId && c.channelId === channelId
+        );
+        
+        if (container) {
+            this.storedContainers = this.storedContainers.filter(
+                c => !(c.guildId === guildId && c.channelId === channelId)
+            );
+            this.logger.info(`Removed GitHub container in guild ${guildId}, channel ${channelId}`);
+            return container.messageId;
+        }
+        
+        this.logger.info(`No GitHub container found in guild ${guildId}, channel ${channelId}`);
+        return null;
+    }
+
+    private async updateAllContainers(): Promise<void> {
+        this.logger.info('Starting GitHub container update...');
+
+        for (const container of this.storedContainers) {
+            try {
+                await this.updateContainer(container);
+            } catch (error) {
+                this.logger.error(`Error updating container in guild ${container.guildId}:`, error);
+            }
+        }
+
+        this.logger.info('GitHub container update completed');
+    }
+
+    private async updateContainer(container: StoredGitHubContainer): Promise<void> {
+        try {
+            const guild = await this.client.guilds.fetch(container.guildId);
+            const channel = await guild.channels.fetch(container.channelId) as TextChannel;
+
+            if (!channel) {
+                this.logger.warn(`Channel ${container.channelId} not found in guild ${container.guildId}`);
+                return;
+            }
+
+            const message = await channel.messages.fetch(container.messageId);
+            if (!message) {
+                this.logger.warn(`Message ${container.messageId} not found in channel ${container.channelId}`);
+                return;
+            }
+
+            const stats = await this.githubStatsService.fetchGitHubStats();
+            const newContainer = GitHubContainerBuilder.createGitHubStatsContainer(stats);
+
+            await message.edit({
+                components: [newContainer],
+                flags: MessageFlags.IsComponentsV2
+            });
+            this.logger.info(`Updated GitHub container in guild ${container.guildId}, channel ${container.channelId}`);
+
+        } catch (error) {
+            this.logger.error(`Error updating GitHub container:`, error);
+            throw error;
+        }
     }
 
     public stop(): void {
         if (this.updateInterval) {
             clearInterval(this.updateInterval);
-            this.updateInterval = null;
-        }
-        this.logger.info('GitHub Stats Update Service stopped');
-    }
-
-    public async addEmbed(guildId: string, channelId: string, messageId: string): Promise<void> {
-        const key = `${guildId}-${channelId}`;
-        this.storedEmbeds.set(key, { guildId, channelId, messageId });
-        this.logger.info(`Added GitHub embed for tracking: ${key}`);
-    }
-
-    public async removeEmbed(guildId: string, channelId: string): Promise<void> {
-        const key = `${guildId}-${channelId}`;
-        this.storedEmbeds.delete(key);
-        this.logger.info(`Removed GitHub embed from tracking: ${key}`);
-    }
-
-    private async updateAllEmbeds(): Promise<void> {
-        this.logger.info('Starting GitHub embed update...');
-
-        for (const [key, embed] of this.storedEmbeds) {
-            try {
-                await this.updateEmbed(embed);
-            } catch (error) {
-                this.logger.error(`Failed to update GitHub embed ${key}:`, error);
-            }
-        }
-
-        this.logger.info('GitHub embed update completed');
-    }
-
-    private async updateEmbed(embed: StoredGitHubEmbed): Promise<void> {
-        try {
-            const guild = await this.client.guilds.fetch(embed.guildId);
-            const channel = await guild.channels.fetch(embed.channelId) as TextChannel;
-
-            if (!channel) {
-                this.logger.warn(`Channel ${embed.channelId} not found in guild ${embed.guildId}`);
-                return;
-            }
-
-            const message = await channel.messages.fetch(embed.messageId);
-            if (!message) {
-                this.logger.warn(`Message ${embed.messageId} not found in channel ${embed.channelId}`);
-                return;
-            }
-
-            const stats = await this.githubStatsService.fetchGitHubStats();
-            const newEmbed = GitHubEmbedBuilder.createGitHubStatsEmbed(stats);
-
-            await message.edit({ embeds: [newEmbed] });
-            this.logger.info(`Updated GitHub embed in guild ${embed.guildId}, channel ${embed.channelId}`);
-
-        } catch (error) {
-            this.logger.error(`Error updating GitHub embed:`, error);
-            throw error;
+            this.logger.info('GitHub update service stopped');
         }
     }
 } 
