@@ -3,15 +3,13 @@ export const GITHUB_CONFIG = {
     WEBSITE_URL: 'https://polocloud.de',
     ISSUES_URL: 'https://github.com/HttpMarco/polocloud/issues',
     AVATAR_URL: 'https://github.com/HttpMarco/polocloud/blob/master/.img/img.png?raw=true',
-    UPDATE_INTERVAL: 10 * 60 * 1000,
     TOP_LANGUAGES: 5
 } as const;
 
 export const BSTATS_CONFIG = {
     VELOCITY_PLUGIN_ID: process.env['BSTATS_VELOCITY_PLUGIN_ID'] || '26763',
     BUNGEECORD_PLUGIN_ID: process.env['BSTATS_BUNGEECORD_PLUGIN_ID'] || '26764',
-    BASE_URL: 'https://bstats.org/plugin',
-    UPDATE_INTERVAL: 15 * 60 * 1000
+    BASE_URL: 'https://bstats.org/plugin'
 } as const;
 
 export const TICKET_CONFIG = {
@@ -41,11 +39,6 @@ export const APPLY_CONFIG = {
         { label: 'Partner Application', value: 'partner', emoji: '🤝', description: 'Apply to become a partner' },
         { label: 'Translator Application', value: 'translator', emoji: '🌐', description: 'Apply to become a translator' }
     ]
-} as const;
-
-
-export const CONTRIBUTORS_CONFIG = {
-    UPDATE_INTERVAL: 60 * 60 * 1000
 } as const;
 
 export const BOT_CONFIG = {

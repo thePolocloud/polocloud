@@ -4,7 +4,8 @@ import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateSe
 import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
 import { TicketService } from '../services/ticket/TicketService';
 import { ApplyService } from '../services/apply/ApplyService';
-import { ContributorsUpdateService } from "../services/contributors/ContributorsUpdateService";
+import { ContributorsUpdateService } from '../services/contributors/ContributorsUpdateService';
+import { TempBanService } from '../services/moderation/TempBanService';
 import { ReleaseCommand } from '../commands/basics/ReleaseCommand';
 import { Logger } from '../utils/Logger';
 
@@ -13,9 +14,10 @@ export class Bot {
     private commandManager: CommandManager;
     private githubStatsUpdateService: GitHubStatsUpdateService;
     private bStatsUpdateService: BStatsUpdateService;
-    private contributorsUpdateService: ContributorsUpdateService;
     private ticketService: TicketService;
     private applyService: ApplyService;
+    private contributorsUpdateService: ContributorsUpdateService;
+    private tempBanService: TempBanService;
     private logger: Logger;
 
     constructor() {
@@ -27,18 +29,21 @@ export class Bot {
             ]
         });
 
-        this.logger = new Logger('Bot');
         this.githubStatsUpdateService = new GitHubStatsUpdateService(this.client);
         this.bStatsUpdateService = new BStatsUpdateService(this.client);
-        this.contributorsUpdateService = new ContributorsUpdateService(this.client);
         this.ticketService = new TicketService();
         this.applyService = new ApplyService();
+        this.contributorsUpdateService = new ContributorsUpdateService(this.client);
+        this.tempBanService = new TempBanService(this.client);
+        this.logger = new Logger('Bot');
+        
         this.commandManager = new CommandManager(
             this.githubStatsUpdateService,
             this.bStatsUpdateService,
             this.contributorsUpdateService,
             this.ticketService,
-            this.applyService
+            this.applyService,
+            this.tempBanService
         );
 
         this.setupEventHandlers();
@@ -109,16 +114,10 @@ export class Bot {
         }
     }
 
-    public async stop(): Promise<void> {
-        try {
-            this.githubStatsUpdateService.stop();
-            this.bStatsUpdateService.stop();
-            this.contributorsUpdateService.stop();
-            await this.client.destroy();
-            this.logger.info('Bot stopped successfully');
-        } catch (error) {
-            this.logger.error('Error stopping bot:', error);
-            throw error;
-        }
+    public stop(): void {
+        this.bStatsUpdateService.stop();
+        this.githubStatsUpdateService.stop();
+        this.tempBanService.stop();
+        this.logger.info('Bot stopped');
     }
 }
