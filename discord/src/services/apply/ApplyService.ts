@@ -1,41 +1,11 @@
-import {
-    TextChannel,
-    CategoryChannel,
-    PermissionFlagsBits,
-    ChannelType,
-    Colors,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    ButtonInteraction,
-    StringSelectMenuBuilder,
-    StringSelectMenuOptionBuilder,
-    ModalBuilder,
-    TextInputBuilder,
-    TextInputStyle,
-    ContainerBuilder,
-    MessageFlags
-} from 'discord.js';
-import { Logger} from "../../utils/Logger";
+import { TextChannel, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ContainerBuilder, Colors, MessageFlags, ButtonBuilder, ButtonStyle, CategoryChannel, ChannelType, PermissionFlagsBits, ButtonInteraction } from 'discord.js';
+import { Logger } from '../../utils/Logger';
+import { ApplicationData } from '../../interfaces/Application';
 import { APPLY_CONFIG, BOT_CONFIG } from '../../config/constants';
 
-interface ApplicationData {
-    id: string;
-    userId: string;
-    channelId: string;
-    category: string;
-    createdAt: Date;
-    status: 'pending' | 'approved' | 'rejected';
-    name: string;
-    age: string;
-    experience: string;
-    motivation: string;
-    additionalInfo: string;
-}
-
 export class ApplyService {
-    private logger: Logger;
     private applications: Map<string, ApplicationData> = new Map();
+    private logger: Logger;
 
     constructor() {
         this.logger = new Logger('ApplyService');
@@ -204,11 +174,11 @@ export class ApplyService {
     public async handleApplicationModal(interaction: any): Promise<void> {
         try {
             const category = interaction.customId.replace('apply_modal_', '');
-            const name = interaction.fields.getTextInputValue('apply_name');
-            const age = interaction.fields.getTextInputValue('apply_age');
-            const experience = interaction.fields.getTextInputValue('apply_experience');
-            const motivation = interaction.fields.getTextInputValue('apply_motivation');
-            const additionalInfo = interaction.fields.getTextInputValue('apply_additional') || 'None provided';
+            const nameInput = interaction.fields.getTextInputValue('apply_name');
+            const ageInput = interaction.fields.getTextInputValue('apply_age');
+            const experienceInput = interaction.fields.getTextInputValue('apply_experience');
+            const motivationInput = interaction.fields.getTextInputValue('apply_motivation');
+            const additionalInfoInput = interaction.fields.getTextInputValue('apply_additional') || 'None provided';
             
             const validCategory = APPLY_CONFIG.CATEGORIES.find(cat => cat.value === category);
             if (!validCategory) {
@@ -261,19 +231,20 @@ export class ApplyService {
             const applicationData: ApplicationData = {
                 id: applicationId,
                 userId: interaction.user.id,
-                channelId: applicationChannel.id,
                 category: category,
-                createdAt: new Date(),
+                subject: nameInput,
+                description: experienceInput,
+                name: nameInput,
+                age: ageInput,
+                experience: experienceInput,
+                motivation: motivationInput,
+                additionalInfo: additionalInfoInput,
                 status: 'pending',
-                name: name,
-                age: age,
-                experience: experience,
-                motivation: motivation,
-                additionalInfo: additionalInfo
+                createdAt: Date.now()
             };
             this.applications.set(applicationId, applicationData);
             
-            const applicationContainer = this.createApplicationDisplayContainer(applicationId, validCategory, name, age, experience, motivation, additionalInfo, interaction.user.id);
+            const applicationContainer = this.createApplicationDisplayContainer(applicationId, validCategory, nameInput, ageInput, experienceInput, motivationInput, additionalInfoInput, interaction.user.id);
 
             const actionButtons = new ActionRowBuilder<ButtonBuilder>()
                 .addComponents(
