@@ -14,7 +14,7 @@ export class UserInfoCommand implements Command {
                 .setRequired(false)
         );
 
-    private logger : Logger;
+    private logger: Logger;
 
     constructor() {
         this.logger = new Logger('UserInfoCommand');
@@ -105,7 +105,7 @@ export class UserInfoCommand implements Command {
             );
 
             const permissions = member.permissions.toArray();
-            const keyPermissions = permissions.filter(perm =>
+            const keyPermissions = permissions.filter(perm => 
                 ['Administrator', 'ManageGuild', 'ManageChannels', 'ManageMessages', 'BanMembers', 'KickMembers', 'ManageRoles'].includes(perm)
             );
 
@@ -114,7 +114,18 @@ export class UserInfoCommand implements Command {
                     .setContent(`## 🔑 Key Permissions\n\n${keyPermissions.length > 0 ? keyPermissions.map(perm => `\`${perm}\``).join(', ') : 'No key permissions'}`)
             );
 
+            container.addSeparatorComponents(
+                separator => separator
+            );
 
+            const status = member.presence?.status || 'offline';
+            const statusEmoji = this.getStatusEmoji(status);
+            const activities = member.presence?.activities || [];
+
+            container.addTextDisplayComponents(
+                textDisplay => textDisplay
+                    .setContent(`## 🟢 Status & Activity\n\n**Status:** ${statusEmoji} ${status.charAt(0).toUpperCase() + status.slice(1)}\n**Activities:** ${activities.length > 0 ? activities.map(activity => `\`${activity.name}\``).join(', ') : 'None'}`)
+            );
         } else {
             container.addSeparatorComponents(
                 separator => separator
@@ -138,4 +149,13 @@ export class UserInfoCommand implements Command {
         return container;
     }
 
-}
+    private getStatusEmoji(status: string): string {
+        switch (status) {
+            case 'online': return '🟢';
+            case 'idle': return '🟡';
+            case 'dnd': return '🔴';
+            case 'offline': return '⚫';
+            default: return '⚫';
+        }
+    }
+} 
