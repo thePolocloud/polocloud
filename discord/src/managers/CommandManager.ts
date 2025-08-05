@@ -10,6 +10,7 @@ import { ClearCommand } from '../commands/basics/ClearCommand';
 import { TicketCommand } from '../commands/basics/TicketCommand';
 import { ApplyCommand } from '../commands/basics/ApplyCommand';
 import { EmojiListCommand } from '../commands/basics/EmojiListCommand';
+import { UserInfoCommand } from '../commands/basics/UserInfoCommand';
 import { KickCommand } from '../commands/basics/KickCommand';
 import { BanCommand } from "../commands/basics/BanCommand";
 import { ReleaseCommand } from '../commands/basics/ReleaseCommand';
@@ -46,6 +47,7 @@ export class CommandManager {
             const kickCommand = new KickCommand();
             const banCommand = new BanCommand();
             const releaseCommand = new ReleaseCommand();
+            const userInfoCommand = new UserInfoCommand();
 
             const githubStatsEmbedCommand = new GitHubStatsContainerCommand(githubStatsUpdateService);
             const removeGitHubStatsEmbedCommand = new RemoveGitHubStatsContainerCommand(githubStatsUpdateService);
@@ -56,6 +58,7 @@ export class CommandManager {
             const contributorsEmbedCommand = new ContributorsEmbedCommand(contributorsUpdateService);
             const removeContriburosEmbedCommand = new RemoveContributorsEmbedCommand(contributorsUpdateService);
 
+            this.commands.set(userInfoCommand.data.name, userInfoCommand)
             this.commands.set(releaseCommand.data.name, releaseCommand)
             this.commands.set(banCommand.data.name, banCommand);
             this.commands.set(kickCommand.data.name, kickCommand)
