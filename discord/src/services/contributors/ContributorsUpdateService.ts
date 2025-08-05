@@ -1,21 +1,13 @@
 import { Client, TextChannel, ContainerBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, Colors } from 'discord.js';
-import { Logger} from "../../utils/Logger";
-import { CONTRIBUTORS_CONFIG, GITHUB_CONFIG } from "../../config/constants";
+import { Logger } from '../../utils/Logger';
+import { GitHubContributor } from '../../interfaces/GitHubContributor';
+import { CONTRIBUTORS_CONFIG, GITHUB_CONFIG } from '../../config/constants';
 import axios from 'axios';
 
 interface StoredContributorsContainer {
     guildId: string;
     channelId: string;
     messageId: string;
-}
-
-interface GitHubContributor {
-    login: string;
-    id: number;
-    avatar_url: string;
-    contributions: number;
-    html_url: string;
-    commits?: number;
 }
 
 export class ContributorsUpdateService {

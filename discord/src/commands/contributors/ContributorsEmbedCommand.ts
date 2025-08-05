@@ -2,17 +2,9 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, 
 import { Command } from '../../interfaces/Command';
 import { Logger } from '../../utils/Logger';
 import { ContributorsUpdateService } from '../../services/contributors/ContributorsUpdateService';
+import { GitHubContributor } from '../../interfaces/GitHubContributor';
 import { GITHUB_CONFIG } from '../../config/constants';
 import axios from 'axios';
-
-interface GitHubContributor {
-    login: string;
-    id: number;
-    avatar_url: string;
-    contributions: number;
-    html_url: string;
-    commits?: number;
-}
 
 export class ContributorsEmbedCommand implements Command {
     public data = new SlashCommandBuilder()
