@@ -39,7 +39,7 @@ export class GitHubStatsContainerCommand implements Command {
                 flags: MessageFlags.IsComponentsV2
             });
 
-            await this.updateService.addEmbed(interaction.guildId!, channel.id, message.id);
+            await this.updateService.addContainer(interaction.guildId!, channel.id, message.id);
 
             await interaction.editReply(`GitHub stats container created successfully! [View Message](${message.url})\n\nThe container will automatically update every 10 minutes.`);
 

@@ -1,26 +1,20 @@
 import { Client, TextChannel, MessageFlags } from 'discord.js';
 import { Logger } from '../../utils/Logger';
-import { GitHubStatsService } from './GitHubStatsService';
 import { GitHubContainerBuilder } from '../../utils/GitHubContainerBuilder';
-import { GITHUB_CONFIG } from '../../config/constants';
-
-interface StoredGitHubContainer {
-    guildId: string;
-    channelId: string;
-    messageId: string;
-}
+import { StoredGitHubContainer } from '../../interfaces/GitHubStats';
+import { GitHubStatsService } from './GitHubStatsService';
 
 export class GitHubStatsUpdateService {
-    private client: Client;
-    private logger: Logger;
-    private updateInterval?: NodeJS.Timeout;
     private storedContainers: StoredGitHubContainer[] = [];
-    private githubStatsService: GitHubStatsService;
+    private logger: Logger;
+    private client: Client;
+    private updateInterval?: NodeJS.Timeout;
+    private statsService: GitHubStatsService;
 
     constructor(client: Client) {
         this.client = client;
         this.logger = new Logger('GitHubStatsUpdateService');
-        this.githubStatsService = new GitHubStatsService();
+        this.statsService = new GitHubStatsService();
         this.startUpdateInterval();
     }
 
@@ -29,25 +23,29 @@ export class GitHubStatsUpdateService {
             this.updateAllContainers().catch(error => {
                 this.logger.error('Error in update interval:', error);
             });
-        }, GITHUB_CONFIG.UPDATE_INTERVAL);
+        }, 900000);
     }
 
-    public async addEmbed(guildId: string, channelId: string, messageId: string): Promise<void> {
-        const container: StoredGitHubContainer = {
-            guildId,
-            channelId,
-            messageId
-        };
-
-        this.storedContainers = this.storedContainers.filter(
-            existing => !(existing.guildId === guildId && existing.channelId === channelId)
+    public addContainer(guildId: string, channelId: string, messageId: string): void {
+        const existingContainer = this.storedContainers.find(
+            container => container.guildId === guildId && container.channelId === channelId
         );
 
-        this.storedContainers.push(container);
-        this.logger.info(`Added GitHub container in guild ${guildId}, channel ${channelId}`);
+        if (existingContainer) {
+            this.removeContainer(guildId, channelId);
+        }
+
+        this.storedContainers.push({
+            guildId,
+            channelId,
+            messageId,
+            lastUpdate: Date.now()
+        });
+
+        this.logger.info(`Added GitHub stats container for guild ${guildId}, channel ${channelId}`);
     }
 
-    public async removeEmbed(guildId: string, channelId: string): Promise<string | null> {
+    public async removeContainer(guildId: string, channelId: string): Promise<string | null> {
         const container = this.storedContainers.find(
             c => c.guildId === guildId && c.channelId === channelId
         );
@@ -56,11 +54,11 @@ export class GitHubStatsUpdateService {
             this.storedContainers = this.storedContainers.filter(
                 c => !(c.guildId === guildId && c.channelId === channelId)
             );
-            this.logger.info(`Removed GitHub container in guild ${guildId}, channel ${channelId}`);
+            this.logger.info(`Removed GitHub stats container in guild ${guildId}, channel ${channelId}`);
             return container.messageId;
         }
         
-        this.logger.info(`No GitHub container found in guild ${guildId}, channel ${channelId}`);
+        this.logger.info(`No GitHub stats container found in guild ${guildId}, channel ${channelId}`);
         return null;
     }
 
@@ -94,7 +92,7 @@ export class GitHubStatsUpdateService {
                 return;
             }
 
-            const stats = await this.githubStatsService.fetchGitHubStats();
+            const stats = await this.statsService.fetchGitHubStats();
             const newContainer = GitHubContainerBuilder.createGitHubStatsContainer(stats);
 
             await message.edit({
