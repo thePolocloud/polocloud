@@ -13,6 +13,7 @@ import { EmojiListCommand } from '../commands/basics/EmojiListCommand';
 import { UserInfoCommand } from '../commands/basics/UserInfoCommand';
 import { KickCommand } from '../commands/basics/KickCommand';
 import { BanCommand } from "../commands/basics/BanCommand";
+import { MuteCommand } from '../commands/basics/MuteCommand';
 import { ReleaseCommand } from '../commands/basics/ReleaseCommand';
 import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
 import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
@@ -46,6 +47,7 @@ export class CommandManager {
             const emojiListCommand = new EmojiListCommand();
             const kickCommand = new KickCommand();
             const banCommand = new BanCommand();
+            const muteCommand = new MuteCommand();
             const releaseCommand = new ReleaseCommand();
             const userInfoCommand = new UserInfoCommand();
 
@@ -61,6 +63,7 @@ export class CommandManager {
             this.commands.set(userInfoCommand.data.name, userInfoCommand)
             this.commands.set(releaseCommand.data.name, releaseCommand)
             this.commands.set(banCommand.data.name, banCommand);
+            this.commands.set(muteCommand.data.name, muteCommand);
             this.commands.set(kickCommand.data.name, kickCommand)
             this.commands.set(serverInfoCommand.data.name, serverInfoCommand);
             this.commands.set(clearCommand.data.name, clearCommand);
