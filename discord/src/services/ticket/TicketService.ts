@@ -1,36 +1,11 @@
-import {
-    TextChannel,
-    CategoryChannel,
-    PermissionFlagsBits,
-    ChannelType,
-    Colors,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    ButtonInteraction,
-    StringSelectMenuBuilder,
-    StringSelectMenuOptionBuilder,
-    ModalBuilder,
-    TextInputBuilder,
-    TextInputStyle,
-    ContainerBuilder,
-    MessageFlags
-} from 'discord.js';
-import { Logger} from "../../utils/Logger";
+import { TextChannel, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ContainerBuilder, Colors, MessageFlags, ButtonBuilder, ButtonStyle, CategoryChannel, ChannelType, PermissionFlagsBits, ButtonInteraction } from 'discord.js';
+import { Logger } from '../../utils/Logger';
+import { TicketData } from '../../interfaces/Ticket';
 import { TICKET_CONFIG, BOT_CONFIG } from '../../config/constants';
 
-interface TicketData {
-    id: string;
-    userId: string;
-    channelId: string;
-    category: string;
-    createdAt: Date;
-    status: 'open' | 'closed';
-}
-
 export class TicketService {
-    private logger: Logger;
     private tickets: Map<string, TicketData> = new Map();
+    private logger: Logger;
 
     constructor() {
         this.logger = new Logger('TicketService');
@@ -199,10 +174,11 @@ export class TicketService {
             const ticketData: TicketData = {
                 id: ticketId,
                 userId: interaction.user.id,
-                channelId: ticketChannel.id,
                 category: category,
-                createdAt: new Date(),
-                status: 'open'
+                subject: subject,
+                description: description,
+                status: 'open',
+                createdAt: Date.now()
             };
             this.tickets.set(ticketId, ticketData);
             
