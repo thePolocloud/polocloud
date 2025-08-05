@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, Colors, PermissionFlagsBits, GuildMember, ContainerBuilder, MessageFlags } from 'discord.js';
 import { Command } from '../../interfaces/Command';
 import { Logger } from '../../utils/Logger';
+import { TempBanService } from '../../services/moderation/TempBanService';
 
 export class BanCommand implements Command {
     public data = new SlashCommandBuilder()
@@ -35,9 +36,11 @@ export class BanCommand implements Command {
         .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers);
 
     private logger: Logger;
+    private tempBanService: TempBanService;
 
-    constructor() {
+    constructor(tempBanService: TempBanService) {
         this.logger = new Logger('BanCommand');
+        this.tempBanService = tempBanService;
     }
 
     public async execute(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -120,14 +123,14 @@ export class BanCommand implements Command {
             });
 
             if (banDuration) {
-                setTimeout(async () => {
-                    try {
-                        await guild.members.unban(targetUser, `Automatic unban after ${durationText}`);
-                        this.logger.info(`User ${targetUser.tag} (${targetUser.id}) was automatically unbanned after ${durationText}`);
-                    } catch (error) {
-                        this.logger.error(`Failed to automatically unban ${targetUser.tag}:`, error);
-                    }
-                }, banDuration);
+                this.tempBanService.addTempBan(
+                    guild.id,
+                    targetUser.id,
+                    interaction.user.id,
+                    reason,
+                    banDuration,
+                    durationText
+                );
             }
 
             const container = this.createBanSuccessContainer(targetUser, interaction, reason, durationText, deleteMessageDays);
@@ -268,14 +271,14 @@ export class BanCommand implements Command {
             });
 
             if (banDuration) {
-                setTimeout(async () => {
-                    try {
-                        await guild.members.unban(targetUser, `Automatic unban after ${durationText}`);
-                        this.logger.info(`User ${targetUser.tag} (${targetUser.id}) was automatically unbanned after ${durationText}`);
-                    } catch (error) {
-                        this.logger.error(`Failed to automatically unban ${targetUser.tag}:`, error);
-                    }
-                }, banDuration);
+                this.tempBanService.addTempBan(
+                    guild.id,
+                    targetUser.id,
+                    interaction.user.id,
+                    reason,
+                    banDuration,
+                    durationText
+                );
             }
 
             const container = this.createBanSuccessContainer(targetUser, interaction, reason, durationText, deleteMessageDays);
