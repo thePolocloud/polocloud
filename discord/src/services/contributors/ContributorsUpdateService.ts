@@ -1,7 +1,7 @@
-import { Client, TextChannel, ContainerBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, Colors } from 'discord.js';
+import { Client, TextChannel, MessageFlags, ContainerBuilder, Colors } from 'discord.js';
 import { Logger } from '../../utils/Logger';
 import { GitHubContributor } from '../../interfaces/GitHubContributor';
-import { CONTRIBUTORS_CONFIG, GITHUB_CONFIG } from '../../config/constants';
+import { GITHUB_CONFIG } from '../../config/constants';
 import axios from 'axios';
 
 interface StoredContributorsContainer {
@@ -11,9 +11,9 @@ interface StoredContributorsContainer {
 }
 
 export class ContributorsUpdateService {
-    private client: Client;
     private logger: Logger;
-    private updateInterval: NodeJS.Timeout | null = null;
+    private client: Client;
+    private updateInterval?: NodeJS.Timeout;
     private storedContainers: Map<string, StoredContributorsContainer> = new Map();
 
     constructor(client: Client) {
@@ -24,7 +24,7 @@ export class ContributorsUpdateService {
     public start(): void {
         this.updateInterval = setInterval(async () => {
             await this.updateAllContainers();
-        }, CONTRIBUTORS_CONFIG.UPDATE_INTERVAL);
+        }, 900000);
 
         this.logger.info('Contributors Update Service started');
     }
@@ -32,7 +32,6 @@ export class ContributorsUpdateService {
     public stop(): void {
         if (this.updateInterval) {
             clearInterval(this.updateInterval);
-            this.updateInterval = null;
         }
         this.logger.info('Contributors Update Service stopped');
     }
@@ -88,17 +87,8 @@ export class ContributorsUpdateService {
 
             const newContainer = this.createContributorsContainer(contributors);
 
-            const githubButton = new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setLabel('GitHub Repository')
-                        .setURL('https://github.com/HttpMarco/polocloud')
-                        .setEmoji('🔗')
-                        .setStyle(ButtonStyle.Link)
-                );
-
             await message.edit({
-                components: [newContainer, githubButton],
+                components: [newContainer],
                 flags: MessageFlags.IsComponentsV2
             });
 
@@ -199,7 +189,7 @@ export class ContributorsUpdateService {
         }
     }
 
-    private createContributorsContainer(contributors: GitHubContributor[]): ContainerBuilder {
+    private createContributorsContainer(contributors: GitHubContributor[]): any {
         const container = new ContainerBuilder()
             .setAccentColor(Colors.Blue);
 
