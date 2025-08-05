@@ -10,16 +10,17 @@ import { ClearCommand } from '../commands/basics/ClearCommand';
 import { TicketCommand } from '../commands/basics/TicketCommand';
 import { ApplyCommand } from '../commands/basics/ApplyCommand';
 import { EmojiListCommand } from '../commands/basics/EmojiListCommand';
-import { UserInfoCommand } from '../commands/basics/UserInfoCommand';
 import { KickCommand } from '../commands/basics/KickCommand';
 import { BanCommand } from "../commands/basics/BanCommand";
-import { MuteCommand } from '../commands/basics/MuteCommand';
 import { ReleaseCommand } from '../commands/basics/ReleaseCommand';
+import { UserInfoCommand } from '../commands/basics/UserInfoCommand';
+import { MuteCommand } from '../commands/basics/MuteCommand';
 import { GitHubStatsUpdateService } from '../services/github/GitHubStatsUpdateService';
 import { BStatsUpdateService } from '../services/bstats/BStatsUpdateService';
 import { TicketService } from '../services/ticket/TicketService';
 import { ApplyService } from '../services/apply/ApplyService';
 import { ContributorsUpdateService } from "../services/contributors/ContributorsUpdateService";
+import { TempBanService } from '../services/moderation/TempBanService';
 import { Logger } from '../utils/Logger';
 import { Command } from '../interfaces/Command';
 
@@ -32,13 +33,14 @@ export class CommandManager {
         bStatsUpdateService: BStatsUpdateService,
         contributorsUpdateService: ContributorsUpdateService,
         ticketService: TicketService,
-        applyService: ApplyService)
+        applyService: ApplyService,
+        tempBanService: TempBanService)
     {
         this.logger = new Logger('CommandManager');
-        this.loadCommands(githubStatsUpdateService, bStatsUpdateService, ticketService, applyService, contributorsUpdateService);
+        this.loadCommands(githubStatsUpdateService, bStatsUpdateService, ticketService, applyService, contributorsUpdateService, tempBanService);
     }
 
-    private loadCommands(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService, ticketService: TicketService, applyService: ApplyService, contributorsUpdateService: ContributorsUpdateService): void {
+    private loadCommands(githubStatsUpdateService: GitHubStatsUpdateService, bStatsUpdateService: BStatsUpdateService, ticketService: TicketService, applyService: ApplyService, contributorsUpdateService: ContributorsUpdateService, tempBanService: TempBanService): void {
         try {
             const serverInfoCommand = new ServerInfoCommand();
             const clearCommand = new ClearCommand();
@@ -46,10 +48,10 @@ export class CommandManager {
             const applyCommand = new ApplyCommand(applyService);
             const emojiListCommand = new EmojiListCommand();
             const kickCommand = new KickCommand();
-            const banCommand = new BanCommand();
-            const muteCommand = new MuteCommand();
+            const banCommand = new BanCommand(tempBanService);
             const releaseCommand = new ReleaseCommand();
             const userInfoCommand = new UserInfoCommand();
+            const muteCommand = new MuteCommand();
 
             const githubStatsEmbedCommand = new GitHubStatsContainerCommand(githubStatsUpdateService);
             const removeGitHubStatsEmbedCommand = new RemoveGitHubStatsContainerCommand(githubStatsUpdateService);
@@ -60,10 +62,8 @@ export class CommandManager {
             const contributorsEmbedCommand = new ContributorsEmbedCommand(contributorsUpdateService);
             const removeContriburosEmbedCommand = new RemoveContributorsEmbedCommand(contributorsUpdateService);
 
-            this.commands.set(userInfoCommand.data.name, userInfoCommand)
             this.commands.set(releaseCommand.data.name, releaseCommand)
             this.commands.set(banCommand.data.name, banCommand);
-            this.commands.set(muteCommand.data.name, muteCommand);
             this.commands.set(kickCommand.data.name, kickCommand)
             this.commands.set(serverInfoCommand.data.name, serverInfoCommand);
             this.commands.set(clearCommand.data.name, clearCommand);
@@ -76,6 +76,8 @@ export class CommandManager {
             this.commands.set(removeBStatsEmbedCommand.data.name, removeBStatsEmbedCommand);
             this.commands.set(contributorsEmbedCommand.data.name, contributorsEmbedCommand);
             this.commands.set(removeContriburosEmbedCommand.data.name, removeContriburosEmbedCommand);
+            this.commands.set(userInfoCommand.data.name, userInfoCommand);
+            this.commands.set(muteCommand.data.name, muteCommand);
 
             this.logger.info(`${this.commands.size} commands loaded`);
         } catch (error) {
