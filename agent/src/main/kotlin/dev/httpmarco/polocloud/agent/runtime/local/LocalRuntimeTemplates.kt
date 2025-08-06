@@ -45,7 +45,7 @@ class LocalRuntimeTemplates : RuntimeTemplates<LocalService> {
             override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
                 val targetDir = targetPath.resolve(sourcePath.relativize(dir))
                 if (!Files.exists(targetDir)) {
-                    Files.createDirectory(targetDir)
+                    Files.createDirectories(targetDir)
                 }
                 return FileVisitResult.CONTINUE
             }
