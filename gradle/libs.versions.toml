@@ -33,7 +33,7 @@ bungeecord = "1.21-R0.4-SNAPSHOT"
 spigot = "1.21.5-R0.1-SNAPSHOT"
 
 # bStats
-bstats = "3.0.2"
+bstats = "3.1.0"
 
 # utils
 lombok = "1.18.38"
