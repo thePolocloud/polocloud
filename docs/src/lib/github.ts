@@ -3,6 +3,7 @@ export interface GitHubStats {
     forks: number;
     releases: number;
     downloads: number;
+    commits: number;
     lastUpdated: string;
 }
 
@@ -89,6 +90,24 @@ export async function fetchGitHubStats(): Promise<GitHubStats> {
         const releasesResponse = await makeGitHubRequest(`${GITHUB_API_BASE}/repos/${REPO_OWNER}/${REPO_NAME}/releases`);
         const releasesData: GitHubRelease[] = await releasesResponse.json();
 
+        // Fetch total commits count
+        const commitsResponse = await makeGitHubRequest(`${GITHUB_API_BASE}/repos/${REPO_OWNER}/${REPO_NAME}/commits?per_page=1`);
+        const linkHeader = commitsResponse.headers.get('link');
+        let totalCommits = 0;
+
+        if (linkHeader) {
+            const lastLinkMatch = linkHeader.match(/<[^>]*page=(\d+)[^>]*>;\s*rel="last"/);
+            if (lastLinkMatch) {
+                totalCommits = parseInt(lastLinkMatch[1]);
+            }
+        }
+
+        // If we couldn't get the total from headers, try to get it from the response
+        if (totalCommits === 0) {
+            const commitsData = await commitsResponse.json();
+            totalCommits = commitsData.length;
+        }
+
         const totalDownloads = releasesData.reduce((total, release) => {
             return total + release.assets.reduce((assetTotal, asset) => {
                 return assetTotal + asset.download_count;
@@ -100,6 +119,7 @@ export async function fetchGitHubStats(): Promise<GitHubStats> {
             forks: repoData.forks_count || 0,
             releases: releasesData.length || 0,
             downloads: totalDownloads,
+            commits: totalCommits,
             lastUpdated: new Date().toISOString(),
         };
 
@@ -120,6 +140,7 @@ export async function fetchGitHubStats(): Promise<GitHubStats> {
             forks: 22,
             releases: 4,
             downloads: 0,
+            commits: 3206,
             lastUpdated: new Date().toISOString(),
         };
     }

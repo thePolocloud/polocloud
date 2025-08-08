@@ -1,6 +1,6 @@
 'use client';
 
-import { Star, GitFork, Download, Package } from 'lucide-react';
+import { Star, GitFork, Download, Package, GitCommit } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface GitHubStats {
@@ -8,6 +8,7 @@ interface GitHubStats {
     forks: number;
     releases: number;
     downloads: number;
+    commits: number;
     lastUpdated: string;
 }
 
@@ -107,6 +108,7 @@ export function GitHubStatsComponent() {
                     forks: 22,
                     releases: 4,
                     downloads: 0,
+                    commits: 3206,
                     lastUpdated: new Date().toISOString(),
                 });
             } finally {
@@ -120,7 +122,7 @@ export function GitHubStatsComponent() {
     if (loading) {
         return (
             <div className="flex flex-wrap justify-start gap-12 mb-16">
-                {[1, 2, 3, 4].map((i) => (
+                {[1, 2, 3, 4, 5].map((i) => (
                     <div key={i} className="flex flex-col items-center justify-center text-center animate-pulse">
                         <div className="w-16 h-16 bg-muted/50 rounded-full mb-4" />
                         <div className="flex flex-col items-center gap-2">
@@ -172,6 +174,15 @@ export function GitHubStatsComponent() {
                         <span className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Downloads</span>
                     </div>
                 </div>
+                <div className="flex flex-col items-center justify-center text-center">
+                    <div className="flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full border border-primary/20 mb-4 text-primary">
+                        <GitCommit className="w-8 h-8" />
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <span className="text-3xl font-bold text-foreground dark:text-white mb-2">3206</span>
+                        <span className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Commits</span>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -182,6 +193,7 @@ export function GitHubStatsComponent() {
             <StatCard icon={<GitFork className="w-8 h-8" />} value={stats.forks} label="Forks" />
             <StatCard icon={<Package className="w-8 h-8" />} value={stats.releases} label="Releases" />
             <StatCard icon={<Download className="w-8 h-8" />} value={stats.downloads} label="Downloads" />
+            <StatCard icon={<GitCommit className="w-8 h-8" />} value={stats.commits} label="Commits" />
         </div>
     );
 } 
