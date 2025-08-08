@@ -3,49 +3,228 @@ title: Groups
 description: Understanding groups in PoloCloud and how to manage them.
 icon: Boxes
 ---
----
+
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
 import { Callout } from 'fumadocs-ui/components/callout';
+import { Boxes, Settings, Database, Server } from 'lucide-react';
 
-## What are Groups?
+<div className="max-w-4xl mx-auto px-4 my-20">
+    <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+    <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
 
-In PoloCloud, a **Group** represents a logical collection or category of services.  
-Groups help you organize and manage services by their function, environment, or any custom classification.
+<div className="relative py-12">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+    <div className="text-center mb-10 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+        <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+            Understanding Groups
+        </h2>
+        <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+    </div>
 
-Typical examples of groups include:  
-- "lobby" for lobby servers  
-- "proxy" for proxy servers  
-- "bw-8x1" for minigame servers like bedwars
+    <div className="max-w-4xl mx-auto px-4">
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+            <div className="relative">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
+                        <Boxes className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground">What are Groups?</h3>
+                </div>
+                <div className="text-muted-foreground/90 leading-relaxed mb-6">
+                    In PoloCloud, a <strong className="text-foreground">Group</strong> represents a logical collection or category of services.
+                    Groups help you organize and manage services by their function, environment, or any custom classification.
+                </div>
 
-Groups allow filtering, bulk operations, and easier service discovery.
+                <div className="grid md:grid-cols-3 gap-4 mb-6">
+                    <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+                        <div className="relative">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Server className="w-4 h-4 text-primary" />
+                                <span className="font-semibold text-foreground">Lobby</span>
+                            </div>
+                            <div className="text-sm text-muted-foreground/80">for lobby servers</div>
+                        </div>
+                    </div>
+                    <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+                        <div className="relative">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Database className="w-4 h-4 text-primary" />
+                                <span className="font-semibold text-foreground">Proxy</span>
+                            </div>
+                            <div className="text-sm text-muted-foreground/80">for proxy servers</div>
+                        </div>
+                    </div>
+                    <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+                        <div className="relative">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Boxes className="w-4 h-4 text-primary" />
+                                <span className="font-semibold text-foreground">bw-8x1</span>
+                            </div>
+                            <div className="text-sm text-muted-foreground/80">for minigame servers</div>
+                        </div>
+                    </div>
+                </div>
 
-### GroupData properties
+                <div className="text-muted-foreground/90 leading-relaxed">
+                    Groups allow filtering, bulk operations, and easier service discovery.
+                </div>
+            </div>
+        </div>
 
-| Property                  | Type              | Description                                                               |
-| ------------------------- | ----------------- | ------------------------------------------------------------------------- |
-| `name`                    | `String`          | The unique name identifier of the group                                   |
-| `platform`                | `PlatformIndex`   | The Platform that is used for services in this group                      |
-| `minMemory`               | `Int`             | Minimum memory allocated (in MB) for services in this group               |
-| `maxMemory`               | `Int`             | Maximum memory allocated (in MB) for services in this group               |
-| `minOnlineService`        | `Int`             | Minimum number of service instances to keep online                        |
-| `maxOnlineService`        | `Int`             | Maximum number of service instances allowed simultaneously                |
-| `percentageToStartNewService` | `Int`         | Load percentage threshold to trigger starting a new service               |
-| `templates`               | `List<String>`    | List of template names used for launching services in this group          |
-| `properties`              | `Map<String, JsonElement>` | Arbitrary key-value configuration properties for custom settings. See [Group custom properties](./groups/#group-custom-properties)        |
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+            <div className="relative">
+                <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
+                    <Settings className="w-6 h-6 text-primary" />
+                    GroupData Properties
+                </h3>
+                <div className="text-muted-foreground/90 leading-relaxed mb-6">
+                    The GroupData class contains all configuration properties for managing groups in PoloCloud.
+                </div>
 
-### Group custom properties
+                <div className="overflow-x-auto rounded-xl border border-border/30 bg-background/20 backdrop-blur-xl backdrop-saturate-150">
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 rounded-xl" />
+                        <table className="w-full border-collapse relative">
+                            <thead>
+                            <tr>
+                                <th className="text-left py-5 px-6 border-b border-border/30 bg-background/40">
+                                    <div className="font-bold text-base bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">Property</div>
+                                </th>
+                                <th className="text-left py-5 px-6 border-b border-border/30 bg-background/40">
+                                    <div className="font-bold text-base bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">Type</div>
+                                </th>
+                                <th className="text-left py-5 px-6 border-b border-border/30 bg-background/40">
+                                    <div className="font-bold text-base bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">Description</div>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">name</code>
+                                </td>
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-blue-500/[0.07] border border-blue-500/10 font-mono text-sm text-blue-500/90 font-medium">String</code>
+                                </td>
+                                <td className="py-4 px-6 text-foreground/70">The unique name identifier of the group</td>
+                            </tr>
+                            <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">platform</code>
+                                </td>
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-blue-500/[0.07] border border-blue-500/10 font-mono text-sm text-blue-500/90 font-medium">PlatformIndex</code>
+                                </td>
+                                <td className="py-4 px-6 text-foreground/70">The Platform that is used for services in this group</td>
+                            </tr>
+                            <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">minMemory</code>
+                                </td>
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-blue-500/[0.07] border border-blue-500/10 font-mono text-sm text-blue-500/90 font-medium">Int</code>
+                                </td>
+                                <td className="py-4 px-6 text-foreground/70">Minimum memory allocated (in MB) for services in this group</td>
+                            </tr>
+                            <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">maxMemory</code>
+                                </td>
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-blue-500/[0.07] border border-blue-500/10 font-mono text-sm text-blue-500/90 font-medium">Int</code>
+                                </td>
+                                <td className="py-4 px-6 text-foreground/70">Maximum memory allocated (in MB) for services in this group</td>
+                            </tr>
+                            <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">minOnlineService</code>
+                                </td>
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-blue-500/[0.07] border border-blue-500/10 font-mono text-sm text-blue-500/90 font-medium">Int</code>
+                                </td>
+                                <td className="py-4 px-6 text-foreground/70">Minimum number of service instances to keep online</td>
+                            </tr>
+                            <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">maxOnlineService</code>
+                                </td>
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-blue-500/[0.07] border border-blue-500/10 font-mono text-sm text-blue-500/90 font-medium">Int</code>
+                                </td>
+                                <td className="py-4 px-6 text-foreground/70">Maximum number of service instances allowed simultaneously</td>
+                            </tr>
+                            <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">percentageToStartNewService</code>
+                                </td>
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-blue-500/[0.07] border border-blue-500/10 font-mono text-sm text-blue-500/90 font-medium">Int</code>
+                                </td>
+                                <td className="py-4 px-6 text-foreground/70">Load percentage threshold to trigger starting a new service</td>
+                            </tr>
+                            <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">templates</code>
+                                </td>
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-blue-500/[0.07] border border-blue-500/10 font-mono text-sm text-blue-500/90 font-medium">List&lt;String&gt;</code>
+                                </td>
+                                <td className="py-4 px-6 text-foreground/70">List of template names used for launching services in this group</td>
+                            </tr>
+                            <tr className="transition-all hover:bg-white/[0.02]">
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">properties</code>
+                                </td>
+                                <td className="py-4 px-6">
+                                    <code className="px-2.5 py-1.5 rounded-md bg-blue-500/[0.07] border border-blue-500/10 font-mono text-sm text-blue-500/90 font-medium">Map&lt;String, JsonElement&gt;</code>
+                                </td>
+                                <td className="py-4 px-6 text-foreground/70">Arbitrary key-value configuration properties for custom settings</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-| Property                              | Type              | Description                                                               |
-|---------------------------------------| ----------------- | ------------------------------------------------------------------------- |
-| `static`                              | `Boolean`         | Keep server files after shutdown.                                         |
-| `fallback`                            | `Boolean`         | Players connect here on join or fallback.                                 |
-| `startPort`                           | `Int`             | Starting port for servers in this group.                                  |
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+            <div className="relative">
+                <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
+                    <Boxes className="w-6 h-6 text-primary" />
+                    Group-related Enums and Constants
+                </h3>
+                <div className="text-muted-foreground/90 leading-relaxed mb-6">
+                    See the <a href="./group-types" className="text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary transition-all duration-200">Group Types</a> page for an overview of all <code className="bg-primary/10 px-1.5 py-0.5 rounded text-primary">GroupType</code> enums (e.g., SERVICE, SERVER, PROXY) to understand how groups categorize services.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-## Group-related enums and constants
+<div className="max-w-4xl mx-auto px-4 my-20">
+    <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+    <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
 
-See the [Group Types](./groups/group-types) page for an overview of all `GroupType` enums (e.g., SERVICE, SERVER, PROXY) to understand how groups categorize services.
-
-<Callout type="tip">
-Groups are key to structuring your cloud infrastructure logically, making it easier to scale, monitor, and manage services.
-</Callout>
+<div className="relative py-12">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+    <div className="max-w-4xl mx-auto px-4">
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+            <div className="relative">
+                <Callout type="tip">
+                    Groups are key to structuring your cloud infrastructure logically, making it easier to scale, monitor, and manage services.
+                </Callout>
+            </div>
+        </div>
+    </div>
+</div>

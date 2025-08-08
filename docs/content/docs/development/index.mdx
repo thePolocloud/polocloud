@@ -5,58 +5,195 @@ icon: Album
 ---
 
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Download, Code, Package, Github } from 'lucide-react';
 
-## Repository
-<Tabs items={['Maven', 'Gradle (Kotlin DSL)']}>
-  <Tab value="Maven">
-    ```xml
-    <repositories>
-        <repository>
-            <id>polocloud-snapshots</id>
-            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-        </repository>
-    </repositories>
-    ```
-  </Tab>
-  <Tab value="Gradle (Kotlin DSL)">
-    ```kotlin
-    repositories {
-        maven {
-            name = "polocloud-snapshots"
-            url = uri("https://central.sonatype.com/repository/maven-snapshots/")
-        }
+<div className="max-w-4xl mx-auto px-4 my-20">
+    <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+    <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
+
+<div className="relative py-12">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+    <div className="text-center mb-10 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+        <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+            Setup Your Development Environment
+        </h2>
+        <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+    </div>
+
+    <div className="max-w-4xl mx-auto px-4">
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+            <div className="relative">
+                <div className="text-center py-8">
+                    <Code className="w-12 h-12 text-primary/60 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-foreground mb-4">Choose Your Build System</h3>
+                    <div className="text-muted-foreground/90 leading-relaxed max-w-2xl mx-auto">
+                        Select your preferred build system to get started with the PoloCloud SDK. We support both Maven and Gradle with Kotlin DSL.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+            <div className="relative">
+                <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
+                    <Package className="w-6 h-6 text-primary" />
+                    Repository Configuration
+                </h3>
+                <div className="text-muted-foreground/90 leading-relaxed mb-6">
+                    Add the PoloCloud repository to your build configuration to access our SDK dependencies.
+                </div>
+
+                <Tabs items={['Maven', 'Gradle (Kotlin DSL)']}>
+                    <Tab value="Maven">
+                        <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+                            <div className="relative">
+                                <div className="font-mono text-sm text-foreground/90">
+                  <pre className="whitespace-pre-wrap"><code>{`<repositories>
+    <repository>
+        <id>polocloud-snapshots</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+    </repository>
+</repositories>`}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </Tab>
+                    <Tab value="Gradle (Kotlin DSL)">
+                        <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+                            <div className="relative">
+                                <div className="font-mono text-sm text-foreground/90">
+                  <pre className="whitespace-pre-wrap"><code>{`repositories {
+    maven {
+        name = "polocloud-snapshots"
+        url = uri("https://central.sonatype.com/repository/maven-snapshots/")
     }
-    ```
-  </Tab>
-</Tabs>
+}`}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </Tab>
+                </Tabs>
+            </div>
+        </div>
 
-## Dependencies
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+            <div className="relative">
+                <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
+                    <Download className="w-6 h-6 text-primary" />
+                    Dependencies
+                </h3>
+                <div className="text-muted-foreground/90 leading-relaxed mb-6">
+                    Add the PoloCloud SDK dependency to your project. Choose your build system and programming language.
+                </div>
 
-<Tabs items={['Maven', 'Gradle (Kotlin DSL)']}>
-    <Tab value="Maven">
-        <Tabs items={['JVM']}>
-            <Tab value="JVM">
-            ```xml
-            <dependencies>
-                <dependency>
-                    <groupId>dev.httpmarco.polocloud</groupId>
-                    <artifactId>sdk-java</artifactId>
-                    <version>3.0.0-SNAPSHOT</version>
-                </dependency>
-            </dependencies>
-            ```
-            </Tab>
-        </Tabs>
-    </Tab>
-    <Tab value="Gradle (Kotlin DSL)">
-         <Tabs items={['JVM']}>
-            <Tab value="JVM">
-            ```kotlin
-            dependencies {
-                implementation("dev.httpmarco.polocloud:sdk-kotlin:3.0.0-SNAPSHOT")
-            }
-            ```
-            </Tab>
-         </Tabs>
-    </Tab>
-</Tabs>
+                <Tabs items={['Maven', 'Gradle (Kotlin DSL)']}>
+                    <Tab value="Maven">
+                        <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+                            <div className="relative">
+                                <div className="font-mono text-sm text-foreground/90">
+                  <pre className="whitespace-pre-wrap"><code>{`<dependencies>
+    <dependency>
+        <groupId>dev.httpmarco.polocloud</groupId>
+        <artifactId>sdk-java</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+</dependencies>`}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </Tab>
+                    <Tab value="Gradle (Kotlin DSL)">
+                        <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+                            <div className="relative">
+                                <div className="font-mono text-sm text-foreground/90">
+                  <pre className="whitespace-pre-wrap"><code>{`dependencies {
+    implementation("dev.httpmarco.polocloud:sdk-kotlin:3.0.0-SNAPSHOT")
+}`}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </Tab>
+                </Tabs>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div className="max-w-4xl mx-auto px-4 my-20">
+    <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+    <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
+
+<div className="relative py-12">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+    <div className="text-center mb-10 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+        <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+            Next Steps
+        </h2>
+        <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+    </div>
+
+    <div className="max-w-4xl mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-6">
+            <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 group hover:bg-background/60 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
+                <div className="relative">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/20 group-hover:bg-primary/20 transition-all duration-300">
+                            <Code className="h-5 w-5 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-bold text-foreground">Explore the API</h3>
+                    </div>
+                    <div className="text-muted-foreground/90 leading-relaxed mb-4">
+                        Learn about the PoloCloud SDK API and how to integrate it into your applications.
+                    </div>
+                    <a
+                        href="/docs/development/services"
+                        className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-background/80 hover:bg-background border border-border/30 hover:border-border/50 transition-all duration-300 text-muted-foreground hover:text-foreground text-sm font-medium"
+                    >
+                        <span>View API Reference</span>
+                        <svg className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 group hover:bg-background/60 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
+                <div className="relative">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/20 group-hover:bg-primary/20 transition-all duration-300">
+                            <Github className="h-5 w-5 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-bold text-foreground">View Examples</h3>
+                    </div>
+                    <div className="text-muted-foreground/90 leading-relaxed mb-4">
+                        Check out our GitHub repository for examples and sample code to get you started quickly.
+                    </div>
+                    <a
+                        href="https://github.com/HttpMarco/polocloud"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-background/80 hover:bg-background border border-border/30 hover:border-border/50 transition-all duration-300 text-muted-foreground hover:text-foreground text-sm font-medium"
+                    >
+                        <span>Visit GitHub</span>
+                        <svg className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

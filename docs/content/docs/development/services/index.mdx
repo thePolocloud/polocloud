@@ -3,19 +3,155 @@ title: Services
 description: Getting Started with the Services PoloCloud
 icon: Server
 ---
----
+
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
+import { Server, Code, Database, Settings } from 'lucide-react';
 
-## Initialization
+<div className="max-w-4xl mx-auto px-4 my-20">
+    <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+    <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
 
-You can get access to the services using by using the following code:
-<Tabs items={['Kotlin', 'Java']}>
-    <Tab value="Kotlin">
-        <DynamicCodeBlock lang="kotlin" code='val serverProvider = PoloCloud.serverProvider()' />
-    </Tab>
-    <Tab value="Java">
-        <DynamicCodeBlock lang="java" code='var serverProvider = PoloCloud.serverProvider();' />
-    </Tab>
-</Tabs>
+<div className="relative py-12">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+    <div className="text-center mb-10 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+        <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+            Services API
+        </h2>
+        <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+    </div>
 
+    <div className="max-w-4xl mx-auto px-4">
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+            <div className="relative">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
+                        <Server className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground">Service Provider</h3>
+                </div>
+                <div className="text-muted-foreground/90 leading-relaxed mb-6">
+                    The <code className="bg-primary/10 px-1.5 py-0.5 rounded text-primary">SharedServiceProvider</code> is your main interface for interacting with services in PoloCloud.
+                    It provides methods to find, manage, and monitor services across your cloud infrastructure.
+                </div>
+
+                <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+                    <div className="relative">
+                        <h4 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                            <Code className="w-5 h-5 text-primary" />
+                            Initialization
+                        </h4>
+                        <div className="text-muted-foreground/90 leading-relaxed mb-4">
+                            You can get access to the services using the following code:
+                        </div>
+
+                        <Tabs items={['Kotlin', 'Java']}>
+                            <Tab value="Kotlin">
+                                <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 mb-6">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+                                    <div className="relative p-6">
+                    <pre className="text-sm font-mono leading-relaxed">
+                      <code className="text-foreground">
+                        <span className="text-purple-500">val</span> <span className="text-blue-500"> serverProvider </span> <span className="text-gray-400">= </span> <span className="text-green-500">PoloCloud</span><span className="text-gray-400">.</span><span className="text-blue-500">serverProvider</span><span className="text-gray-400">()</span>
+                      </code>
+                    </pre>
+                                    </div>
+                                </div>
+                            </Tab>
+                            <Tab value="Java">
+                                <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 mb-6">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+                                    <div className="relative p-6">
+                    <pre className="text-sm font-mono leading-relaxed">
+                      <code className="text-foreground">
+                        <span className="text-purple-500">var </span> <span className="text-blue-500">serverProvider </span> <span className="text-gray-400">= </span> <span className="text-green-500">PoloCloud</span><span className="text-gray-400">.</span><span className="text-blue-500">serverProvider</span><span className="text-gray-400">();</span>
+                      </code>
+                    </pre>
+                                    </div>
+                                </div>
+                            </Tab>
+                        </Tabs>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+            <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 group hover:bg-background/60 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
+                <div className="relative">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 ring-1 ring-blue-500/20 group-hover:bg-blue-500/20 transition-all duration-300">
+                            <Database className="h-5 w-5 text-blue-500" />
+                        </div>
+                        <h4 className="text-lg font-bold text-foreground">Find Services</h4>
+                    </div>
+                    <div className="text-muted-foreground/90 leading-relaxed mb-4">
+                        Search for services by name, type, or group. Both synchronous and asynchronous methods are available.
+                    </div>
+                    <a
+                        href="./find"
+                        className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-background/80 hover:bg-background border border-border/30 hover:border-border/50 transition-all duration-300 text-muted-foreground hover:text-foreground text-sm font-medium"
+                    >
+                        <span>Learn More</span>
+                        <svg className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 group hover:bg-background/60 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
+                <div className="relative">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10 ring-1 ring-green-500/20 group-hover:bg-green-500/20 transition-all duration-300">
+                            <Server className="h-5 w-5 text-green-500" />
+                        </div>
+                        <h4 className="text-lg font-bold text-foreground">Boot Services</h4>
+                    </div>
+                    <div className="text-muted-foreground/90 leading-relaxed mb-4">
+                        Start new service instances programmatically. Control when and how services are launched.
+                    </div>
+                    <a
+                        href="./boot-service"
+                        className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-background/80 hover:bg-background border border-border/30 hover:border-border/50 transition-all duration-300 text-muted-foreground hover:text-foreground text-sm font-medium"
+                    >
+                        <span>Learn More</span>
+                        <svg className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 group hover:bg-background/60 transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
+                <div className="relative">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 ring-1 ring-purple-500/20 group-hover:bg-purple-500/20 transition-all duration-300">
+                            <Settings className="h-5 w-5 text-purple-500" />
+                        </div>
+                        <h4 className="text-lg font-bold text-foreground">Service Management</h4>
+                    </div>
+                    <div className="text-muted-foreground/90 leading-relaxed mb-4">
+                        Advanced service operations including filtering, grouping, and bulk operations.
+                    </div>
+                    <a
+                        href="./find-all"
+                        className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-background/80 hover:bg-background border border-border/30 hover:border-border/50 transition-all duration-300 text-muted-foreground hover:text-foreground text-sm font-medium"
+                    >
+                        <span>Learn More</span>
+                        <svg className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
