@@ -1,0 +1,297 @@
+---
+title: Notify Addon
+description: Real-time notification system for PoloCloud networks
+icon: Bell
+---
+
+import { Bell, Settings, AlertTriangle, CheckCircle, Zap, Users, Server, Network, ArrowRight, Activity, Download, FileText, Command, Info } from 'lucide-react';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import ButtonLink from '@/app/docs/components/button-link';
+import Image from 'next/image';
+
+<div className="max-w-4xl mx-auto px-4 my-20">
+  <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+  <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
+
+<div className="relative py-12">
+  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+  <div className="text-center mb-10 relative">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+    <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+      Overview
+    </h2>
+    <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+  </div>
+
+  <div className="max-w-4xl mx-auto px-4">
+    <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+      <div className="relative">
+        <div className="text-center py-8">
+          <Bell className="w-12 h-12 text-primary/60 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-foreground mb-4">PoloCloud Notify Addon</h3>
+          <div className="text-muted-foreground/90 leading-relaxed max-w-2xl mx-auto mb-6">
+            The PoloCloud Notify Addon is a lightweight and easy-to-use extension for PoloCloud that sends notifications to players with specific permissions when services start, stop, or are starting. It is designed to work on all supported proxies, including Velocity and BungeeCord, helping staff and players stay informed about the status of network services in real time.
+          </div>
+          <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4 mb-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+            <div className="relative">
+              <Image
+                src="/notify-addon.png"
+                alt="PoloCloud Notify Addon"
+                width={400}
+                height={200}
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
+          </div>
+          <div className="mt-8">
+            <a
+              href="https://modrinth.com/plugin/polocloud-notify"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-background/80 hover:bg-background border border-border/30 hover:border-border/50 transition-all duration-300 text-muted-foreground hover:text-foreground"
+            >
+              <Download className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all" />
+              <span className="font-medium">Download on Modrinth</span>
+              <ArrowRight className="w-4 h-4 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div className="max-w-4xl mx-auto px-4 my-20">
+  <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+  <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
+
+<div className="relative py-12">
+  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+  <div className="text-center mb-10 relative">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+    <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+      Permission
+    </h2>
+    <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+  </div>
+
+  <div className="max-w-4xl mx-auto px-4">
+    <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+      <div className="relative">
+        <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
+          <Users className="w-6 h-6 text-primary" />
+          Required Permissions
+        </h3>
+        <div className="text-muted-foreground/90 leading-relaxed mb-6">
+          These permissions are needed to receive notifications:
+        </div>
+        <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+          <div className="relative">
+            <div className="font-mono text-sm text-foreground/90">
+              polocloud.addons.notify.receive.starting<br />
+              polocloud.addons.notify.receive.online<br />
+              polocloud.addons.notify.receive.shutdown
+            </div>
+          </div>
+        </div>
+        <div className="text-muted-foreground/90 leading-relaxed mt-4">
+          Add these permissions to players or groups who should receive notifications about service status changes.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div className="max-w-4xl mx-auto px-4 my-20">
+  <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+  <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
+
+<div className="relative py-12">
+  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+  <div className="text-center mb-10 relative">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+    <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+      Installation
+    </h2>
+    <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+  </div>
+
+  <div className="max-w-4xl mx-auto px-4">
+    <Steps>
+      <Step>
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+          <div className="relative">
+            <h3 className="text-xl font-bold text-foreground mb-4">Download</h3>
+            <div className="text-muted-foreground/90 leading-relaxed mb-4">
+              Download the latest release of the PoloCloud Notify Addon.
+            </div>
+          </div>
+        </div>
+      </Step>
+
+      <Step>
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+          <div className="relative">
+            <h3 className="text-xl font-bold text-foreground mb-4">Install</h3>
+            <div className="text-muted-foreground/90 leading-relaxed mb-4">
+              Place the .jar file into your plugins folder and restart the proxy instance.
+            </div>
+          </div>
+        </div>
+      </Step>
+
+      <Step>
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+          <div className="relative">
+            <h3 className="text-xl font-bold text-foreground mb-4">Configure</h3>
+            <div className="text-muted-foreground/90 leading-relaxed mb-4">
+              Edit the generated notify-config.json to customize messages and permissions.
+            </div>
+            <Files>
+              <File name="notify-config.json" path="{&#10;  'starting-message': '&7[&aNotify&7] &e{service} &7is starting...',&#10;  'online-message': '&7[&aNotify&7] &e{service} &7is now online!',&#10;  'shutdown-message': '&7[&aNotify&7] &e{service} &7has stopped.',&#10;  'permissions': ['polocloud.addons.notify.receive.starting', 'polocloud.addons.notify.receive.online', 'polocloud.addons.notify.receive.shutdown']&#10;}">
+                <div className="text-muted-foreground/90 leading-relaxed">
+                  Customize the notification messages and configure which permissions are required.
+                </div>
+              </File>
+            </Files>
+          </div>
+        </div>
+      </Step>
+
+      <Step>
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+          <div className="relative">
+            <h3 className="text-xl font-bold text-foreground mb-4">Apply Changes</h3>
+            <div className="text-muted-foreground/90 leading-relaxed mb-4">
+              Reload or restart the proxy to apply the changes.
+            </div>
+          </div>
+        </div>
+      </Step>
+    </Steps>
+  </div>
+</div>
+
+<div className="max-w-4xl mx-auto px-4 my-20">
+  <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+  <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
+
+<div className="relative py-12">
+  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+  <div className="text-center mb-10 relative">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+    <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+      Use Cases
+    </h2>
+    <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+  </div>
+
+  <div className="max-w-4xl mx-auto px-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-green-500/10 ring-1 ring-green-500/20">
+              <Users className="h-5 w-5 text-green-500" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Staff Information</h3>
+          </div>
+          <div className="text-muted-foreground/90 leading-relaxed mb-4">
+            Keep staff informed about service status changes across the network.
+          </div>
+        </div>
+      </div>
+
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-blue-500/10 ring-1 ring-blue-500/20">
+              <Bell className="h-5 w-5 text-blue-500" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Role-based Notifications</h3>
+          </div>
+          <div className="text-muted-foreground/90 leading-relaxed mb-4">
+            Notify players with specific roles or permissions about server availability.
+          </div>
+        </div>
+      </div>
+
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-purple-500/10 ring-1 ring-purple-500/20">
+              <Settings className="h-5 w-5 text-purple-500" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Custom Notifications</h3>
+          </div>
+          <div className="text-muted-foreground/90 leading-relaxed mb-4">
+            Customize notifications to fit your community's style and needs.
+          </div>
+        </div>
+      </div>
+
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-orange-500/10 ring-1 ring-orange-500/20">
+              <CheckCircle className="h-5 w-5 text-orange-500" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Real-time Updates</h3>
+          </div>
+          <div className="text-muted-foreground/90 leading-relaxed mb-4">
+            With the PoloCloud Notify Addon, you ensure that the right players stay up to date with real-time information about your network's services — simple, configurable, and reliable.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div className="relative overflow-hidden rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-6 mb-4">
+  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-blue-500/5 opacity-40" />
+  <div className="relative">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 ring-1 ring-blue-500/30">
+        <Info className="h-4 w-4 text-blue-500" />
+      </div>
+      <h5 className="text-sm font-semibold text-blue-600 dark:text-blue-400">Pro Tip</h5>
+    </div>
+    <div className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
+      The Notify Addon works on all supported proxies, including Velocity and BungeeCord, making it a universal solution for your network's notification needs.
+    </div>
+  </div>
+</div>
+
+<div className="relative overflow-hidden rounded-xl border border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-amber-500/5 p-6">
+  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-amber-500/5 opacity-40" />
+  <div className="relative">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 ring-1 ring-amber-500/30">
+        <AlertTriangle className="h-4 w-4 text-amber-500" />
+      </div>
+      <h5 className="text-sm font-semibold text-amber-600 dark:text-amber-400">Important</h5>
+    </div>
+    <div className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed">
+      Make sure to place the .jar file in the plugins folder of your proxy server, not on the backend servers. The addon only needs to be installed on the proxy.
+    </div>
+  </div>
+</div> 

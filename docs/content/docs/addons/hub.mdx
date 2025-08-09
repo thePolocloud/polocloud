@@ -1,0 +1,282 @@
+---
+title: Hub Addon
+description: Lightweight hub command extension for PoloCloud networks
+icon: Globe
+---
+
+import { Globe, Settings, AlertTriangle, CheckCircle, Zap, Users, Server, Network, ArrowRight, Activity, Download, FileText, Command, Info } from 'lucide-react';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import ButtonLink from '@/app/docs/components/button-link';
+
+<div className="max-w-4xl mx-auto px-4 my-20">
+  <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+  <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
+
+<div className="relative py-12">
+  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+  <div className="text-center mb-10 relative">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+    <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+      Overview
+    </h2>
+    <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+  </div>
+
+  <div className="max-w-4xl mx-auto px-4">
+    <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+      <div className="relative">
+        <div className="text-center py-8">
+          <Globe className="w-12 h-12 text-primary/60 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-foreground mb-4">PoloCloud Hub Addon</h3>
+          <div className="text-muted-foreground/90 leading-relaxed max-w-2xl mx-auto">
+            The PoloCloud Hub Addon is a lightweight and easy-to-use extension for PoloCloud that adds a /hub command to your network. It is designed to work on all supported proxies, including Velocity and BungeeCord, allowing players to quickly return to the hub or lobby server from anywhere.
+          </div>
+          <div className="mt-8">
+            <a
+              href="https://modrinth.com/plugin/polocloud-hub"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-background/80 hover:bg-background border border-border/30 hover:border-border/50 transition-all duration-300 text-muted-foreground hover:text-foreground"
+            >
+              <Download className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all" />
+              <span className="font-medium">Download on Modrinth</span>
+              <ArrowRight className="w-4 h-4 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div className="max-w-4xl mx-auto px-4 my-20">
+  <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+  <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
+
+<div className="relative py-12">
+  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+  <div className="text-center mb-10 relative">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+    <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+      Permission
+    </h2>
+    <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+  </div>
+
+  <div className="max-w-4xl mx-auto px-4">
+    <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+      <div className="relative">
+        <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-3">
+          <Users className="w-6 h-6 text-primary" />
+          Required Permission
+        </h3>
+        <div className="text-muted-foreground/90 leading-relaxed mb-6">
+          This permission is needed to execute the command:
+        </div>
+        <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+          <div className="relative">
+            <div className="font-mono text-sm text-foreground/90">
+              polocloud.addons.hub.command
+            </div>
+          </div>
+        </div>
+        <div className="text-muted-foreground/90 leading-relaxed mt-4">
+          Add this permission to players or groups who should be able to use the /hub command.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div className="max-w-4xl mx-auto px-4 my-20">
+  <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+  <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
+
+<div className="relative py-12">
+  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+  <div className="text-center mb-10 relative">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+    <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+      Installation
+    </h2>
+    <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+  </div>
+
+  <div className="max-w-4xl mx-auto px-4">
+    <Steps>
+      <Step>
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+          <div className="relative">
+            <h3 className="text-xl font-bold text-foreground mb-4">Download</h3>
+            <div className="text-muted-foreground/90 leading-relaxed mb-4">
+              Download the latest release of the PoloCloud Hub Addon.
+            </div>
+          </div>
+        </div>
+      </Step>
+
+      <Step>
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+          <div className="relative">
+            <h3 className="text-xl font-bold text-foreground mb-4">Install</h3>
+            <div className="text-muted-foreground/90 leading-relaxed mb-4">
+              Place the .jar file into your plugins folder and restart the proxy instance.
+            </div>
+          </div>
+        </div>
+      </Step>
+
+      <Step>
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+          <div className="relative">
+            <h3 className="text-xl font-bold text-foreground mb-4">Configure</h3>
+            <div className="text-muted-foreground/90 leading-relaxed mb-4">
+              Edit the generated hub-config.json to customize the message, aliases, and prefix.
+            </div>
+            <Files>
+              <File name="hub-config.json" path="{&#10;  'message': '&aTeleporting to hub...',&#10;  'aliases': ['l', 'lobby'],&#10;  'prefix': '&7[&bHub&7]'&#10;}">
+                <div className="text-muted-foreground/90 leading-relaxed">
+                  Customize the message players see, add command aliases, and set your own prefix.
+                </div>
+              </File>
+            </Files>
+          </div>
+        </div>
+      </Step>
+
+      <Step>
+        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6 mb-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+          <div className="relative">
+            <h3 className="text-xl font-bold text-foreground mb-4">Apply Changes</h3>
+            <div className="text-muted-foreground/90 leading-relaxed mb-4">
+              Reload or restart the proxy to apply the changes.
+            </div>
+          </div>
+        </div>
+      </Step>
+    </Steps>
+  </div>
+</div>
+
+<div className="max-w-4xl mx-auto px-4 my-20">
+  <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+  <div className="h-px mt-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" />
+</div>
+
+<div className="relative py-12">
+  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-[100px] opacity-40" />
+  <div className="text-center mb-10 relative">
+    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-[32px] opacity-20" />
+    <h2 className="relative text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight">
+      Use Cases
+    </h2>
+    <div className="w-20 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent rounded-full mx-auto mt-4" />
+  </div>
+
+  <div className="max-w-4xl mx-auto px-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-green-500/10 ring-1 ring-green-500/20">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Quick Return</h3>
+          </div>
+          <div className="text-muted-foreground/90 leading-relaxed mb-4">
+            Provide players with a simple and intuitive way to return to the fallback server.
+          </div>
+        </div>
+      </div>
+
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-blue-500/10 ring-1 ring-blue-500/20">
+              <Command className="h-5 w-5 text-blue-500" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Multiple Aliases</h3>
+          </div>
+          <div className="text-muted-foreground/90 leading-relaxed mb-4">
+            Add multiple aliases for better accessibility (e.g., /hub, /l, /lobby).
+          </div>
+        </div>
+      </div>
+
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-purple-500/10 ring-1 ring-purple-500/20">
+              <Settings className="h-5 w-5 text-purple-500" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Custom Branding</h3>
+          </div>
+          <div className="text-muted-foreground/90 leading-relaxed mb-4">
+            Brand your hub command with your own prefix and style.
+          </div>
+        </div>
+      </div>
+
+      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-orange-500/10 ring-1 ring-orange-500/20">
+              <Users className="h-5 w-5 text-orange-500" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Player Experience</h3>
+          </div>
+          <div className="text-muted-foreground/90 leading-relaxed mb-4">
+            With the PoloCloud Hub Addon, your players will always have a quick, easy, and customizable way back to your hub.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div className="relative overflow-hidden rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-6 mb-4">
+  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-blue-500/5 opacity-40" />
+  <div className="relative">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 ring-1 ring-blue-500/30">
+        <Info className="h-4 w-4 text-blue-500" />
+      </div>
+      <h5 className="text-sm font-semibold text-blue-600 dark:text-blue-400">Pro Tip</h5>
+    </div>
+    <div className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
+      The Hub Addon is designed to work on all supported proxies, including Velocity and BungeeCord, making it a universal solution for your network.
+    </div>
+  </div>
+</div>
+
+<div className="relative overflow-hidden rounded-xl border border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-amber-500/5 p-6">
+  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-amber-500/5 opacity-40" />
+  <div className="relative">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 ring-1 ring-amber-500/30">
+        <AlertTriangle className="h-4 w-4 text-amber-500" />
+      </div>
+      <h5 className="text-sm font-semibold text-amber-600 dark:text-amber-400">Important</h5>
+    </div>
+    <div className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed">
+      Make sure to place the .jar file in the plugins folder of your proxy server, not on the backend servers. The addon only needs to be installed on the proxy.
+    </div>
+  </div>
+</div> 
