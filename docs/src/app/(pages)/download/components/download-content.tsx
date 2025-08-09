@@ -398,7 +398,7 @@ export function DownloadContent() {
             Never miss an update again!
           </p>
           <a
-            href="https://discord.gg/polocloud"
+            href="https://discord.com/invite/mQ39S2EWNV"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-medium px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm"

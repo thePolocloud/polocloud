@@ -20,7 +20,7 @@ export function Footer() {
             </div>
             <div className="flex items-center gap-4">
               <a 
-                href="https://discord.polocloud.de" 
+                href="https://discord.com/invite/mQ39S2EWNV"
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white transition-all duration-300 hover:scale-105 transform p-2 rounded-lg border border-border/30 dark:border-white/10 hover:border-border/50 dark:hover:border-white/20"
