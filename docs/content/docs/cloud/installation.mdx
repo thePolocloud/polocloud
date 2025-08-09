@@ -4,10 +4,11 @@ description: Getting Started with PoloCloud
 icon: CloudDownload
 ---
 
-import { Download, CloudDownload, Server, Box } from 'lucide-react';
+import { Download, CloudDownload, Server, Box, Copy, Check } from 'lucide-react';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import { CopyButton } from '@/components/copy-button';
 
 <div className="max-w-4xl mx-auto px-4 my-20">
   <div className="h-[2px] bg-gradient-to-r from-transparent via-border/40 to-transparent" />
@@ -58,7 +59,9 @@ import { File, Folder, Files } from 'fumadocs-ui/components/files';
                   the pre-made Zip <code className="bg-primary/10 px-1.5 py-0.5 rounded text-primary">polocloud-v3.0.0-pre-4.zip</code>.
                 </div>
                 <a
-                  href="https://github.com/HttpMarco/polocloud/releases"
+                  href="https://polocloud.de/download"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-background/80 hover:bg-background border border-border/30 hover:border-border/50 transition-all duration-300 text-muted-foreground hover:text-foreground"
                 >
                   <Download className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all" />
@@ -83,8 +86,11 @@ import { File, Folder, Files } from 'fumadocs-ui/components/files';
                     </div>
                     <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4">
                       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
-                      <div className="relative font-mono text-sm text-foreground/90">
+                      <div className="relative flex items-center justify-between">
+                        <div className="font-mono text-sm text-foreground/90">
                         java -jar polocloud-launcher.jar
+                        </div>
+                        <CopyButton text="java -jar polocloud-launcher.jar" />
                       </div>
                     </div>
                   </Tab>
@@ -97,14 +103,20 @@ import { File, Folder, Files } from 'fumadocs-ui/components/files';
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
                         <div className="relative">
                           <div className="font-medium mb-2 text-foreground">Linux / macOS</div>
+                          <div className="flex items-center justify-between">
                           <code className="font-mono text-sm text-foreground/90">start.sh</code>
+                            <CopyButton text="./start.sh" />
+                          </div>
                         </div>
                       </div>
                       <div className="relative overflow-hidden rounded-lg border border-border/50 bg-gradient-to-b from-background/50 to-background/80 p-4 flex-1">
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40" />
                         <div className="relative">
                           <div className="font-medium mb-2 text-foreground">Windows</div>
+                          <div className="flex items-center justify-between">
                           <code className="font-mono text-sm text-foreground/90">start.bat</code>
+                            <CopyButton text="start.bat" />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -122,17 +134,23 @@ import { File, Folder, Files } from 'fumadocs-ui/components/files';
           <div className="relative">
             <div className="text-center py-12">
               <Box className="w-12 h-12 text-primary/60 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-foreground mb-4">Docker Installation Coming Soon</h3>
-              <div className="text-muted-foreground/90 leading-relaxed max-w-2xl mx-auto">
-                Docker support is currently under development. This will allow you to run PoloCloud in containers for better isolation and easier deployment.
+              <h3 className="text-xl font-bold text-foreground mb-4">Docker Installation</h3>
+              <div className="text-muted-foreground/90 leading-relaxed max-w-2xl mx-auto mb-4">
+                Docker support is now available in version 3.0.0-pre.6-SNAPSHOT. This allows you to run PoloCloud in containers for better isolation and easier deployment.
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-sm font-medium mb-6">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                Available in v3.0.0-pre.6-SNAPSHOT
               </div>
               <div className="mt-8">
                 <a
-                  href="https://github.com/HttpMarco/polocloud/issues"
+                  href="https://github.com/HttpMarco/polocloud/releases"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-background/80 hover:bg-background border border-border/30 hover:border-border/50 transition-all duration-300 text-muted-foreground hover:text-foreground"
                 >
                   <Box className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all" />
-                  <span className="font-medium">Track Progress</span>
+                  <span className="font-medium">Download Latest Release</span>
                 </a>
               </div>
             </div>
@@ -146,17 +164,23 @@ import { File, Folder, Files } from 'fumadocs-ui/components/files';
           <div className="relative">
             <div className="text-center py-12">
               <Server className="w-12 h-12 text-primary/60 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-foreground mb-4">Kubernetes Installation Coming Soon</h3>
-              <div className="text-muted-foreground/90 leading-relaxed max-w-2xl mx-auto">
-                Kubernetes support is under active development. This will enable you to run PoloCloud at scale with automated deployment, scaling, and management.
+              <h3 className="text-xl font-bold text-foreground mb-4">Kubernetes Installation</h3>
+              <div className="text-muted-foreground/90 leading-relaxed max-w-2xl mx-auto mb-4">
+                Kubernetes support is now available in version 3.0.0-pre.6-SNAPSHOT. This enables you to run PoloCloud at scale with automated deployment, scaling, and management.
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-sm font-medium mb-6">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                Available in v3.0.0-pre.6-SNAPSHOT
               </div>
               <div className="mt-8">
                 <a
-                  href="https://github.com/HttpMarco/polocloud/issues"
+                  href="https://github.com/HttpMarco/polocloud/releases"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-background/80 hover:bg-background border border-border/30 hover:border-border/50 transition-all duration-300 text-muted-foreground hover:text-foreground"
                 >
                   <Server className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all" />
-                  <span className="font-medium">Track Progress</span>
+                  <span className="font-medium">Download Latest Release</span>
                 </a>
               </div>
             </div>
@@ -207,80 +231,80 @@ import { File, Folder, Files } from 'fumadocs-ui/components/files';
           </Files>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-border/30 bg-background/20 backdrop-blur-xl backdrop-saturate-150">
+        <div className="overflow-x-auto rounded-xl border border-border/50 bg-gradient-to-b from-background/50 to-background/80">
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 rounded-xl" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-40 rounded-xl" />
             <table className="w-full border-collapse relative">
               <thead>
                 <tr>
-                  <th className="text-left py-5 px-6 border-b border-border/30 bg-background/40">
-                    <div className="font-bold text-base bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">Name</div>
+                  <th className="text-left py-4 px-6 border-b border-border/30 bg-background/30 backdrop-blur-sm">
+                    <div className="font-semibold text-sm text-foreground/90">Name</div>
                   </th>
-                  <th className="text-left py-5 px-6 border-b border-border/30 bg-background/40">
-                    <div className="font-bold text-base bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">Description</div>
+                  <th className="text-left py-4 px-6 border-b border-border/30 bg-background/30 backdrop-blur-sm">
+                    <div className="font-semibold text-sm text-foreground/90">Description</div>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
-                  <td className="py-4 px-6">
-                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">local/</code>
+                <tr className="border-b border-border/20 transition-all hover:bg-background/20">
+                  <td className="py-3 px-6">
+                    <code className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20 font-mono text-xs text-primary/90 font-medium">local/</code>
                   </td>
-                  <td className="py-4 px-6 text-foreground/70">Main runtime folder with all PoloCloud data</td>
+                  <td className="py-3 px-6 text-muted-foreground/80 text-sm">Main runtime folder with all PoloCloud data</td>
                 </tr>
-                <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
-                  <td className="py-4 px-6">
-                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">local/dependencies/</code>
+                <tr className="border-b border-border/20 transition-all hover:bg-background/20">
+                  <td className="py-3 px-6">
+                    <code className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20 font-mono text-xs text-primary/90 font-medium">local/dependencies/</code>
                   </td>
-                  <td className="py-4 px-6 text-foreground/70">Downloaded dependencies</td>
+                  <td className="py-3 px-6 text-muted-foreground/80 text-sm">Downloaded dependencies</td>
                 </tr>
-                <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
-                  <td className="py-4 px-6">
-                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">local/groups/</code>
+                <tr className="border-b border-border/20 transition-all hover:bg-background/20">
+                  <td className="py-3 px-6">
+                    <code className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20 font-mono text-xs text-primary/90 font-medium">local/groups/</code>
                   </td>
-                  <td className="py-4 px-6 text-foreground/70">Server group configurations</td>
+                  <td className="py-3 px-6 text-muted-foreground/80 text-sm">Server group configurations</td>
                 </tr>
-                <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
-                  <td className="py-4 px-6">
-                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">local/libs/</code>
+                <tr className="border-b border-border/20 transition-all hover:bg-background/20">
+                  <td className="py-3 px-6">
+                    <code className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20 font-mono text-xs text-primary/90 font-medium">local/libs/</code>
                   </td>
-                  <td className="py-4 px-6 text-foreground/70">Our own libs to run polocloud</td>
+                  <td className="py-3 px-6 text-muted-foreground/80 text-sm">Our own libs to run polocloud</td>
                 </tr>
-                <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
-                  <td className="py-4 px-6">
-                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">local/metadata/platforms</code>
+                <tr className="border-b border-border/20 transition-all hover:bg-background/20">
+                  <td className="py-3 px-6">
+                    <code className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20 font-mono text-xs text-primary/90 font-medium">local/metadata/platforms</code>
                   </td>
-                  <td className="py-4 px-6 text-foreground/70">Platform configurations</td>
+                  <td className="py-3 px-6 text-muted-foreground/80 text-sm">Platform configurations</td>
                 </tr>
-                <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
-                  <td className="py-4 px-6">
-                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">local/metadata/tasks</code>
+                <tr className="border-b border-border/20 transition-all hover:bg-background/20">
+                  <td className="py-3 px-6">
+                    <code className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20 font-mono text-xs text-primary/90 font-medium">local/metadata/tasks</code>
                   </td>
-                  <td className="py-4 px-6 text-foreground/70">Required tasks to run platforms in PoloCloud</td>
+                  <td className="py-3 px-6 text-muted-foreground/80 text-sm">Required tasks to run platforms in PoloCloud</td>
                 </tr>
-                <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
-                  <td className="py-4 px-6">
-                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">local/templates/</code>
+                <tr className="border-b border-border/20 transition-all hover:bg-background/20">
+                  <td className="py-3 px-6">
+                    <code className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20 font-mono text-xs text-primary/90 font-medium">local/templates/</code>
                   </td>
-                  <td className="py-4 px-6 text-foreground/70">Templates for the platforms</td>
+                  <td className="py-3 px-6 text-muted-foreground/80 text-sm">Templates for the platforms</td>
                 </tr>
-                <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
-                  <td className="py-4 px-6">
-                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">temp/</code>
+                <tr className="border-b border-border/20 transition-all hover:bg-background/20">
+                  <td className="py-3 px-6">
+                    <code className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20 font-mono text-xs text-primary/90 font-medium">temp/</code>
                   </td>
-                  <td className="py-4 px-6 text-foreground/70">The platforms are placed here while running</td>
+                  <td className="py-3 px-6 text-muted-foreground/80 text-sm">The platforms are placed here while running</td>
                 </tr>
-                <tr className="border-b border-border/[0.15] transition-all hover:bg-white/[0.02]">
-                  <td className="py-4 px-6">
-                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">config.json</code>
+                <tr className="border-b border-border/20 transition-all hover:bg-background/20">
+                  <td className="py-3 px-6">
+                    <code className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20 font-mono text-xs text-primary/90 font-medium">config.json</code>
                   </td>
-                  <td className="py-4 px-6 text-foreground/70">Main configuration file for PoloCloud</td>
+                  <td className="py-3 px-6 text-muted-foreground/80 text-sm">Main configuration file for PoloCloud</td>
                 </tr>
-                <tr className="transition-all hover:bg-white/[0.02]">
-                  <td className="py-4 px-6">
-                    <code className="px-2.5 py-1.5 rounded-md bg-primary/[0.07] border border-primary/10 font-mono text-sm text-primary/90 font-medium">polocloud-launcher.jar</code>
+                <tr className="transition-all hover:bg-background/20">
+                  <td className="py-3 px-6">
+                    <code className="px-2 py-1 rounded-md bg-primary/10 border border-primary/20 font-mono text-xs text-primary/90 font-medium">polocloud-launcher.jar</code>
                   </td>
-                  <td className="py-4 px-6 text-foreground/70">The main executable to launch PoloCloud</td>
+                  <td className="py-3 px-6 text-muted-foreground/80 text-sm">The main executable to launch PoloCloud</td>
                 </tr>
               </tbody>
             </table>
