@@ -4,6 +4,10 @@
       "title": "Blog",
       "pages": [
         {
+          "title": "polocloud",
+          "url": "/blog/polocloud"
+        },
+        {
           "title": "Test Blog",
           "url": "/blog/test"
         }
