@@ -2,6 +2,7 @@
 
 import { Star, GitFork, Download, Package, GitCommit } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 interface GitHubStats {
     stars: number;
@@ -58,12 +59,12 @@ const StatCard = ({ icon, value, label }: StatCardProps) => {
                 {icon}
             </div>
             <div className="flex flex-col items-center">
-        <span className="text-3xl font-bold text-foreground dark:text-white mb-2">
-          {displayValue.toLocaleString()}
-        </span>
+                <span className="text-3xl font-bold text-foreground dark:text-white mb-2">
+                    {displayValue.toLocaleString()}
+                </span>
                 <span className="text-sm text-muted-foreground font-medium uppercase tracking-wide">
-          {label}
-        </span>
+                    {label}
+                </span>
             </div>
         </div>
     );
@@ -123,11 +124,32 @@ export function GitHubStatsComponent() {
         return (
             <div className="flex flex-wrap justify-start gap-12 mb-16">
                 {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="flex flex-col items-center justify-center text-center animate-pulse">
-                        <div className="w-16 h-16 bg-muted/50 rounded-full mb-4" />
+                    <div key={i} className="flex flex-col items-center justify-center text-center">
+                        <div className="w-16 h-16 bg-gradient-to-br from-muted/30 to-muted/50 rounded-full mb-4 animate-pulse relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" style={{
+                                animationDuration: '2s',
+                                animationIterationCount: 'infinite',
+                                transform: 'translateX(-100%)',
+                                animationName: 'shimmer'
+                            }}></div>
+                        </div>
                         <div className="flex flex-col items-center gap-2">
-                            <div className="w-20 h-10 bg-muted/50 rounded" />
-                            <div className="w-24 h-4 bg-muted/50 rounded" />
+                            <div className="w-20 h-10 bg-gradient-to-r from-muted/30 to-muted/50 rounded animate-pulse relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" style={{
+                                    animationDuration: '2s',
+                                    animationIterationCount: 'infinite',
+                                    transform: 'translateX(-100%)',
+                                    animationName: 'shimmer'
+                                }}></div>
+                            </div>
+                            <div className="w-24 h-4 bg-gradient-to-r from-muted/30 to-muted/50 rounded animate-pulse relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" style={{
+                                    animationDuration: '2s',
+                                    animationIterationCount: 'infinite',
+                                    transform: 'translateX(-100%)',
+                                    animationName: 'shimmer'
+                                }}></div>
+                            </div>
                         </div>
                     </div>
                 ))}

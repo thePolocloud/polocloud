@@ -7,6 +7,15 @@ import { useEffect, useState } from 'react';
 import { TextGenerateEffect } from '@/utils/text-generate-effect';
 import { motion } from 'framer-motion';
 
+interface TerminalLine {
+    time: string;
+    level: string;
+    message: string;
+    color: string;
+    highlight?: string;
+    highlightColor?: string;
+}
+
 export function HeroSection() {
     const [isVisible, setIsVisible] = useState(false);
     const [showCommand, setShowCommand] = useState(false);
@@ -15,8 +24,30 @@ export function HeroSection() {
     const [showLogsPhase3, setShowLogsPhase3] = useState(false);
     const [typedText, setTypedText] = useState('');
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [latestVersion, setLatestVersion] = useState('v3.0.0-pre.4-SNAPSHOT');
 
     const commandText = "java -jar polocloud-launcher.jar";
+
+    // Helper function to render highlighted text
+    const renderMessage = (message: string, highlight?: string, highlightColor?: string) => {
+        if (!highlight || !highlightColor) {
+            return <span>{message}</span>;
+        }
+        
+        const parts = message.split(highlight);
+        return (
+            <>
+                {parts.map((part, index) => (
+                    <span key={index}>
+                        {part}
+                        {index < parts.length - 1 && (
+                            <span className={highlightColor}>{highlight}</span>
+                        )}
+                    </span>
+                ))}
+            </>
+        );
+    };
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -31,6 +62,31 @@ export function HeroSection() {
             clearTimeout(timer);
             clearTimeout(commandTimer);
         };
+    }, []);
+
+    // Fetch latest release version from GitHub
+    useEffect(() => {
+        const fetchLatestVersion = async () => {
+            try {
+                const response = await fetch('/api/github-stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.releases && data.releases > 0) {
+                        // Fetch the latest release details
+                        const releasesResponse = await fetch('https://api.github.com/repos/HttpMarco/polocloud/releases/latest');
+                        if (releasesResponse.ok) {
+                            const releaseData = await releasesResponse.json();
+                            setLatestVersion(`v${releaseData.tag_name}`);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Failed to fetch latest version, using fallback');
+                // Keep the fallback version
+            }
+        };
+
+        fetchLatestVersion();
     }, []);
 
     useEffect(() => {
@@ -66,37 +122,346 @@ export function HeroSection() {
         }
     }, [showLogsPhase2]);
 
-    const terminalLinesPhase1 = [
-        { time: "16:42:01", level: "INFO", message: "Starting PoloCloud 3.0.0-pre.5-SNAPSHOT Agent...", color: "text-blue-400" },
-        { time: "16:42:01", level: "WARN", message: "You are using a snapshot version of polocloud. This version is not recommended for production use!", color: "text-yellow-400" },
-        { time: "16:42:01", level: "INFO", message: "You are running the latest version of the agent.", color: "text-blue-400" }
+    const terminalLinesPhase1: TerminalLine[] = [
+        { time: "16:42:01", level: "INFO", message: `Starting PoloCloud ${latestVersion.replace('v', '')} Agent...`, color: "text-gray-300" },
+        { time: "16:42:01", level: "WARN", message: "You are using a snapshot version of polocloud. This version is not recommended for production use!", color: "text-yellow-400" }
     ];
 
-    const terminalLinesPhase2 = [
-        { time: "16:42:01", level: "INFO", message: "You are running the latest version of the agent.", color: "text-blue-400" },
-        { time: "16:42:04", level: "INFO", message: "Successfully started gRPC server on port 8934", color: "text-blue-400" },
-        { time: "16:42:04", level: "INFO", message: "Using runtime: LocalRuntime", color: "text-blue-400" },
-        { time: "16:42:04", level: "INFO", message: "Load groups (2): lobby, proxy", color: "text-blue-400" },
-        { time: "16:42:04", level: "INFO", message: "Load 12 platforms with 207 versions.", color: "text-blue-400" },
-        { time: "16:42:04", level: "INFO", message: "The agent is now successfully started and ready to use!", color: "text-green-400" },
-        { time: "16:42:04", level: "INFO", message: "The service lobby-1 is now starting...", color: "text-blue-400" },
-        { time: "16:42:04", level: "INFO", message: "The service proxy-1 is now starting...", color: "text-blue-400" }
+    const terminalLinesPhase2: TerminalLine[] = [
+        { time: "16:42:01", level: "INFO", message: "You are running the latest version of the agent.", color: "text-gray-300" },
+        { time: "16:42:04", level: "INFO", message: "Successfully started gRPC server on port 8932", color: "text-gray-300" },
+        { time: "16:42:04", level: "INFO", message: "Using runtime: LocalRuntime", color: "text-gray-300" },
+        { time: "16:42:04", level: "INFO", message: "Load groups (2): lobby, proxy", color: "text-gray-300" },
+        { time: "16:42:04", level: "INFO", message: "Load 12 platforms with 207 versions.", color: "text-gray-300" },
+        { time: "16:42:04", level: "INFO", message: "The agent is now successfully started and ready to use!", color: "text-gray-300", highlight: "successfully", highlightColor: "text-cyan-400" },
+        { time: "16:42:04", level: "INFO", message: "The service lobby-1 is now starting...", color: "text-gray-300", highlight: "lobby-1", highlightColor: "text-cyan-400" },
+        { time: "16:42:04", level: "INFO", message: "The service proxy-1 is now starting...", color: "text-gray-300", highlight: "proxy-1", highlightColor: "text-cyan-400" }
     ];
 
-    const terminalLinesPhase3 = [
-        { time: "16:42:08", level: "INFO", message: "The service proxy-1 is now online.", color: "text-green-400" },
-        { time: "16:42:30", level: "INFO", message: "The service lobby-1 is now online.", color: "text-green-400" }
+    const terminalLinesPhase3: TerminalLine[] = [
+        { time: "16:42:08", level: "INFO", message: "The service proxy-1 is now online.", color: "text-gray-300", highlight: "proxy-1", highlightColor: "text-cyan-400" },
+        { time: "16:42:30", level: "INFO", message: "The service lobby-1 is now online.", color: "text-gray-300", highlight: "lobby-1", highlightColor: "text-cyan-400" }
     ];
 
     return (
         <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20 min-h-screen flex items-center justify-center">
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] dark:bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)]" />
 
+            {/* Floating Particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {/* Particle 1 */}
+                <motion.div
+                    className="absolute w-2 h-2 bg-primary/20 rounded-full"
+                    animate={{
+                        x: [0, 100, 0],
+                        y: [0, -50, 0],
+                        opacity: [0.3, 0.8, 0.3],
+                    }}
+                    transition={{
+                        duration: 8,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                    }}
+                    style={{
+                        left: "10%",
+                        top: "20%",
+                    }}
+                />
+                
+                {/* Particle 2 */}
+                <motion.div
+                    className="absolute w-1 h-1 bg-primary/30 rounded-full"
+                    animate={{
+                        x: [0, -80, 0],
+                        y: [0, 60, 0],
+                        opacity: [0.2, 0.6, 0.2],
+                    }}
+                    transition={{
+                        duration: 12,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 2,
+                    }}
+                    style={{
+                        left: "80%",
+                        top: "30%",
+                    }}
+                />
+                
+                {/* Particle 3 */}
+                <motion.div
+                    className="absolute w-1.5 h-1.5 bg-primary/25 rounded-full"
+                    animate={{
+                        x: [0, 60, 0],
+                        y: [0, -40, 0],
+                        opacity: [0.4, 0.7, 0.4],
+                    }}
+                    transition={{
+                        duration: 10,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 4,
+                    }}
+                    style={{
+                        left: "20%",
+                        top: "70%",
+                    }}
+                />
+                
+                {/* Particle 4 */}
+                <motion.div
+                    className="absolute w-1 h-1 bg-primary/15 rounded-full"
+                    animate={{
+                        x: [0, -40, 0],
+                        y: [0, 80, 0],
+                        opacity: [0.3, 0.5, 0.3],
+                    }}
+                    transition={{
+                        duration: 15,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 1,
+                    }}
+                    style={{
+                        left: "70%",
+                        top: "60%",
+                    }}
+                />
+                
+                {/* Particle 5 */}
+                <motion.div
+                    className="absolute w-2 h-2 bg-primary/20 rounded-full"
+                    animate={{
+                        x: [0, 120, 0],
+                        y: [0, -30, 0],
+                        opacity: [0.2, 0.8, 0.2],
+                    }}
+                    transition={{
+                        duration: 14,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 3,
+                    }}
+                    style={{
+                        left: "40%",
+                        top: "10%",
+                    }}
+                />
+                
+                {/* Particle 6 */}
+                <motion.div
+                    className="absolute w-1 h-1 bg-primary/25 rounded-full"
+                    animate={{
+                        x: [0, -60, 0],
+                        y: [0, 50, 0],
+                        opacity: [0.3, 0.6, 0.3],
+                    }}
+                    transition={{
+                        duration: 11,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 5,
+                    }}
+                    style={{
+                        left: "90%",
+                        top: "80%",
+                    }}
+                />
+                
+                {/* Particle 7 */}
+                <motion.div
+                    className="absolute w-1.5 h-1.5 bg-primary/20 rounded-full"
+                    animate={{
+                        x: [0, 80, 0],
+                        y: [0, -60, 0],
+                        opacity: [0.4, 0.7, 0.4],
+                    }}
+                    transition={{
+                        duration: 13,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 2.5,
+                    }}
+                    style={{
+                        left: "15%",
+                        top: "40%",
+                    }}
+                />
+                
+                {/* Particle 8 */}
+                <motion.div
+                    className="absolute w-1 h-1 bg-primary/30 rounded-full"
+                    animate={{
+                        x: [0, -100, 0],
+                        y: [0, 40, 0],
+                        opacity: [0.2, 0.5, 0.2],
+                    }}
+                    transition={{
+                        duration: 16,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 6,
+                    }}
+                    style={{
+                        left: "60%",
+                        top: "90%",
+                    }}
+                />
+
+                {/* Particle 9 */}
+                <motion.div
+                    className="absolute w-1.5 h-1.5 bg-primary/25 rounded-full"
+                    animate={{
+                        x: [0, 70, 0],
+                        y: [0, -40, 0],
+                        opacity: [0.3, 0.6, 0.3],
+                    }}
+                    transition={{
+                        duration: 12,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 1.5,
+                    }}
+                    style={{
+                        left: "85%",
+                        top: "30%",
+                    }}
+                />
+
+                {/* Particle 10 */}
+                <motion.div
+                    className="absolute w-1 h-1 bg-primary/20 rounded-full"
+                    animate={{
+                        x: [0, -50, 0],
+                        y: [0, 90, 0],
+                        opacity: [0.2, 0.4, 0.2],
+                    }}
+                    transition={{
+                        duration: 18,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 3.5,
+                    }}
+                    style={{
+                        left: "25%",
+                        top: "85%",
+                    }}
+                />
+
+                {/* Particle 11 */}
+                <motion.div
+                    className="absolute w-2 h-2 bg-primary/15 rounded-full"
+                    animate={{
+                        x: [0, 90, 0],
+                        y: [0, -70, 0],
+                        opacity: [0.1, 0.3, 0.1],
+                    }}
+                    transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 4.5,
+                    }}
+                    style={{
+                        left: "75%",
+                        top: "15%",
+                    }}
+                />
+
+                {/* Particle 12 */}
+                <motion.div
+                    className="absolute w-1 h-1 bg-primary/35 rounded-full"
+                    animate={{
+                        x: [0, -80, 0],
+                        y: [0, 60, 0],
+                        opacity: [0.4, 0.7, 0.4],
+                    }}
+                    transition={{
+                        duration: 14,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 2,
+                    }}
+                    style={{
+                        left: "45%",
+                        top: "75%",
+                    }}
+                />
+
+                {/* Particle 13 */}
+                <motion.div
+                    className="absolute w-1.5 h-1.5 bg-primary/20 rounded-full"
+                    animate={{
+                        x: [0, 60, 0],
+                        y: [0, -50, 0],
+                        opacity: [0.2, 0.5, 0.2],
+                    }}
+                    transition={{
+                        duration: 16,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 5.5,
+                    }}
+                    style={{
+                        left: "5%",
+                        top: "25%",
+                    }}
+                />
+
+                {/* Particle 14 */}
+                <motion.div
+                    className="absolute w-1 h-1 bg-primary/30 rounded-full"
+                    animate={{
+                        x: [0, -70, 0],
+                        y: [0, 30, 0],
+                        opacity: [0.3, 0.6, 0.3],
+                    }}
+                    transition={{
+                        duration: 13,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 1,
+                    }}
+                    style={{
+                        left: "95%",
+                        top: "50%",
+                    }}
+                />
+
+                {/* Particle 15 */}
+                <motion.div
+                    className="absolute w-2 h-2 bg-primary/25 rounded-full"
+                    animate={{
+                        x: [0, 40, 0],
+                        y: [0, -90, 0],
+                        opacity: [0.2, 0.4, 0.2],
+                    }}
+                    transition={{
+                        duration: 17,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 6.5,
+                    }}
+                    style={{
+                        left: "35%",
+                        top: "5%",
+                    }}
+                />
+            </div>
+
             <div className="relative container mx-auto px-6 py-20 z-10">
                 <div className={`grid lg:grid-cols-2 gap-12 items-center transition-all duration-1000 ease-out ${
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}>
                     <div className="order-1 text-center lg:text-left">
+                        {/* Version Badge */}
+                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6 transition-all duration-1000 delay-100 ${
+                            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                        }`}>
+                            <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                            <span>{latestVersion}</span>
+                        </div>
+
                         <h1 className={`text-5xl md:text-7xl lg:text-8xl font-black mb-8 text-foreground dark:text-white transition-all duration-1000 delay-200 tracking-tight leading-tight ${
                             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                         }`}>
@@ -161,7 +526,7 @@ export function HeroSection() {
                             <div className="p-4 font-mono text-sm">
                                 {showCommand && (
                                     <div className="flex items-center gap-2 mb-4">
-                                        <span className="text-green-400 font-mono text-sm">/home/polocloud</span>
+                                        <span className="text-cyan-400 font-mono text-sm">/home/polocloud</span>
                                         <span className="text-gray-400 font-mono text-sm">$</span>
                                         <span className="text-gray-300 font-mono text-sm">
                       {typedText}
@@ -194,12 +559,12 @@ export function HeroSection() {
                       |
                     </span>
                                         <span className={`font-mono text-xs w-12 flex-shrink-0 ${
-                                            line.level === 'WARN' ? 'text-yellow-400' : 'text-blue-400'
+                                            line.level === 'WARN' ? 'text-yellow-400' : 'text-gray-300'
                                         }`}>
                       {line.level}:
                     </span>
                                         <span className={`font-mono text-xs ${line.color}`}>
-                      {line.message}
+                      {renderMessage(line.message, line.highlight, line.highlightColor)}
                     </span>
                                     </motion.div>
                                 ))}
@@ -220,12 +585,12 @@ export function HeroSection() {
                       |
                     </span>
                                         <span className={`font-mono text-xs w-12 flex-shrink-0 ${
-                                            line.level === 'WARN' ? 'text-yellow-400' : 'text-blue-400'
+                                            line.level === 'WARN' ? 'text-yellow-400' : 'text-white'
                                         }`}>
                       {line.level}:
                     </span>
                                         <span className={`font-mono text-xs ${line.color}`}>
-                      {line.message}
+                      {renderMessage(line.message, line.highlight, line.highlightColor)}
                     </span>
                                     </motion.div>
                                 ))}
@@ -246,12 +611,12 @@ export function HeroSection() {
                       |
                     </span>
                                         <span className={`font-mono text-xs w-12 flex-shrink-0 ${
-                                            line.level === 'WARN' ? 'text-yellow-400' : 'text-blue-400'
+                                            line.level === 'WARN' ? 'text-yellow-400' : 'text-white'
                                         }`}>
                       {line.level}:
                     </span>
                                         <span className={`font-mono text-xs ${line.color}`}>
-                      {line.message}
+                      {renderMessage(line.message, line.highlight, line.highlightColor)}
                     </span>
                                     </motion.div>
                                 ))}
@@ -263,7 +628,9 @@ export function HeroSection() {
                                         animate={{ opacity: 1 }}
                                         transition={{ duration: 0.3, delay: 1.5 }}
                                     >
-                                        <span className="text-blue-400 font-mono text-sm">polocloud@3.0.0-pre.5-SNAPSHOT</span>
+                                        <span className="text-gray-300 font-mono text-sm">
+                                            {renderMessage(`polocloud@${latestVersion.replace('v', '')}`, "polocloud", "text-cyan-400")}
+                                        </span>
                                         <span className="text-gray-400 font-mono text-sm">»</span>
                                         <motion.span
                                             className="text-gray-300 font-mono text-xs"

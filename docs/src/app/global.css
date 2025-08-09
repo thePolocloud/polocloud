@@ -342,3 +342,13 @@ body {
     position: relative;
     z-index: 1;
 }
+
+/* Glanz-Effekt Animation für Badges */
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
