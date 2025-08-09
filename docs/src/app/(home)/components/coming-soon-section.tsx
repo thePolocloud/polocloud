@@ -111,7 +111,7 @@ export function ComingSoonSection() {
             Be the first to know when these features are available. Join our community for early access and exclusive updates.
             </p>
             <a
-              href="https://discord.gg/polocloud"
+              href="https://discord.com/invite/mQ39S2EWNV"
               target="_blank"
               rel="noopener noreferrer"
             className="inline-flex items-center gap-3 px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-white rounded-xl font-semibold text-lg transition-all duration-300 shadow-[0_0_20px_rgba(0,200,255,0.15)] hover:shadow-[0_0_30px_rgba(0,200,255,0.25)] hover:scale-105 group"
