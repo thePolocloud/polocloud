@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, Star, Package, Code, Server, Filter, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface RoadmapItem {
   id: string;
@@ -76,10 +77,27 @@ const getCategoryColor = (category: string) => {
   }
 };
 
+const getBorderColor = (columnId: string) => {
+  switch (columnId) {
+    case 'no-status':
+      return '#dc2626';
+    case 'todo':
+      return '#9198a1';
+    case 'in-progress':
+      return '#9e6a03';
+    case 'quality-testing':
+      return '#8957e5';
+    case 'done':
+      return '#238636';
+    default:
+      return '#6b7280';
+  }
+};
+
 const RoadmapCard = ({ item, index }: { item: RoadmapItem; index: number }) => {
   return (
     <div 
-      className="bg-card/40 backdrop-blur-sm border border-border/40 rounded-xl p-4 mb-3 hover:bg-card/60 transition-all duration-500 hover:shadow-lg hover:border-border/60 hover:scale-105 group"
+      className="bg-card/40 backdrop-blur-sm border border-border/40 rounded-xl p-4 mb-3 transition-all duration-500 group relative overflow-hidden"
       style={{
         animationDelay: `${index * 100}ms`
       }}
@@ -167,24 +185,7 @@ const RoadmapCard = ({ item, index }: { item: RoadmapItem; index: number }) => {
   );
 };
 
-const RoadmapColumn = ({ column, columnIndex }: { column: RoadmapColumn; columnIndex: number }) => {
-  const getBorderColor = (columnId: string) => {
-    switch (columnId) {
-      case 'no-status':
-        return '#dc2626';
-      case 'todo':
-        return '#9198a1';
-      case 'in-progress':
-        return '#9e6a03';
-      case 'quality-testing':
-        return '#8957e5';
-      case 'done':
-        return '#238636';
-      default:
-        return '#6b7280';
-    }
-  };
-
+const RoadmapColumn = ({ column, columnIndex, totalItems }: { column: RoadmapColumn; columnIndex: number; totalItems: number }) => {
   return (
     <div 
       className="flex flex-col h-full"
@@ -208,11 +209,40 @@ const RoadmapColumn = ({ column, columnIndex }: { column: RoadmapColumn; columnI
         />
 
         <div className="relative z-10">
-          <h2 className="font-bold text-foreground dark:text-white text-sm uppercase tracking-wider mb-1">
-            {column.title}
-          </h2>
-          <div className="text-xs text-muted-foreground dark:text-white/60 font-medium">
-            {column.items.length} items
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-bold text-foreground dark:text-white text-sm uppercase tracking-wider">
+              {column.title}
+            </h2>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold" style={{ color: getBorderColor(column.id) }}>
+                {column.items.length}
+              </span>
+              <span className="text-xs text-muted-foreground dark:text-white/60 font-medium">
+                items
+              </span>
+            </div>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="mb-3">
+            <div className="flex items-center justify-between text-xs mb-1">
+              <span className="text-muted-foreground">Progress</span>
+              <span className="font-medium" style={{ color: getBorderColor(column.id) }}>
+                {totalItems > 0 ? Math.round((column.items.length / totalItems) * 100) : 0}%
+              </span>
+            </div>
+            <div className="w-full bg-muted/30 rounded-full h-2 overflow-hidden">
+              <motion.div 
+                className="h-2 rounded-full"
+                style={{ 
+                  backgroundColor: getBorderColor(column.id),
+                  width: totalItems > 0 ? `${(column.items.length / totalItems) * 100}%` : '0%'
+                }}
+                initial={{ width: 0 }}
+                animate={{ width: totalItems > 0 ? `${(column.items.length / totalItems) * 100}%` : '0%' }}
+                transition={{ duration: 1, delay: columnIndex * 0.2 }}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -233,7 +263,14 @@ export function RoadmapContent() {
   const [error, setError] = useState<string | null>(null);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [showQuickStats, setShowQuickStats] = useState(false);
   const contentRef = useRef<HTMLElement>(null);
+
+  // Calculate quick stats
+  const totalItems = roadmapData.reduce((total, column) => total + column.items.length, 0);
+  const completedItems = roadmapData.find(col => col.id === 'done')?.items.length || 0;
+  const inProgressItems = roadmapData.find(col => col.id === 'in-progress')?.items.length || 0;
+  const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -533,7 +570,7 @@ export function RoadmapContent() {
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                   }`}
                 >
-                  <RoadmapColumn column={column} columnIndex={index} />
+                  <RoadmapColumn column={column} columnIndex={index} totalItems={totalItems} />
                 </div>
               ))}
             </div>
@@ -542,116 +579,175 @@ export function RoadmapContent() {
       </section>
 
       {isFilterModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card/95 backdrop-blur-sm border border-border/40 rounded-2xl p-6 shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-foreground">Filter by Tags</h3>
-              <button
-                onClick={() => setIsFilterModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        <motion.div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div 
+            className="bg-card/95 backdrop-blur-sm border border-border/40 rounded-2xl p-6 shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto relative overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            {/* Cool Background Effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-primary/50 to-primary" />
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Filter className="w-4 h-4 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground">Filter by Tags</h3>
+                </div>
+                <button
+                  onClick={() => setIsFilterModalOpen(false)}
+                  className="w-8 h-8 rounded-lg hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-110"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
 
-            {activeFilters.length > 0 && (
-              <div className="mb-6 p-4 bg-muted/30 rounded-lg">
-                <div className="text-sm text-muted-foreground mb-3">Active filters:</div>
-                <div className="flex flex-wrap gap-2">
-                  {activeFilters.map((tag) => (
+              {activeFilters.length > 0 && (
+                <motion.div 
+                  className="mb-6 p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl border border-primary/20"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <div className="text-sm text-primary font-medium mb-3 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                    Active filters ({activeFilters.length})
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {activeFilters.map((tag, index) => (
+                      <motion.span
+                        key={tag}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border backdrop-blur-sm"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        style={{
+                          backgroundColor: tag === 'improvement' ? 'rgba(234, 187, 44, 0.2)' :
+                                            tag === 'new requirement' ? 'rgba(130, 247, 29, 0.2)' :
+                                            tag === 'prototype-5' ? 'rgba(136, 252, 202, 0.2)' :
+                                            tag === 'bug' ? 'rgba(236, 161, 168, 0.2)' :
+                                            'rgba(156, 163, 175, 0.2)',
+                          color: tag === 'improvement' ? 'rgb(234, 187, 44)' :
+                                 tag === 'new requirement' ? 'rgb(130, 247, 29)' :
+                                 tag === 'prototype-5' ? 'rgb(136, 252, 202)' :
+                                 tag === 'bug' ? 'rgb(236, 161, 168)' :
+                                 'rgb(156, 163, 175)',
+                          borderColor: tag === 'improvement' ? 'rgba(234, 187, 44, 0.4)' :
+                                        tag === 'new requirement' ? 'rgba(130, 247, 29, 0.4)' :
+                                        tag === 'prototype-5' ? 'rgba(136, 252, 202, 0.4)' :
+                                        tag === 'bug' ? 'rgba(236, 161, 168, 0.4)' :
+                                        'rgba(156, 163, 175, 0.4)'
+                        }}
+                      >
+                        {tag}
+                        <button
+                          onClick={() => toggleFilter(tag)}
+                          className="hover:bg-black/10 rounded-full p-0.5 transition-all duration-200 hover:scale-110"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </motion.span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={clearAllFilters}
+                    className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 flex items-center gap-1 hover:scale-105"
+                  >
+                    <X className="w-3 h-3" />
+                    Clear all filters
+                  </button>
+                </motion.div>
+              )}
+
+              <div className="space-y-2 mb-6">
+                {allTags.map((tag, index) => (
+                  <motion.label
+                    key={tag}
+                    className="flex items-center gap-3 p-4 rounded-xl hover:bg-muted/30 transition-all duration-200 cursor-pointer group border border-transparent hover:border-border/30"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={activeFilters.includes(tag)}
+                        onChange={() => toggleFilter(tag)}
+                        className="w-5 h-5 rounded border-border/50 text-primary focus:ring-primary focus:ring-2 focus:ring-offset-2 transition-all duration-200"
+                      />
+                      {activeFilters.includes(tag) && (
+                        <motion.div
+                          className="absolute inset-0 flex items-center justify-center"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        >
+                          <div className="w-2 h-2 bg-primary rounded-full" />
+                        </motion.div>
+                      )}
+                    </div>
                     <span
-                      key={tag}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border"
+                      className="flex-1 text-sm font-medium group-hover:scale-105 transition-transform duration-200"
                       style={{
-                        backgroundColor: tag === 'improvement' ? 'rgba(234, 187, 44, 0.3)' :
-                                          tag === 'new requirement' ? 'rgba(130, 247, 29, 0.3)' :
-                                          tag === 'prototype-5' ? 'rgba(136, 252, 202, 0.3)' :
-                                          tag === 'bug' ? 'rgba(236, 161, 168, 0.3)' :
-                                          'rgba(156, 163, 175, 0.3)',
                         color: tag === 'improvement' ? 'rgb(234, 187, 44)' :
                                tag === 'new requirement' ? 'rgb(130, 247, 29)' :
                                tag === 'prototype-5' ? 'rgb(136, 252, 202)' :
                                tag === 'bug' ? 'rgb(236, 161, 168)' :
-                               'rgb(156, 163, 175)',
-                        borderColor: tag === 'improvement' ? 'rgba(234, 187, 44, 0.3)' :
-                                    tag === 'new requirement' ? 'rgba(130, 247, 29, 0.3)' :
-                                    tag === 'prototype-5' ? 'rgba(136, 252, 202, 0.3)' :
-                                    tag === 'bug' ? 'rgba(236, 161, 168, 0.3)' :
-                                    'rgba(156, 163, 175, 0.3)'
+                               'rgb(156, 163, 175)'
                       }}
                     >
                       {tag}
-                      <button
-                        onClick={() => toggleFilter(tag)}
-                        className="hover:bg-black/10 rounded-full p-0.5 transition-colors duration-200"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
                     </span>
-                  ))}
-                </div>
-                <button
-                  onClick={clearAllFilters}
-                  className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 flex items-center gap-1"
-                >
-                  <X className="w-3 h-3" />
-                  Clear all filters
-                </button>
+                    <motion.div
+                      className="w-4 h-4 rounded-full group-hover:scale-110 transition-transform duration-200"
+                      style={{
+                        backgroundColor: tag === 'improvement' ? 'rgb(234, 187, 44)' :
+                                         tag === 'new requirement' ? 'rgb(130, 247, 29)' :
+                                         tag === 'prototype-5' ? 'rgb(136, 252, 202)' :
+                                         tag === 'bug' ? 'rgb(236, 161, 168)' :
+                                         'rgb(156, 163, 175)'
+                      }}
+                      whileHover={{ rotate: 180 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </motion.label>
+                ))}
               </div>
-            )}
 
-            <div className="space-y-3 mb-6">
-              {allTags.map((tag) => (
-                <label
-                  key={tag}
-                  className="flex items-center gap-3 p-4 rounded-lg hover:bg-muted/30 transition-colors duration-200 cursor-pointer"
+              <div className="pt-4 border-t border-border/30">
+                <motion.div 
+                  className="text-sm text-muted-foreground mb-4 flex items-center gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={activeFilters.includes(tag)}
-                    onChange={() => toggleFilter(tag)}
-                    className="w-5 h-5 rounded border-border/50 text-blue-500 focus:ring-blue-500 focus:ring-2 focus:ring-offset-2"
-                  />
-                  <span
-                    className="flex-1 text-sm font-medium"
-                    style={{
-                      color: tag === 'improvement' ? 'rgb(234, 187, 44)' :
-                             tag === 'new requirement' ? 'rgb(130, 247, 29)' :
-                             tag === 'prototype-5' ? 'rgb(136, 252, 202)' :
-                             tag === 'bug' ? 'rgb(236, 161, 168)' :
-                             'rgb(156, 163, 175)'
-                    }}
-                  >
-                    {tag}
-                  </span>
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{
-                      backgroundColor: tag === 'improvement' ? 'rgb(234, 187, 44)' :
-                                     tag === 'new requirement' ? 'rgb(130, 247, 29)' :
-                                     tag === 'prototype-5' ? 'rgb(136, 252, 202)' :
-                                     tag === 'bug' ? 'rgb(236, 161, 168)' :
-                                     'rgb(156, 163, 175)'
-                    }}
-                  />
-                </label>
-              ))}
-            </div>
-
-            <div className="pt-4 border-t border-border/30">
-              <div className="text-sm text-muted-foreground mb-4">
-                Showing {filteredData.reduce((total, column) => total + column.items.length, 0)} items
-                {activeFilters.length > 0 && ` (filtered by ${activeFilters.length} tag${activeFilters.length > 1 ? 's' : ''})`}
+                  <div className="w-2 h-2 bg-primary rounded-full" />
+                  Showing {filteredData.reduce((total, column) => total + column.items.length, 0)} items
+                  {activeFilters.length > 0 && ` (filtered by ${activeFilters.length} tag${activeFilters.length > 1 ? 's' : ''})`}
+                </motion.div>
+                <motion.button
+                  onClick={() => setIsFilterModalOpen(false)}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Apply Filters
+                </motion.button>
               </div>
-              <button
-                onClick={() => setIsFilterModalOpen(false)}
-                className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors duration-200"
-              >
-                Apply Filters
-              </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </>
   );

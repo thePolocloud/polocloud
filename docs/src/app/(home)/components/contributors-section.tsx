@@ -345,27 +345,14 @@ export function ContributorsSection() {
                         {contributors.map((contributor, index) => (
                             <motion.div
                                 key={contributor.login}
-                                whileHover={{
-                                    scale: 1.02,
-                                    y: -2,
-                                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
-                                    transition: { type: "spring", stiffness: 300, damping: 20 }
-                                }}
-                                whileTap={{ scale: 0.98 }}
-                                className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-xl p-6 hover:bg-card/40 hover:border-border/70 transition-all duration-300 group cursor-pointer"
+                                className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-xl p-6 hover:bg-card/40 hover:border-border/70 transition-all duration-300 group cursor-pointer relative"
                             >
                                 <motion.div
                                     className="flex items-center mb-4"
-                                    whileHover={{ x: 5 }}
                                     transition={{ type: "spring", stiffness: 400 }}
                                 >
                                     <motion.div
-                                        className="w-16 h-16 rounded-full overflow-hidden mr-4 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-200"
-                                        whileHover={{
-                                            scale: 1.1,
-                                            rotate: 5,
-                                            boxShadow: "0 0 20px rgba(99, 102, 241, 0.3)"
-                                        }}
+                                        className="w-16 h-16 rounded-full overflow-hidden mr-4 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all duration-200 relative"
                                         transition={{ type: "spring", stiffness: 300 }}
                                     >
                                         <img
@@ -378,6 +365,48 @@ export function ContributorsSection() {
                                             }}
                                         />
                                     </motion.div>
+                                    
+                                    {/* Top 3 Badges - außerhalb um das Avatar herum */}
+                                    {index < 3 && (
+                                        <div className="absolute -top-1 -right-1 w-6 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg z-10">
+                                            {index === 0 && (
+                                                <div className="w-full h-full rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-lg px-1 relative overflow-hidden">
+                                                    {/* Glänzender Effekt */}
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" style={{
+                                                        animationDuration: '2s',
+                                                        animationIterationCount: 'infinite',
+                                                        transform: 'translateX(-100%)',
+                                                        animationName: 'shimmer'
+                                                    }}></div>
+                                                    <span className="text-white font-bold text-[10px] relative z-10">#1</span>
+                                                </div>
+                                            )}
+                                            {index === 1 && (
+                                                <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center shadow-lg px-1 relative overflow-hidden">
+                                                    {/* Glänzender Effekt */}
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" style={{
+                                                        animationDuration: '2s',
+                                                        animationIterationCount: 'infinite',
+                                                        transform: 'translateX(-100%)',
+                                                        animationName: 'shimmer'
+                                                    }}></div>
+                                                    <span className="text-white font-bold text-[10px] relative z-10">#2</span>
+                                                </div>
+                                            )}
+                                            {index === 2 && (
+                                                <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center shadow-lg px-1 relative overflow-hidden">
+                                                    {/* Glänzender Effekt */}
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" style={{
+                                                        animationDuration: '2s',
+                                                        animationIterationCount: 'infinite',
+                                                        transform: 'translateX(-100%)',
+                                                        animationName: 'shimmer'
+                                                    }}></div>
+                                                    <span className="text-white font-bold text-[10px] relative z-10">#3</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                     <div>
                                         <h3 className="text-lg font-bold text-foreground dark:text-white group-hover:text-primary transition-colors duration-200">
                                             {contributor.login}

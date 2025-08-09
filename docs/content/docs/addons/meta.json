@@ -2,5 +2,11 @@
   "title": "Addons",
   "description": "All features on top of the cloud",
   "icon": "Package",
-  "root": true
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "notify",
+    "hub"
+  ]
 }
