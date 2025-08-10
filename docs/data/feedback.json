@@ -7,6 +7,8 @@
     "avatar": "https://cdn.discordapp.com/avatars/728686692638392370/6446f45953135c2512e42b97c009aafe.png",
     "id": "1754817785439",
     "createdAt": "2025-08-10T09:23:05.439Z",
-    "status": "PENDING"
+    "status": "APPROVED",
+    "approvedBy": "admin",
+    "approvedAt": "2025-08-10T09:26:23.725Z"
   }
 ]
