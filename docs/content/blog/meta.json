@@ -4,6 +4,18 @@
       "title": "Blog",
       "pages": [
         {
+          "title": "docker",
+          "url": "/blog/docker"
+        },
+        {
+          "title": "This is Proto",
+          "url": "/blog/this-is-proto"
+        },
+        {
+          "title": "polocloud",
+          "url": "/blog/polocloud"
+        },
+        {
           "title": "Test Blog",
           "url": "/blog/test"
         }
