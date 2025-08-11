@@ -90,7 +90,6 @@ export async function fetchGitHubStats(): Promise<GitHubStats> {
         const releasesResponse = await makeGitHubRequest(`${GITHUB_API_BASE}/repos/${REPO_OWNER}/${REPO_NAME}/releases`);
         const releasesData: GitHubRelease[] = await releasesResponse.json();
 
-        // Fetch total commits count
         const commitsResponse = await makeGitHubRequest(`${GITHUB_API_BASE}/repos/${REPO_OWNER}/${REPO_NAME}/commits?per_page=1`);
         const linkHeader = commitsResponse.headers.get('link');
         let totalCommits = 0;
@@ -102,7 +101,6 @@ export async function fetchGitHubStats(): Promise<GitHubStats> {
             }
         }
 
-        // If we couldn't get the total from headers, try to get it from the response
         if (totalCommits === 0) {
             const commitsData = await commitsResponse.json();
             totalCommits = commitsData.length;
@@ -278,4 +276,341 @@ export function getCacheStatus(): {
         hasClientCache: !!clientCache,
         hasContributorsCache: !!contributorsCache,
     };
+}
+
+
+
+import { Octokit } from '@octokit/rest';
+
+export const blogOctokit = new Octokit({
+  auth: GITHUB_TOKEN,
+});
+
+export const BLOG_REPO_CONFIG = {
+  owner: process.env.GITHUB_REPO_OWNER || 'jakubbbdev',
+  repo: process.env.GITHUB_REPO_NAME || 'polocloud',
+  branch: process.env.GITHUB_BRANCH || 'website',
+  blogPath: 'docs/content/blog',
+  metaFile: 'docs/content/blog/meta.json',
+};
+
+export interface BlogPostMetadata {
+  title: string;
+  description: string;
+  date: string;
+  author: string;
+  tags: string[];
+  pinned: boolean;
+  slug: string;
+}
+
+export interface BlogMeta {
+  pages: Array<{
+    title: string;
+    pages: Array<{
+      title: string;
+      url: string;
+    }>;
+  }>;
+}
+
+export async function createOrUpdateBlogFile(
+  path: string,
+  content: string,
+  message: string,
+  sha?: string
+): Promise<void> {
+  try {
+    const params: any = {
+      owner: BLOG_REPO_CONFIG.owner,
+      repo: BLOG_REPO_CONFIG.repo,
+      path,
+      message,
+      content: Buffer.from(content).toString('base64'),
+      branch: BLOG_REPO_CONFIG.branch,
+    };
+
+    if (sha) {
+      params.sha = sha;
+    }
+
+    await blogOctokit.rest.repos.createOrUpdateFileContents(params);
+  } catch (error) {
+    console.error('Error creating/updating blog file:', error);
+    throw error;
+  }
+}
+
+export async function getBlogFileFromGitHub(path: string): Promise<{ content: string; sha: string } | null> {
+  try {
+    const response = await blogOctokit.rest.repos.getContent({
+      owner: BLOG_REPO_CONFIG.owner,
+      repo: BLOG_REPO_CONFIG.repo,
+      path,
+      ref: BLOG_REPO_CONFIG.branch,
+    });
+
+    if ('content' in response.data) {
+      return {
+        content: Buffer.from(response.data.content, 'base64').toString('utf8'),
+        sha: response.data.sha,
+      };
+    }
+    return null;
+  } catch (error) {
+    if ((error as any).status === 404) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function updateBlogMeta(newPost: { title: string; slug: string }): Promise<void> {
+  try {
+    const metaFile = await getBlogFileFromGitHub(BLOG_REPO_CONFIG.metaFile);
+    
+    let meta: BlogMeta;
+    let sha: string | undefined;
+
+    if (metaFile) {
+      meta = JSON.parse(metaFile.content);
+      sha = metaFile.sha;
+    } else {
+      meta = {
+        pages: [
+          {
+            title: "Blog",
+            pages: []
+          }
+        ]
+      };
+    }
+
+    const blogSection = meta.pages.find(p => p.title === "Blog");
+    if (blogSection) {
+      const existingPost = blogSection.pages.find(p => p.url === `/blog/${newPost.slug}`);
+      
+      if (!existingPost) {
+
+        blogSection.pages.unshift({
+          title: newPost.title,
+          url: `/blog/${newPost.slug}`
+        });
+      } else {
+
+        existingPost.title = newPost.title;
+      }
+    }
+
+    const updatedContent = JSON.stringify(meta, null, 2);
+    await createOrUpdateBlogFile(
+      BLOG_REPO_CONFIG.metaFile,
+      updatedContent,
+      `Update blog meta for: ${newPost.title}`,
+      sha
+    );
+  } catch (error) {
+    console.error('Error updating blog meta:', error);
+    throw error;
+  }
+}
+
+export function createSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
+export function generateMDXContent(metadata: BlogPostMetadata, content: string): string {
+  const frontmatter = `---
+title: "${metadata.title}"
+description: "${metadata.description}"
+date: "${metadata.date}"
+author: "${metadata.author}"
+tags: [${metadata.tags.map(tag => `"${tag}"`).join(', ')}]
+pinned: ${metadata.pinned}
+---
+
+${content}`;
+
+  return frontmatter;
+}
+
+
+export interface FeedbackData {
+  id: string;
+  userId: string;
+  username: string;
+  avatar: string;
+  rating: number;
+  description: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdAt: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectedBy?: string;
+  rejectedAt?: string;
+}
+
+export async function getFeedbackFromGitHub(): Promise<FeedbackData[]> {
+  try {
+    const feedbackFile = await getBlogFileFromGitHub('docs/data/feedback.json');
+    
+    if (feedbackFile) {
+      const feedbackData = JSON.parse(feedbackFile.content);
+      return Array.isArray(feedbackData) ? feedbackData : [];
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error getting feedback from GitHub:', error);
+    return [];
+  }
+}
+
+export async function saveFeedbackToGitHub(feedbackData: FeedbackData[], commitMessage: string): Promise<void> {
+  try {
+    const feedbackFile = await getBlogFileFromGitHub('docs/data/feedback.json');
+    const content = JSON.stringify(feedbackData, null, 2);
+    
+    await createOrUpdateBlogFile(
+      'docs/data/feedback.json',
+      content,
+      commitMessage,
+      feedbackFile?.sha
+    );
+  } catch (error) {
+    console.error('Error saving feedback to GitHub:', error);
+    throw error;
+  }
+}
+
+export async function addFeedbackToGitHub(newFeedback: Omit<FeedbackData, 'id' | 'createdAt' | 'status'>): Promise<FeedbackData> {
+  const feedbackData = await getFeedbackFromGitHub();
+  
+  const feedback: FeedbackData = {
+    ...newFeedback,
+    id: Date.now().toString(),
+    createdAt: new Date().toISOString(),
+    status: 'PENDING'
+  };
+  
+  feedbackData.push(feedback);
+  
+  await saveFeedbackToGitHub(
+    feedbackData, 
+    `Add new feedback from ${newFeedback.username} (${newFeedback.rating} stars)`
+  );
+  
+  return feedback;
+}
+
+export async function updateFeedbackStatusOnGitHub(
+  feedbackId: string, 
+  status: 'APPROVED' | 'REJECTED', 
+  adminUser: string
+): Promise<void> {
+  const feedbackData = await getFeedbackFromGitHub();
+  
+  const feedbackIndex = feedbackData.findIndex(f => f.id === feedbackId);
+  if (feedbackIndex === -1) {
+    throw new Error('Feedback not found');
+  }
+  
+  const feedback = feedbackData[feedbackIndex];
+  feedback.status = status;
+  
+  if (status === 'APPROVED') {
+    feedback.approvedBy = adminUser;
+    feedback.approvedAt = new Date().toISOString();
+
+    delete feedback.rejectedBy;
+    delete feedback.rejectedAt;
+  } else {
+    feedback.rejectedBy = adminUser;
+    feedback.rejectedAt = new Date().toISOString();
+
+    delete feedback.approvedBy;
+    delete feedback.approvedAt;
+  }
+  
+  feedbackData[feedbackIndex] = feedback;
+  
+  await saveFeedbackToGitHub(
+    feedbackData, 
+    `${status.toLowerCase()} feedback from ${feedback.username} by ${adminUser}`
+  );
+}
+
+export async function getUserFeedbackFromGitHub(userId: string): Promise<FeedbackData | null> {
+  const feedbackData = await getFeedbackFromGitHub();
+  return feedbackData.find(f => f.userId === userId) || null;
+}
+
+export async function getPartnersFromGitHub() {
+  try {
+    console.log('🔍 Fetching partners from GitHub...');
+    const response = await blogOctokit.rest.repos.getContent({
+      owner: BLOG_REPO_CONFIG.owner,
+      repo: BLOG_REPO_CONFIG.repo,
+      path: 'data/partners.json',
+      ref: BLOG_REPO_CONFIG.branch,
+    });
+
+    if ('content' in response.data) {
+      const content = Buffer.from(response.data.content, 'base64').toString('utf8');
+      const partners = JSON.parse(content);
+      console.log('✅ Partners loaded from GitHub:', partners.length, 'partners');
+      return partners;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('❌ Error fetching partners from GitHub:', error);
+    if (error.status === 404) {
+      console.log('📁 Partners file does not exist on GitHub, returning empty array');
+    }
+    return [];
+  }
+}
+
+export async function savePartnersToGitHub(partners: any[]) {
+  try {
+    const path = 'data/partners.json';
+    const content = JSON.stringify(partners, null, 2);
+
+    let sha: string | undefined;
+    try {
+      const existingFile = await blogOctokit.rest.repos.getContent({
+        owner: BLOG_REPO_CONFIG.owner,
+        repo: BLOG_REPO_CONFIG.repo,
+        path,
+        ref: BLOG_REPO_CONFIG.branch,
+      });
+      
+      if ('sha' in existingFile.data) {
+        sha = existingFile.data.sha;
+      }
+    } catch (error) {
+
+    }
+
+    await blogOctokit.rest.repos.createOrUpdateFileContents({
+      owner: BLOG_REPO_CONFIG.owner,
+      repo: BLOG_REPO_CONFIG.repo,
+      path,
+      message: `Update partners list - ${new Date().toISOString()}`,
+      content: Buffer.from(content).toString('base64'),
+      branch: BLOG_REPO_CONFIG.branch,
+      sha,
+    });
+
+    console.log('Partners saved to GitHub successfully');
+  } catch (error) {
+    console.error('Error saving partners to GitHub:', error);
+    throw error;
+  }
 } 
