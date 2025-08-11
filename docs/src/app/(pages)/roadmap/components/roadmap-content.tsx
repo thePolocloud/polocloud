@@ -222,8 +222,7 @@ const RoadmapColumn = ({ column, columnIndex, totalItems }: { column: RoadmapCol
               </span>
             </div>
           </div>
-          
-          {/* Progress Bar */}
+
           <div className="mb-3">
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-muted-foreground">Progress</span>
@@ -266,7 +265,6 @@ export function RoadmapContent() {
   const [showQuickStats, setShowQuickStats] = useState(false);
   const contentRef = useRef<HTMLElement>(null);
 
-  // Calculate quick stats
   const totalItems = roadmapData.reduce((total, column) => total + column.items.length, 0);
   const completedItems = roadmapData.find(col => col.id === 'done')?.items.length || 0;
   const inProgressItems = roadmapData.find(col => col.id === 'in-progress')?.items.length || 0;
@@ -455,7 +453,7 @@ export function RoadmapContent() {
           <div className={`text-center mb-16 transition-all duration-1000 ease-out ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
-            <h1 className={`text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent transition-all duration-1000 delay-200 ${
+            <h1 className={`text-3xl md:text-4xl lg:text-5xl font-black mb-8 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent tracking-tight leading-tight transition-all duration-1000 delay-200 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}>
               Development Roadmap
@@ -592,7 +590,6 @@ export function RoadmapContent() {
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            {/* Cool Background Effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-primary/50 to-primary" />
             
