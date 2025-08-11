@@ -6,6 +6,7 @@ import { DocsButton } from '@/components/layout/header/docs-button';
 import { RoadmapButton } from '@/components/layout/header/roadmap-button';
 import { ChangelogButton } from '@/components/layout/header/changelog-button';
 import { BlogButton } from '@/components/layout/header/blog-button';
+import { FeedbackButton } from '@/components/layout/header/feedback-button';
 import { DashboardButton } from '@/components/layout/header/dashboard-button';
 import { LogoWithLink } from '@/components/layout/header/logo';
 import { Footer } from '../(home)/components/footer';
@@ -23,6 +24,7 @@ function CustomNavbar() {
           <RoadmapButton />
           <ChangelogButton />
           <BlogButton />
+          <FeedbackButton />
         </div>
 
         <div className="flex items-center space-x-2 w-32 justify-end">
