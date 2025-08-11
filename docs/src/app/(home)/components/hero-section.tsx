@@ -28,7 +28,6 @@ export function HeroSection() {
 
     const commandText = "java -jar polocloud-launcher.jar";
 
-    // Helper function to render highlighted text
     const renderMessage = (message: string, highlight?: string, highlightColor?: string) => {
         if (!highlight || !highlightColor) {
             return <span>{message}</span>;
@@ -64,7 +63,7 @@ export function HeroSection() {
         };
     }, []);
 
-    // Fetch latest release version from GitHub
+
     useEffect(() => {
         const fetchLatestVersion = async () => {
             try {
@@ -72,7 +71,7 @@ export function HeroSection() {
                 if (response.ok) {
                     const data = await response.json();
                     if (data.releases && data.releases > 0) {
-                        // Fetch the latest release details
+
                         const releasesResponse = await fetch('https://api.github.com/repos/HttpMarco/polocloud/releases/latest');
                         if (releasesResponse.ok) {
                             const releaseData = await releasesResponse.json();
@@ -82,7 +81,7 @@ export function HeroSection() {
                 }
             } catch (error) {
                 console.log('Failed to fetch latest version, using fallback');
-                // Keep the fallback version
+
             }
         };
 
@@ -147,9 +146,9 @@ export function HeroSection() {
         <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20 min-h-screen flex items-center justify-center">
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] dark:bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)]" />
 
-            {/* Floating Particles */}
+
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {/* Particle 1 */}
+
                 <motion.div
                     className="absolute w-2 h-2 bg-primary/20 rounded-full"
                     animate={{
@@ -167,8 +166,7 @@ export function HeroSection() {
                         top: "20%",
                     }}
                 />
-                
-                {/* Particle 2 */}
+
                 <motion.div
                     className="absolute w-1 h-1 bg-primary/30 rounded-full"
                     animate={{
@@ -187,8 +185,7 @@ export function HeroSection() {
                         top: "30%",
                     }}
                 />
-                
-                {/* Particle 3 */}
+
                 <motion.div
                     className="absolute w-1.5 h-1.5 bg-primary/25 rounded-full"
                     animate={{
@@ -208,7 +205,7 @@ export function HeroSection() {
                     }}
                 />
                 
-                {/* Particle 4 */}
+
                 <motion.div
                     className="absolute w-1 h-1 bg-primary/15 rounded-full"
                     animate={{
@@ -227,8 +224,7 @@ export function HeroSection() {
                         top: "60%",
                     }}
                 />
-                
-                {/* Particle 5 */}
+
                 <motion.div
                     className="absolute w-2 h-2 bg-primary/20 rounded-full"
                     animate={{
@@ -247,8 +243,7 @@ export function HeroSection() {
                         top: "10%",
                     }}
                 />
-                
-                {/* Particle 6 */}
+
                 <motion.div
                     className="absolute w-1 h-1 bg-primary/25 rounded-full"
                     animate={{
@@ -267,8 +262,7 @@ export function HeroSection() {
                         top: "80%",
                     }}
                 />
-                
-                {/* Particle 7 */}
+
                 <motion.div
                     className="absolute w-1.5 h-1.5 bg-primary/20 rounded-full"
                     animate={{
@@ -287,8 +281,7 @@ export function HeroSection() {
                         top: "40%",
                     }}
                 />
-                
-                {/* Particle 8 */}
+
                 <motion.div
                     className="absolute w-1 h-1 bg-primary/30 rounded-full"
                     animate={{
@@ -308,7 +301,6 @@ export function HeroSection() {
                     }}
                 />
 
-                {/* Particle 9 */}
                 <motion.div
                     className="absolute w-1.5 h-1.5 bg-primary/25 rounded-full"
                     animate={{
@@ -328,7 +320,6 @@ export function HeroSection() {
                     }}
                 />
 
-                {/* Particle 10 */}
                 <motion.div
                     className="absolute w-1 h-1 bg-primary/20 rounded-full"
                     animate={{
@@ -348,7 +339,6 @@ export function HeroSection() {
                     }}
                 />
 
-                {/* Particle 11 */}
                 <motion.div
                     className="absolute w-2 h-2 bg-primary/15 rounded-full"
                     animate={{
@@ -368,7 +358,6 @@ export function HeroSection() {
                     }}
                 />
 
-                {/* Particle 12 */}
                 <motion.div
                     className="absolute w-1 h-1 bg-primary/35 rounded-full"
                     animate={{
@@ -388,7 +377,6 @@ export function HeroSection() {
                     }}
                 />
 
-                {/* Particle 13 */}
                 <motion.div
                     className="absolute w-1.5 h-1.5 bg-primary/20 rounded-full"
                     animate={{
@@ -408,7 +396,6 @@ export function HeroSection() {
                     }}
                 />
 
-                {/* Particle 14 */}
                 <motion.div
                     className="absolute w-1 h-1 bg-primary/30 rounded-full"
                     animate={{
@@ -428,7 +415,6 @@ export function HeroSection() {
                     }}
                 />
 
-                {/* Particle 15 */}
                 <motion.div
                     className="absolute w-2 h-2 bg-primary/25 rounded-full"
                     animate={{
@@ -454,7 +440,7 @@ export function HeroSection() {
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}>
                     <div className="order-1 text-center lg:text-left">
-                        {/* Version Badge */}
+
                         <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6 transition-all duration-1000 delay-100 ${
                             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                         }`}>
@@ -543,7 +529,7 @@ export function HeroSection() {
                                     </div>
                                 )}
 
-                                {/* Phase 1 Logs */}
+
                                 {showLogsPhase1 && terminalLinesPhase1.map((line, index) => (
                                     <motion.div
                                         key={`phase1-${index}`}
@@ -569,7 +555,6 @@ export function HeroSection() {
                                     </motion.div>
                                 ))}
 
-                                {/* Phase 2 Logs */}
                                 {showLogsPhase2 && terminalLinesPhase2.map((line, index) => (
                                     <motion.div
                                         key={`phase2-${index}`}
@@ -595,7 +580,6 @@ export function HeroSection() {
                                     </motion.div>
                                 ))}
 
-                                {/* Phase 3 Logs */}
                                 {showLogsPhase3 && terminalLinesPhase3.map((line, index) => (
                                     <motion.div
                                         key={`phase3-${index}`}
