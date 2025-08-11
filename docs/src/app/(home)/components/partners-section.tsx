@@ -4,15 +4,18 @@ import { ExternalLink, Users, Handshake, Star, Cloud, Award, Zap } from 'lucide-
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-// Partner-Logos für das Carousel
-const partnerLogos = [
-    { name: 'Partner 1', logo: '/placeholder.png' },
-    { name: 'Partner 2', logo: '/placeholder.png' },
-    { name: 'Partner 3', logo: '/placeholder.png' },
-];
+interface Partner {
+    id: string;
+    name: string;
+    logo: string;
+    website?: string;
+    description?: string;
+}
 
 const PartnersCarousel = () => {
     const [isVisible, setIsVisible] = useState(false);
+    const [partners, setPartners] = useState<Partner[]>([]);
+    const [loading, setLoading] = useState(true);
     const carouselRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -30,6 +33,27 @@ const PartnersCarousel = () => {
         }
 
         return () => observer.disconnect();
+    }, []);
+
+
+    useEffect(() => {
+        const fetchPartners = async () => {
+            try {
+                const response = await fetch('/api/public/partners');
+                if (response.ok) {
+                    const data = await response.json();
+                    setPartners(data.partners || []);
+                } else {
+                    console.error('Failed to fetch partners');
+                }
+            } catch (error) {
+                console.error('Error fetching partners:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPartners();
     }, []);
 
     return (
@@ -58,51 +82,69 @@ const PartnersCarousel = () => {
                     </div>
 
                     <div className="relative overflow-hidden max-w-2xl mx-auto">
-                        <div className="flex space-x-8 animate-scroll">
-                            {partnerLogos.map((partner, index) => (
+                        {loading ? (
+                            <div className="text-center text-muted-foreground py-8">
+                                Loading partners...
+                            </div>
+                        ) : partners.length === 0 ? (
+                            <div className="text-center text-muted-foreground py-8">
+                                No partners available.
+                            </div>
+                        ) : partners.length === 1 ? (
+
+                            <div className="flex justify-center">
                                 <motion.div
-                                    key={`first-${index}`}
-                                    className="flex-shrink-0 flex flex-col items-center"
+                                    className="flex flex-col items-center"
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     whileInView={{ opacity: 1, scale: 1 }}
                                     viewport={{ once: true }}
-                                    transition={{ delay: index * 0.1 }}
+                                    transition={{ delay: 0.1 }}
                                 >
-                                    <div className="w-28 h-18 bg-gradient-to-br from-background/50 to-background/30 backdrop-blur-sm border border-border/30 rounded-lg flex items-center justify-center mb-2 shadow-lg hover:shadow-xl transition-all duration-300 group">
-                                        <Image
-                                            src={partner.logo}
-                                            alt={partner.name}
-                                            width={112}
-                                            height={72}
-                                            className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300"
+                                    <div 
+                                        className="w-32 h-20 bg-gradient-to-br from-background/50 to-background/30 backdrop-blur-sm border border-border/30 rounded-lg flex items-center justify-center mb-3 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                                        onClick={() => {
+                                            if (partners[0].website) {
+                                                window.open(partners[0].website, '_blank', 'noopener,noreferrer');
+                                            }
+                                        }}
+                                    >
+                                        <img
+                                            src={partners[0].logo}
+                                            alt={partners[0].name}
+                                            className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-300"
                                             onError={(e) => {
-                                                console.warn(`Failed to load logo for ${partner.name}:`, partner.logo);
+                                                console.warn(`Failed to load logo for ${partners[0].name}:`, partners[0].logo);
                                                 e.currentTarget.style.display = 'none';
                                             }}
                                         />
                                     </div>
-                                    <span className="text-xs font-semibold text-foreground dark:text-white/80 text-center">
-                    {partner.name}
-                  </span>
+                                    <span className="text-sm font-semibold text-foreground dark:text-white/80 text-center">
+                                        {partners[0].name}
+                                    </span>
+                                    {partners[0].website && (
+                                        <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-1" />
+                                    )}
                                 </motion.div>
-                            ))}
+                            </div>
+                        ) : (
 
-                            {Array.from({ length: Math.max(3, Math.ceil(8 / partnerLogos.length)) }, (_, setIndex) => (
-                                partnerLogos.map((partner, index) => (
-                                    <motion.div
-                                        key={`duplicate-${setIndex}-${index}`}
+                            <div className="flex space-x-6 animate-scroll">
+                                {partners.map((partner, index) => (
+                                    <div
+                                        key={`first-${partner.id}`}
                                         className="flex-shrink-0 flex flex-col items-center"
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        whileInView={{ opacity: 1, scale: 1 }}
-                                        viewport={{ once: true }}
-                                        transition={{ delay: index * 0.1 }}
                                     >
-                                        <div className="w-28 h-18 bg-gradient-to-br from-background/50 to-background/30 backdrop-blur-sm border border-border/30 rounded-lg flex items-center justify-center mb-2 shadow-lg hover:shadow-xl transition-all duration-300 group">
-                                            <Image
+                                        <div 
+                                            className="w-28 h-18 bg-gradient-to-br from-background/50 to-background/30 backdrop-blur-sm border border-border/30 rounded-lg flex items-center justify-center mb-2 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                                            onClick={() => {
+                                                if (partner.website) {
+                                                    window.open(partner.website, '_blank', 'noopener,noreferrer');
+                                                }
+                                            }}
+                                        >
+                                            <img
                                                 src={partner.logo}
                                                 alt={partner.name}
-                                                width={112}
-                                                height={72}
                                                 className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300"
                                                 onError={(e) => {
                                                     console.warn(`Failed to load logo for ${partner.name}:`, partner.logo);
@@ -111,12 +153,46 @@ const PartnersCarousel = () => {
                                             />
                                         </div>
                                         <span className="text-xs font-semibold text-foreground dark:text-white/80 text-center">
-                      {partner.name}
-                    </span>
-                                    </motion.div>
-                                ))
-                            ))}
-                        </div>
+                                            {partner.name}
+                                        </span>
+                                        {partner.website && (
+                                            <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-1" />
+                                        )}
+                                    </div>
+                                ))}
+                                {partners.map((partner, index) => (
+                                    <div
+                                        key={`second-${partner.id}`}
+                                        className="flex-shrink-0 flex flex-col items-center"
+                                    >
+                                        <div 
+                                            className="w-28 h-18 bg-gradient-to-br from-background/50 to-background/30 backdrop-blur-sm border border-border/30 rounded-lg flex items-center justify-center mb-2 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                                            onClick={() => {
+                                                if (partner.website) {
+                                                    window.open(partner.website, '_blank', 'noopener,noreferrer');
+                                                }
+                                            }}
+                                        >
+                                            <img
+                                                src={partner.logo}
+                                                alt={partner.name}
+                                                className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300"
+                                                onError={(e) => {
+                                                    console.warn(`Failed to load logo for ${partner.name}:`, partner.logo);
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                        <span className="text-xs font-semibold text-foreground dark:text-white/80 text-center">
+                                            {partner.name}
+                                        </span>
+                                        {partner.website && (
+                                            <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-1" />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <motion.div

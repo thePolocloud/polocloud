@@ -1,11 +1,12 @@
+'use client';
+
 import { notFound } from 'next/navigation';
 import { PageLayout } from '@/components/layout/page-layout';
-import { Calendar, User, Tag, ArrowLeft, Github, ExternalLink } from 'lucide-react';
-import { readFileSync, readdirSync } from 'fs';
-import { join } from 'path';
-import matter from 'gray-matter';
-import { MDXRemote } from 'next-mdx-remote/rsc';
+import { Calendar, User, Tag, ArrowLeft, Github, ExternalLink, FileText } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
+import { useEffect, useState, use } from 'react';
 
 interface BlogPost {
   title: string;
@@ -14,46 +15,59 @@ interface BlogPost {
   author?: string;
   tags?: string[];
   content: string;
+  slug: string;
 }
 
-function getBlogSlugs(): string[] {
-  const blogDir = join(process.cwd(), 'content', 'blog');
-  const files = readdirSync(blogDir).filter(file => file.endsWith('.mdx') && file !== 'meta.json');
-  return files.map(file => file.replace('.mdx', ''));
-}
+export default function BlogPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = use(params);
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-function getBlogPost(slug: string): BlogPost | null {
-  try {
-    const blogDir = join(process.cwd(), 'content', 'blog');
-    const filePath = join(blogDir, `${slug}.mdx`);
-    const fileContent = readFileSync(filePath, 'utf8');
-    const { data, content } = matter(fileContent);
-    
-    return {
-      title: data.title || 'Untitled',
-      description: data.description,
-      date: data.date,
-      author: data.author,
-      tags: data.tags || [],
-      content,
-    };
-  } catch (error) {
-    return null;
+  useEffect(() => {
+    async function loadBlogPost() {
+      try {
+        const response = await fetch(`/api/blog/${resolvedParams.slug}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPost(data.post);
+        } else {
+          setError(true);
+        }
+      } catch (err) {
+        console.error('Failed to load blog post:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadBlogPost();
+  }, [resolvedParams.slug]);
+
+  if (loading) {
+    return (
+      <PageLayout>
+        <div className="relative min-h-screen">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] dark:bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)]" />
+          
+          <div className="container mx-auto px-6 py-12 max-w-4xl relative z-10">
+            <div className="text-center py-16">
+              <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4 animate-pulse" />
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                Loading blog post...
+              </h2>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Please wait while we fetch the content.
+              </p>
+            </div>
+          </div>
+        </div>
+      </PageLayout>
+    );
   }
-}
 
-export async function generateStaticParams() {
-  const slugs = getBlogSlugs();
-  return slugs.map((slug) => ({
-    slug,
-  }));
-}
-
-export default async function BlogPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const post = getBlogPost(slug);
-  
-  if (!post) {
+  if (error || !post) {
     notFound();
   }
 
@@ -119,8 +133,8 @@ export default async function BlogPage({ params }: { params: Promise<{ slug: str
           </div>
 
           <article className="prose prose-lg dark:prose-invert max-w-none bg-card/30 backdrop-blur-sm border border-border/50 rounded-xl p-8 mb-12">
-            <MDXRemote 
-              source={post.content}
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               components={{
                 a: ({ href, children, ...props }) => {
                   if (href?.startsWith('/')) {
@@ -162,7 +176,9 @@ export default async function BlogPage({ params }: { params: Promise<{ slug: str
                   <blockquote className="border-l-4 border-primary/30 pl-4 italic text-muted-foreground my-6" {...props}>{children}</blockquote>
                 ),
               }}
-            />
+            >
+              {post.content}
+            </ReactMarkdown>
           </article>
 
           <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-xl p-6">

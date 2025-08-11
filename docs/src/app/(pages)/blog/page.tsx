@@ -1,8 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { Calendar, User, Tag, ArrowRight, Pin, MessageCircle, FileText } from 'lucide-react';
-import { readFileSync, readdirSync } from 'fs';
-import { join } from 'path';
-import matter from 'gray-matter';
+import { useEffect, useState } from 'react';
 
 interface BlogPost {
   title: string;
@@ -12,36 +12,51 @@ interface BlogPost {
   tags?: string[];
   slug: string;
   pinned?: boolean;
-}
-
-function getBlogPosts(): BlogPost[] {
-  const blogDir = join(process.cwd(), 'content', 'blog');
-  const files = readdirSync(blogDir).filter(file => file.endsWith('.mdx') && file !== 'meta.json');
-  
-  const posts: BlogPost[] = [];
-  
-  for (const file of files) {
-    const filePath = join(blogDir, file);
-    const fileContent = readFileSync(filePath, 'utf8');
-    const { data } = matter(fileContent);
-    const slug = file.replace('.mdx', '');
-    
-    posts.push({
-      title: data.title || 'Untitled',
-      description: data.description,
-      date: data.date,
-      author: data.author,
-      tags: data.tags || [],
-      slug,
-      pinned: data.pinned || false,
-    });
-  }
-  
-  return posts;
+  contentPreview?: string;
+  wordCount?: number;
 }
 
 export default function BlogIndexPage() {
-  const blogPosts = getBlogPosts();
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadBlogPosts() {
+      try {
+        const response = await fetch('/api/blog');
+        if (response.ok) {
+          const data = await response.json();
+          setBlogPosts(data.posts || []);
+        }
+      } catch (error) {
+        console.error('Failed to load blog posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadBlogPosts();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="relative min-h-screen">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] dark:bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)]" />
+        
+        <div className="container mx-auto px-6 py-12 max-w-6xl relative z-10">
+          <div className="text-center py-16">
+            <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4 animate-pulse" />
+            <h2 className="text-2xl font-bold text-foreground mb-4">
+              Loading blog posts...
+            </h2>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Please wait while we fetch the latest content.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const pinnedPosts = blogPosts.filter(post => post.pinned);
   const unpinnedPosts = blogPosts.filter(post => !post.pinned);
