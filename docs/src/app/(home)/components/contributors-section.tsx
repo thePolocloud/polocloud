@@ -366,12 +366,12 @@ export function ContributorsSection() {
                                         />
                                     </motion.div>
                                     
-                                    {/* Top 3 Badges - außerhalb um das Avatar herum */}
+
                                     {index < 3 && (
                                         <div className="absolute -top-1 -right-1 w-6 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg z-10">
                                             {index === 0 && (
                                                 <div className="w-full h-full rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-lg px-1 relative overflow-hidden">
-                                                    {/* Glänzender Effekt */}
+
                                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" style={{
                                                         animationDuration: '2s',
                                                         animationIterationCount: 'infinite',
@@ -383,7 +383,7 @@ export function ContributorsSection() {
                                             )}
                                             {index === 1 && (
                                                 <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center shadow-lg px-1 relative overflow-hidden">
-                                                    {/* Glänzender Effekt */}
+
                                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" style={{
                                                         animationDuration: '2s',
                                                         animationIterationCount: 'infinite',
@@ -395,7 +395,7 @@ export function ContributorsSection() {
                                             )}
                                             {index === 2 && (
                                                 <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center shadow-lg px-1 relative overflow-hidden">
-                                                    {/* Glänzender Effekt */}
+
                                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" style={{
                                                         animationDuration: '2s',
                                                         animationIterationCount: 'infinite',

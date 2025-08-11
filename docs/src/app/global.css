@@ -55,6 +55,28 @@ html {
         animation: gradient 3s ease infinite;
     }
 
+    /* Line clamp utilities */
+    .line-clamp-2 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .line-clamp-3 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+    }
+
+    .line-clamp-4 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+    }
+
     @keyframes gradient {
         0%, 100% {
             background-position: 0% 50%;
@@ -75,6 +97,33 @@ html {
         }
         100% {
             transform: translateX(-100%);
+        }
+    }
+
+    /* Marquee Animations */
+    .animate-marquee {
+        animation: marquee var(--duration) linear infinite;
+    }
+
+    .animate-marquee-vertical {
+        animation: marquee-vertical var(--duration) linear infinite;
+    }
+
+    @keyframes marquee {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(calc(-100% - var(--gap)));
+        }
+    }
+
+    @keyframes marquee-vertical {
+        from {
+            transform: translateY(0);
+        }
+        to {
+            transform: translateY(calc(-100% - var(--gap)));
         }
     }
 }
@@ -344,11 +393,35 @@ body {
 }
 
 /* Glanz-Effekt Animation für Badges */
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
 @keyframes shimmer {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Toast Animations */
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.slide-in-from-right-full {
+  animation: slide-in-from-right-full 0.3s ease-out;
+}
+
+@keyframes slide-in-from-right-full {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
