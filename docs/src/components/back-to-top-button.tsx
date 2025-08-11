@@ -24,15 +24,14 @@ export function BackToTopButton() {
         const currentPosition = window.pageYOffset;
         const targetPosition = 0;
         const distance = currentPosition - targetPosition;
-        const duration = 1000; // 1 Sekunde
+        const duration = 1000;
         let start: number | null = null;
 
         const animation = (currentTime: number) => {
             if (start === null) start = currentTime;
             const timeElapsed = currentTime - start;
             const progress = Math.min(timeElapsed / duration, 1);
-            
-            // Easing function für schönere Animation
+
             const easeOutQuart = 1 - Math.pow(1 - progress, 4);
             
             window.scrollTo(0, currentPosition - (distance * easeOutQuart));
