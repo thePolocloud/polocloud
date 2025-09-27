@@ -20,23 +20,36 @@ class VelocityMotdUpdater (
     @Subscribe
     fun onProxyPing(event: ProxyPingEvent) {
         val group = Polocloud.instance().groupProvider().find(platform.proxyAddon().poloService.groupName)!!
+        val ping = event.ping
+
         if(group.properties["maintenance"]?.asBoolean ?: false) {
             // maintenance mode is enabled, use maintenance MOTD
             if(!config.maintenanceMotd().enabled) {
                 // maintenance motd is disabled
                 return
             }
-            val motdLines = config.maintenanceMotd().lineOne + "\n" + config.maintenanceMotd().lineTwo
+
+            val motdLines = (config.maintenanceMotd().lineOne + "\n" + config.maintenanceMotd().lineTwo)
                 .replace("%version%", polocloudVersion)
                 .replace("%online_players%", server.playerCount.toString())
-            val newVersionName = config.maintenanceMotd().pingMessage
-            val newPing = ServerPing.builder()
-                .description(MiniMessage.miniMessage().deserialize(motdLines))
-                .version(ServerPing.Version(1, newVersionName))
-                .maximumPlayers(event.ping.players.orElse(null)?.max ?: 0)
-                .onlinePlayers(event.ping.players.orElse(null)?.online ?: 0)
 
-            event.ping = newPing.build()
+            val newVersionName = config.maintenanceMotd().pingMessage
+
+            // Build from existing ping to preserve favicon, sample players, etc.
+            val builder = try {
+                ping.asBuilder()
+            } catch (_: Throwable) {
+                ServerPing.builder()
+                    .favicon(ping.favicon.orElse(null))
+                    .maximumPlayers(ping.players.orElse(null)?.max ?: 0)
+                    .onlinePlayers(ping.players.orElse(null)?.online ?: 0)
+                    .version(ping.version)
+            }
+
+            event.ping = builder
+                .description(MiniMessage.miniMessage().deserialize(motdLines))
+                .version(ServerPing.Version(ping.version.protocol, newVersionName))
+                .build()
             return
         }
 
@@ -45,10 +58,15 @@ class VelocityMotdUpdater (
             return
         }
 
-        val ping = event.ping
-        if(ping == null) {
-            // no ping data available
-            return
+        // Build from existing ping to keep favicon and other fields
+        val builder = try {
+            ping.asBuilder()
+        } catch (_: Throwable) {
+            ServerPing.builder()
+                .favicon(ping.favicon.orElse(null))
+                .maximumPlayers(ping.players.orElse(null)?.max ?: 0)
+                .onlinePlayers(ping.players.orElse(null)?.online ?: 0)
+                .version(ping.version)
         }
 
         var motdLines = config.motd().lineOne + "\n" + config.motd().lineTwo
@@ -56,14 +74,10 @@ class VelocityMotdUpdater (
             .replace("%version%", polocloudVersion)
             .replace("%online_players%", server.playerCount.toString())
 
-        val newPing = ServerPing.builder()
+        event.ping = builder
             .description(MiniMessage.miniMessage().deserialize(motdLines))
             .version(ping.version)
-            .maximumPlayers(ping.players.orElse(null) ?.max ?: 0)
-            .onlinePlayers(ping.players.orElse(null)?.online ?: 0)
-
-        event.ping = newPing.build()
+            .build()
 
     }
-
 }
