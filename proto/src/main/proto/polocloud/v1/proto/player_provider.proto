@@ -6,35 +6,51 @@ option java_package = "dev.httpmarco.polocloud.v1.player";
 option java_multiple_files = true;
 
 service PlayerController {
-    rpc findAll (PlayerFindRequest) returns (PlayerFindResponse);
-    rpc findByName (PlayerFindByNameRequest) returns (PlayerFindResponse);
-    rpc findByService (PlayerFindByServiceRequest) returns (PlayerFindResponse);
-    rpc playerCount(PlayerCountRequest) returns (PlayerCountResponse);
+  rpc findAll (PlayerFindRequest) returns (PlayerFindResponse);
+  rpc findByName (PlayerFindByNameRequest) returns (PlayerFindResponse);
+  rpc findByService (PlayerFindByServiceRequest) returns (PlayerFindResponse);
+  rpc playerCount(PlayerCountRequest) returns (PlayerCountResponse);
 }
 
 message PlayerFindRequest {}
 
 message PlayerFindByNameRequest {
-    string name = 1;
+  string name = 1;
 }
 
 message PlayerFindByServiceRequest {
-    string current_service_name = 1;
+  string current_service_name = 1;
 }
 
 message PlayerSnapshot {
-    string unique_id = 1;
-    string name = 2;
-    string current_service_name = 3;
-    int64 first_time_joined = 4;
+  string unique_id = 1;
+  string name = 2;
+  string current_service_name = 3;
+  int64 first_time_joined = 4;
 }
 
 message PlayerFindResponse {
-    repeated PlayerSnapshot players = 1;
+  repeated PlayerSnapshot players = 1;
 }
 
 message PlayerCountRequest {}
 
 message PlayerCountResponse {
-    int32 count = 1;
+  int32 count = 1;
 }
+
+message PlayerActorMessage {
+  string unique_id = 1;
+  string message = 2;
+}
+
+message PlayerActorKick {
+  string unique_id = 1;
+  string message = 2;
+}
+
+message PlayerActorSend {
+  string unique_id = 1;
+  string service = 2;
+}
+
