@@ -2,6 +2,7 @@ package dev.httpmarco.polocloud.sdk.java.player;
 
 import dev.httpmarco.polocloud.common.future.FutureConverterKt;
 import dev.httpmarco.polocloud.shared.player.PolocloudPlayer;
+import dev.httpmarco.polocloud.shared.player.SharedPlayerActor;
 import dev.httpmarco.polocloud.shared.player.SharedPlayerProvider;
 import dev.httpmarco.polocloud.shared.service.Service;
 import dev.httpmarco.polocloud.v1.player.*;
@@ -12,8 +13,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class PlayerProvider implements SharedPlayerProvider<PolocloudPlayer> {
+public final class PlayerProvider implements SharedPlayerProvider<PolocloudPlayer> {
 
+    private final PlayerActor actor = new PlayerActor();
     private final PlayerControllerGrpc.PlayerControllerBlockingStub blockingStub;
     private final PlayerControllerGrpc.PlayerControllerFutureStub futureStub;
 
@@ -63,5 +65,10 @@ public class PlayerProvider implements SharedPlayerProvider<PolocloudPlayer> {
         return this.blockingStub
                 .playerCount(PlayerCountRequest.getDefaultInstance())
                 .getCount();
+    }
+
+    @Override
+    public @NotNull SharedPlayerActor playerActor() {
+        return actor;
     }
 }

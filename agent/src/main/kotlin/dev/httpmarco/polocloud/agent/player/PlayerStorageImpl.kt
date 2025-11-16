@@ -1,10 +1,13 @@
 package dev.httpmarco.polocloud.agent.player
 
+import dev.httpmarco.polocloud.sdk.java.player.PlayerActor
+import dev.httpmarco.polocloud.shared.player.SharedPlayerActor
 import dev.httpmarco.polocloud.shared.service.Service
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
-private val cachedPlayers =  mutableMapOf<UUID, AbstractPolocloudPlayer>()
+private val cachedPlayers = mutableMapOf<UUID, AbstractPolocloudPlayer>()
+private val actor = PlayerActor()
 
 class PlayerStorageImpl : PlayerStorage {
     override fun addPlayer(player: AbstractPolocloudPlayer) {
@@ -39,5 +42,7 @@ class PlayerStorageImpl : PlayerStorage {
         return CompletableFuture.completedFuture(findByService(service.name()))
     }
 
-    override fun playerCount(): Int = cachedPlayers.size
+    override fun playerCount() = cachedPlayers.size
+
+    override fun playerActor() = actor
 }

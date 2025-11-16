@@ -38,5 +38,14 @@ interface SharedPlayerProvider<P : PolocloudPlayer> {
      */
     fun findByServiceAsync(service: Service): CompletableFuture<List<P>>
 
+    /**
+     * Global player count
+     */
     fun playerCount(): Int
+
+    /**
+     * Actor for all message, sounds, title and more handling related to players.
+     */
+    fun playerActor(): SharedPlayerActor
+
 }
