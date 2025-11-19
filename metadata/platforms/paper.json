@@ -39,8 +39,32 @@
   ],
   "versions": [
     {
-      "version": "1.21.10",
-      "buildId": "88"
+      "version": "1.9.4",
+      "buildId": 775
+    },
+    {
+      "version": "1.8.8",
+      "buildId": 445
+    },
+    {
+      "version": "1.7.10",
+      "buildId": 2025
+    },
+    {
+      "version": "1.21.9-pre4",
+      "buildId": 22
+    },
+    {
+      "version": "1.21.9-pre3",
+      "buildId": 12
+    },
+    {
+      "version": "1.21.9-pre2",
+      "buildId": 7
+    },
+    {
+      "version": "1.21.9",
+      "buildId": 59
     },
     {
       "version": "1.21.8",
@@ -67,12 +91,168 @@
       "buildId": "83"
     },
     {
+      "version": "1.21.10",
+      "buildId": 113
+    },
+    {
       "version": "1.21.1",
       "buildId": "133"
     },
     {
       "version": "1.21",
       "buildId": "130"
+    },
+    {
+      "version": "1.20.6",
+      "buildId": 151
+    },
+    {
+      "version": "1.20.5",
+      "buildId": 22
+    },
+    {
+      "version": "1.20.4",
+      "buildId": 499
+    },
+    {
+      "version": "1.20.2",
+      "buildId": 318
+    },
+    {
+      "version": "1.20.1",
+      "buildId": 196
+    },
+    {
+      "version": "1.20",
+      "buildId": 17
+    },
+    {
+      "version": "1.19.4",
+      "buildId": 550
+    },
+    {
+      "version": "1.19.3",
+      "buildId": 448
+    },
+    {
+      "version": "1.19.2",
+      "buildId": 307
+    },
+    {
+      "version": "1.19.1",
+      "buildId": 111
+    },
+    {
+      "version": "1.19",
+      "buildId": 81
+    },
+    {
+      "version": "1.18.2",
+      "buildId": 388
+    },
+    {
+      "version": "1.18.1",
+      "buildId": 216
+    },
+    {
+      "version": "1.18",
+      "buildId": 66
+    },
+    {
+      "version": "1.17.1",
+      "buildId": 411
+    },
+    {
+      "version": "1.17",
+      "buildId": 79
+    },
+    {
+      "version": "1.16.5",
+      "buildId": 794
+    },
+    {
+      "version": "1.16.4",
+      "buildId": 416
+    },
+    {
+      "version": "1.16.3",
+      "buildId": 253
+    },
+    {
+      "version": "1.16.2",
+      "buildId": 189
+    },
+    {
+      "version": "1.16.1",
+      "buildId": 138
+    },
+    {
+      "version": "1.15.2",
+      "buildId": 393
+    },
+    {
+      "version": "1.15.1",
+      "buildId": 62
+    },
+    {
+      "version": "1.15",
+      "buildId": 21
+    },
+    {
+      "version": "1.14.4",
+      "buildId": 245
+    },
+    {
+      "version": "1.14.3",
+      "buildId": 134
+    },
+    {
+      "version": "1.14.2",
+      "buildId": 107
+    },
+    {
+      "version": "1.14.1",
+      "buildId": 50
+    },
+    {
+      "version": "1.14",
+      "buildId": 17
+    },
+    {
+      "version": "1.13.2",
+      "buildId": 657
+    },
+    {
+      "version": "1.13.1",
+      "buildId": 386
+    },
+    {
+      "version": "1.13-pre7",
+      "buildId": 12
+    },
+    {
+      "version": "1.13",
+      "buildId": 173
+    },
+    {
+      "version": "1.12.2",
+      "buildId": 1620
+    },
+    {
+      "version": "1.12.1",
+      "buildId": 1204
+    },
+    {
+      "version": "1.12",
+      "buildId": 1169
+    },
+    {
+      "version": "1.11.2",
+      "buildId": 1106
+    },
+    {
+      "version": "1.10.2",
+      "buildId": 918
     }
   ]
 }

@@ -8,7 +8,7 @@
   ],
   "tasks": [
     "EULA_TASK",
-    "SPIGOT_SERVER_PROPERTIES",
+    "PAPER_SERVER_PROPERTIES",
     "PAPER_PROXY_SUPPORT_TASK"
   ],
   "preTasks": [
@@ -37,6 +37,10 @@
     "-Daikars.new.flags=true"
   ],
   "versions": [
+    {
+      "version": "1.21.10",
+      "buildId": "2527"
+    },
     {
       "version": "1.21.8",
       "buildId": "2497"

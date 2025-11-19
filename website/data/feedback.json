@@ -31,6 +31,8 @@
     "avatar": "https://cdn.discordapp.com/avatars/1364366068298289256/46607da405d6b8c48cb5095554142acc.png",
     "id": "1761649902732",
     "createdAt": "2025-10-28T11:11:42.732Z",
-    "status": "PENDING"
+    "status": "APPROVED",
+    "approvedBy": "HttpMarco",
+    "approvedAt": "2025-11-13T11:01:26.857Z"
   }
 ]

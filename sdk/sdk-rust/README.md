@@ -21,7 +21,7 @@ Add SDK to you project by adding this to your `Cargo.toml`:
 ```toml
 [dependencies]
 tokio = { version = "1.47.0", features = ["macros", "rt-multi-thread"] }
-polocloud-sdk = { git = "https://github.com/HttpMarco/polocloud.git", version = "3.0.0-pre.6-SNAPSHOT" }
+polocloud-sdk = { git = "https://github.com/HttpMarco/polocloud.git", version = "3.0.0-pre.6.1-SNAPSHOT" }
 ```
 
 ### Connection Details

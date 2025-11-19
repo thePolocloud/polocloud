@@ -1,6 +1,6 @@
 [package]
 name = "polocloud-sdk"
-version = "3.0.0-pre.6-SNAPSHOT"
+version = "3.0.0-pre.6.1-SNAPSHOT"
 edition = "2024"
 
 [dependencies]

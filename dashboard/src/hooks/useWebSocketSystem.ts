@@ -243,7 +243,7 @@ export function useTerminalWebSocket(backendIp?: string, token?: string, autoCon
   const sendCommand = useCallback(async (command: string) => {
     try {
 
-      setLogs(prev => [...prev, `polocloud@3.0.0-pre.6-SNAPSHOT » ${command}`]);
+      setLogs(prev => [...prev, `polocloud@3.0.0-pre.6.1-SNAPSHOT » ${command}`]);
       
       const isHttpsFrontend = typeof window !== 'undefined' && window.location.protocol === 'https:';
       const isLocalBackend = backendIp && (

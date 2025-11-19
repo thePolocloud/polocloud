@@ -93,6 +93,7 @@ abstract class BridgeInstance<F, T>(protected val polocloud: PolocloudShared = P
      */
     fun findFallback(): F? {
         return registeredFallbacks.keys
+            .filter { findServer(it.name()) != null }
             .sortedWith(
                 compareBy(
                     { it.properties["fallbackPriority"]?.toIntOrNull() ?: Int.MAX_VALUE },

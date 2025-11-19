@@ -177,7 +177,7 @@ export default function NewTerminalPage() {
               <div className="font-mono text-sm whitespace-nowrap">
                 <span className="text-blue-400">polocloud</span>
                 <span className="text-gray-400">@</span>
-                <span className="text-white">3.0.0-pre.6-SNAPSHOT</span>
+                <span className="text-white">3.0.0-pre.6.1-SNAPSHOT</span>
                 <span className="text-gray-400"> » </span>
               </div>
 

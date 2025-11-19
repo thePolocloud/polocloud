@@ -18,7 +18,31 @@
   "versions": [
     {
       "version": "1.21.8",
+      "buildId": 143
+    },
+    {
+      "version": "1.21.8",
       "buildId": "139"
+    },
+    {
+      "version": "1.21.8",
+      "buildId": 142
+    },
+    {
+      "version": "1.21.7",
+      "buildId": 53
+    },
+    {
+      "version": "1.21.6",
+      "buildId": 29
+    },
+    {
+      "version": "1.21.5",
+      "buildId": 68
+    },
+    {
+      "version": "1.21.4",
+      "buildId": 524
     }
   ]
 }

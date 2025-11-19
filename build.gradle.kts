@@ -6,7 +6,7 @@ allprojects {
     apply(plugin = "maven-publish")
 
     group = "dev.httpmarco.polocloud"
-    version = "3.0.0-pre.6-SNAPSHOT"
+    version = "3.0.0-pre.6.1-SNAPSHOT"
 
     repositories {
         mavenCentral()

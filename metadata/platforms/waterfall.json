@@ -14,6 +14,50 @@
     {
       "version": "latest",
       "buildId": "-1"
+    },
+    {
+      "version": "1.21",
+      "buildId": "600"
+    },
+    {
+      "version": "1.20",
+      "buildId": "578"
+    },
+    {
+      "version": "1.19",
+      "buildId": "535"
+    },
+    {
+      "version": "1.18",
+      "buildId": "488"
+    },
+    {
+      "version": "1.17",
+      "buildId": "454"
+    },
+    {
+      "version": "1.16",
+      "buildId": "431"
+    },
+    {
+      "version": "1.15",
+      "buildId": "350"
+    },
+    {
+      "version": "1.14",
+      "buildId": "301"
+    },
+    {
+      "version": "1.13",
+      "buildId": "276"
+    },
+    {
+      "version": "1.12",
+      "buildId": "185"
+    },
+    {
+      "version": "1.11",
+      "buildId": "108"
     }
   ]
 }

@@ -145,15 +145,31 @@ export function GroupCard({ group, index, onClick }: GroupCardProps) {
                         </div>
                         <div className="flex flex-wrap gap-1">
                             {group.templates && group.templates.length > 0 ? (
-                                group.templates.map((template: { name: string }, idx: number) => (
-                                    <Badge 
-                                        key={idx} 
-                                        variant="secondary" 
-                                        className="text-xs px-2 py-1 h-5 text-muted-foreground bg-background/50 border border-border/30"
-                                    >
-                                        {template.name}
-                                    </Badge>
-                                ))
+                                group.templates
+                                    .filter((template: any) => {
+                                        if (typeof template === 'string') {
+                                            return template.trim().length > 0;
+                                        }
+                                        if (typeof template === 'object' && template !== null) {
+                                            return template.name && typeof template.name === 'string' && template.name.trim().length > 0;
+                                        }
+                                        return false;
+                                    })
+                                    .map((template: any, idx: number) => {
+                                        const templateName = typeof template === 'string'
+                                            ? template 
+                                            : (template.name || '');
+                                        
+                                        return (
+                                            <Badge 
+                                                key={idx} 
+                                                variant="secondary" 
+                                                className="text-xs px-2 py-1 h-5 text-muted-foreground bg-background/50 border border-border/30"
+                                            >
+                                                {templateName}
+                                            </Badge>
+                                        );
+                                    })
                             ) : (
                                 <span className="text-xs text-muted-foreground">No templates</span>
                             )}
