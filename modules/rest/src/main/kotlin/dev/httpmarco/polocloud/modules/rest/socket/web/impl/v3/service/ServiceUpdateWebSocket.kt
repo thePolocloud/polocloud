@@ -10,14 +10,22 @@ import io.javalin.http.Context
 import io.javalin.websocket.WsCloseContext
 import io.javalin.websocket.WsConnectContext
 import io.javalin.websocket.WsMessageContext
+import java.io.InterruptedIOException
 
 class EventWebSocket : BaseWebSocket("/services/update", "polocloud.ws.service.update"), SocketSender {
+
     override fun onConnect(context: WsConnectContext) {
         this.clients += context
 
         Agent.eventProvider().subscribe(ServiceChangeStateEvent::class.java) { event ->
-            if (context.session.isOpen) {
-                update(event.service)
+            try {
+                if (context.session.isOpen) {
+                    update(event.service)
+                }
+            } catch (e: InterruptedIOException) {
+                // Service is stopping, ignore the error
+            } catch (e: Exception) {
+                // Log other errors if needed, but don't crash
             }
         }
 
@@ -29,27 +37,37 @@ class EventWebSocket : BaseWebSocket("/services/update", "polocloud.ws.service.u
     }
 
     override fun onMessage(context: WsMessageContext) {
-
     }
 
     override fun onError(context: Context) {
-
     }
 
     fun update(service: Service) {
-        val message = JsonObject().apply {
-            addProperty("serviceName", service.name())
-            addProperty("state", service.state.name)
-            addProperty("timestamp", System.currentTimeMillis().toString())
-        }
+        try {
+            val message = JsonObject().apply {
+                addProperty("serviceName", service.name())
+                addProperty("state", service.state.name)
+                addProperty("timestamp", System.currentTimeMillis().toString())
+            }
 
-        send(message.toString())
+            send(message.toString())
+        } catch (e: InterruptedIOException) {
+            // Service is stopping, ignore the error silently
+        } catch (e: Exception) {
+            // Log other errors if needed, but don't crash
+        }
     }
 
     override fun send(message: String) {
         this.clients.forEach { client ->
-            if (client.session.isOpen) {
-                client.send(message)
+            try {
+                if (client.session.isOpen) {
+                    client.send(message)
+                }
+            } catch (e: InterruptedIOException) {
+                // Service is stopping, ignore the error silently
+            } catch (e: Exception) {
+                // Log other errors if needed, but don't crash
             }
         }
     }

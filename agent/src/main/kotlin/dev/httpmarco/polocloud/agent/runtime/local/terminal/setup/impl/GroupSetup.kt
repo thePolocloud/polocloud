@@ -56,23 +56,24 @@ class GroupSetup : Setup<AbstractGroup>("Group setup") {
         val static = if (result.contains(staticArgument)) result.arg(staticArgument) else false
         val properties = PropertyHolder.empty()
 
-        val templates = mutableListOf(
-            Template("EVERY"),
-            Template("EVERY_" + originalPlatform.type.name)
-        )
 
+        val templateStorage = Agent.runtime.templateStorage()
 
-        if (fallback) {
-            properties.with(FALLBACK, true)
-            // TODO SEAR
-            templates.add(Template("EVERY_FALLBACK"))
+        val templates = buildList {
+            add(templateStorage.create("EVERY"))
+            add(templateStorage.create("EVERY_${originalPlatform.type.name}"))
+
+            if (fallback) {
+                properties.with(FALLBACK, true)
+                add(templateStorage.create("EVERY_FALLBACK"))
+            }
+            add(templateStorage.create(name))
         }
 
         if (static) {
             properties.with(STATIC, true)
         }
 
-        // TODO USE EVERY TEMPLATE IF EXISTS
         val group = AbstractGroup(
             name,
             minMemory,
@@ -86,13 +87,15 @@ class GroupSetup : Setup<AbstractGroup>("Group setup") {
             properties
         )
 
-        templates.add(Template(name))
-
-        if (group.isProxy() && Agent.runtime.serviceStorage().findAll().stream().anyMatch { it.type == GroupType.SERVER }) {
+        if (group.isProxy() && Agent.runtime.serviceStorage().findAll().stream()
+                .anyMatch { it.type == GroupType.SERVER }
+        ) {
             i18n.warn("agent.local-runtime.setup.group.warnProxyCantWork")
         }
 
-        if (group.isProxy() && Agent.runtime.groupStorage().findAll().any({ it.isProxy() && it.platform() != group.platform() })) {
+        if (group.isProxy() && Agent.runtime.groupStorage().findAll()
+                .any({ it.isProxy() && it.platform() != group.platform() })
+        ) {
             i18n.warn("agent.local-runtime.setup.group.warnMultipleProxies")
         }
 

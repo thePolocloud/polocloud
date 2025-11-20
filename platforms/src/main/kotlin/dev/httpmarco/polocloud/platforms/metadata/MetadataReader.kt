@@ -4,6 +4,7 @@ import dev.httpmarco.polocloud.platforms.PLATFORM_GSON
 import dev.httpmarco.polocloud.platforms.PLATFORM_PATH
 import dev.httpmarco.polocloud.platforms.Platform
 import dev.httpmarco.polocloud.platforms.PlatformPool
+import dev.httpmarco.polocloud.platforms.exceptions.DuplicatedPlatformActionException
 import dev.httpmarco.polocloud.platforms.exceptions.PlatformMetadataNotLoadableException
 import dev.httpmarco.polocloud.platforms.tasks.PlatformTask
 import dev.httpmarco.polocloud.platforms.tasks.PlatformTaskPool
@@ -27,7 +28,13 @@ object MetadataReader {
         }
 
         path.listDirectoryEntries().forEach {
-            PlatformTaskPool.attach(PLATFORM_GSON.fromJson(Files.readString(it), PlatformTask::class.java))
+            val task = PLATFORM_GSON.fromJson(Files.readString(it), PlatformTask::class.java)
+
+            if(PlatformTaskPool.find(task.name) != null) {
+                throw DuplicatedPlatformActionException(task.name)
+            }
+
+            PlatformTaskPool.attach(task)
         }
         return true
     }

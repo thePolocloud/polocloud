@@ -1,6 +1,6 @@
 package dev.httpmarco.polocloud.platforms
 
-import dev.httpmarco.polocloud.common.filesystem.copyDirectoryContent
+import dev.httpmarco.polocloud.common.filesystem.copyDirectory
 import dev.httpmarco.polocloud.common.language.Language
 import dev.httpmarco.polocloud.common.os.OS
 import dev.httpmarco.polocloud.common.os.currentCPUArchitecture
@@ -74,7 +74,7 @@ class Platform(
         tasks().forEach { it.runTask(servicePath, environment) }
 
         // copy the platform file to the service path
-        copyDirectoryContent(path.parent, servicePath, StandardCopyOption.REPLACE_EXISTING)
+        copyDirectory(path.parent, servicePath)
 
         if (bridge == null) {
             return

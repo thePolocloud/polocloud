@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,9 +15,11 @@ import { usePermissions } from '@/hooks/usePermissions';
 
 export default function ServiceScreenPage() {
   const params = useParams();
+  const router = useRouter();
   const serviceName = params.service as string;
   const [command, setCommand] = useState('');
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const redirectTriggeredRef = useRef(false);
 
   const { hasPermission } = usePermissions();
   const canSendCommands = hasPermission('polocloud.service.screen');
@@ -33,6 +35,60 @@ export default function ServiceScreenPage() {
   useEffect(() => {
     logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
+
+  useEffect(() => {
+    const handleServiceStateUpdate = (event: CustomEvent) => {
+      if (redirectTriggeredRef.current) return;
+
+      const { serviceName: updatedServiceName, state } = event.detail;
+      
+      if (updatedServiceName === serviceName) {
+        if (state === 'STOPPING' || state === 'STOPPED' || state === 'OFFLINE') {
+          redirectTriggeredRef.current = true;
+          router.push('/services');
+        }
+      }
+    };
+
+    window.addEventListener('serviceStateUpdate', handleServiceStateUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('serviceStateUpdate', handleServiceStateUpdate as EventListener);
+    };
+  }, [serviceName, router]);
+
+  useEffect(() => {
+    if (redirectTriggeredRef.current) return;
+
+    const checkServiceStatus = async () => {
+      try {
+        const response = await fetch('/api/services/list');
+        if (response.ok) {
+          const services = await response.json();
+          const currentService = Array.isArray(services) 
+            ? services.find((s: { name: string; state: string }) => s.name === serviceName)
+            : null;
+
+          if (currentService && 
+              (currentService.state === 'STOPPING' || 
+               currentService.state === 'STOPPED' || 
+               currentService.state === 'OFFLINE')) {
+            if (!redirectTriggeredRef.current) {
+              redirectTriggeredRef.current = true;
+              router.push('/services');
+            }
+          }
+        }
+      } catch {
+        // Ignore errors
+      }
+    };
+
+    checkServiceStatus();
+    const interval = setInterval(checkServiceStatus, 1000);
+
+    return () => clearInterval(interval);
+  }, [serviceName, router]);
 
   const handleSendCommand = () => {
     if (!command.trim() || !isConnected || !canSendCommands) return;

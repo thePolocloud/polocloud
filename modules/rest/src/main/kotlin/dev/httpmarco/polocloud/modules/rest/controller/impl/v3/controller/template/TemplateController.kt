@@ -29,8 +29,8 @@ class TemplateController : Controller("/template") {
         val data = JsonArray().apply {
             templates.forEach { template ->
                 add(JsonObject().apply {
-                        addProperty("name", template.name)
-                        addProperty("size", template.size())
+                    addProperty("name", template.name)
+                    addProperty("size", template.size())
                 })
             }
         }
@@ -52,8 +52,7 @@ class TemplateController : Controller("/template") {
         val runtimeTemplateStorage = Agent.runtime.templateStorage()
         when (runtimeTemplateStorage) {
             is LocalRuntimeTemplateStorage -> {
-                val template = LocalTemplate(model.name)
-                runtimeTemplateStorage.create(template)
+                runtimeTemplateStorage.create(model.name)
             }
 
             // TODO DOCKER AND K8S IMPLEMENTATION
@@ -84,7 +83,7 @@ class TemplateController : Controller("/template") {
             // TODO DOCKER AND K8S IMPLEMENTATION
 
             else -> {
-                context.defaultResponse(500,"Unsupported template runtime")
+                context.defaultResponse(500, "Unsupported template runtime")
                 return
             }
         }
@@ -101,7 +100,7 @@ class TemplateController : Controller("/template") {
 
         val template = Agent.runtime.templateStorage().find(templateName)
         if (template == null) {
-            context.defaultResponse(400,"Template could not be found")
+            context.defaultResponse(400, "Template could not be found")
             return
         }
 

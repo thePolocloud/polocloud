@@ -1,10 +1,11 @@
 package dev.httpmarco.polocloud.agent.runtime
 
 import dev.httpmarco.polocloud.agent.services.AbstractService
+import dev.httpmarco.polocloud.agent.utils.Reloadable
 import dev.httpmarco.polocloud.shared.template.SharedTemplateProvider
 import dev.httpmarco.polocloud.shared.template.Template
 
-interface RuntimeTemplateStorage<T : Template, out S : AbstractService> : SharedTemplateProvider<T> {
+interface RuntimeTemplateStorage<T : Template, out S : AbstractService> : SharedTemplateProvider<T>, Reloadable {
 
     fun availableTemplates() : List<Template>
 
@@ -14,7 +15,7 @@ interface RuntimeTemplateStorage<T : Template, out S : AbstractService> : Shared
 
     fun templates(service: @UnsafeVariance S): List<Template>
 
-    fun create(template: T)
+    fun create(name: String): T
 
     fun delete(template: T)
 

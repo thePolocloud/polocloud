@@ -16,7 +16,7 @@ export interface WebSocketSystemConfig {
   onStatusChange?: (status: ConnectionStatus) => void;
 }
 
-export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error';
+export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'disconnecting' | 'error';
 
 export interface ConnectionInfo {
   status: ConnectionStatus;
@@ -147,22 +147,30 @@ export class WebSocketSystem {
         };
         
         this.ws.onmessage = (event) => {
-          this.handleMessage(event.data);
+          try {
+            if (this.status === 'disconnected' || this.status === 'disconnecting') {
+              return;
+            }
+            this.handleMessage(event.data);
+          } catch (error) {}
         };
         
         this.ws.onclose = (event) => {
           clearTimeout(timeout);
+          this.stopHeartbeat();
           this.handleDisconnect();
           
-          if (event.code !== 1000) {
+          if (event.code !== 1000 && this.status !== 'disconnecting') {
             this.scheduleReconnect();
           }
         };
         
         this.ws.onerror = (error) => {
           clearTimeout(timeout);
-          this.handleError(new Error('WebSocket error'));
-          reject(error);
+          if (this.status !== 'disconnecting') {
+            this.handleError(new Error('WebSocket error'));
+            reject(error);
+          }
         };
         
       } catch (error) {
@@ -323,6 +331,9 @@ export class WebSocketSystem {
     
     this.eventSource.onmessage = (event) => {
       try {
+        if (this.status === 'disconnected' || this.status === 'disconnecting') {
+          return;
+        }
         const data = JSON.parse(event.data);
         this.handleMessage(data);
       } catch {
@@ -330,9 +341,18 @@ export class WebSocketSystem {
     };
     
     this.eventSource.onerror = () => {
-      this.eventSource?.close();
+      try {
+        if (this.eventSource) {
+          this.eventSource.close();
+        }
+      } catch {
+        // Ignore errors during close
+      }
       this.eventSource = null;
-      this.scheduleReconnect();
+      
+      if (this.status !== 'disconnecting') {
+        this.scheduleReconnect();
+      }
     };
   }
 
@@ -401,6 +421,7 @@ export class WebSocketSystem {
   }
 
   public disconnect(): void {
+    this.updateStatus('disconnecting');
     this.stopHeartbeat();
     
     if (this.reconnectTimeout) {
@@ -414,12 +435,22 @@ export class WebSocketSystem {
     }
     
     if (this.ws) {
-      this.ws.close(1000);
+      try {
+        if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+          this.ws.close(1000);
+        }
+      } catch {
+        // Ignore errors during close (can happen during shutdown)
+      }
       this.ws = null;
     }
     
     if (this.eventSource) {
-      this.eventSource.close();
+      try {
+        this.eventSource.close();
+      } catch {
+        // Ignore errors during close
+      }
       this.eventSource = null;
     }
 
@@ -459,6 +490,9 @@ export class WebSocketSystem {
 
   private handleMessage(data: string | WebSocketMessage): void {
     try {
+      if (this.status === 'disconnected' || this.status === 'disconnecting') {
+        return;
+      }
       
       let message: WebSocketMessage;
       

@@ -33,14 +33,14 @@ jobs:
           NEW_VERSIONS="[]"
           for version in $(echo "$PAPER_VERSIONS" | jq -r '.[]'); do
             echo "Checking version: $version"
-            BUILD_ID=$(curl -s "https://api.papermc.io/v2/projects/paper/versions/$version" | jq '.builds | max')
+            BUILD_ID=$(curl -s "https://api.papermc.io/v2/projects/paper/versions/$version" | jq -r 'if .builds == null or (.builds | length) == 0 then empty else (.builds | max) end')
             echo "Latest build for $version: $BUILD_ID"
             
-            if [ "$BUILD_ID" != "null" ]; then
+            if [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ] && [ "$BUILD_ID" != "" ]; then
               SHOULD_ADD=$(echo "$CURRENT_PAPER" | jq --arg v "$version" --arg b "$BUILD_ID" '
                 if length == 0 then true
                 else
-                  (.[] | select(.version == $v) | .buildId // 0) as $current |
+                  (map(select(.version == $v)) | first | .buildId // 0) as $current |
                   if $current == 0 then true
                   else ($b | tonumber) > ($current | tonumber)
                   end
@@ -48,12 +48,12 @@ jobs:
               ')
               
               if [ "$SHOULD_ADD" = "true" ]; then
-                CURRENT_BUILD=$(echo "$CURRENT_PAPER" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_PAPER" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "New version found: $version build $BUILD_ID (current: $CURRENT_BUILD)"
-                NEW_VERSION="{\"version\": \"$version\", \"buildId\": $BUILD_ID}"
-                NEW_VERSIONS=$(echo "$NEW_VERSIONS $NEW_VERSION" | jq -s '.[0] + [.[1]]')
+                NEW_VERSION=$(echo "{}" | jq --arg v "$version" --argjson b "$BUILD_ID" '.version = $v | .buildId = $b')
+                NEW_VERSIONS=$(echo "$NEW_VERSIONS" | jq --argjson new "$NEW_VERSION" '. + [$new]')
               else
-                CURRENT_BUILD=$(echo "$CURRENT_PAPER" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_PAPER" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "Version $version build $BUILD_ID already exists or is older (current: $CURRENT_BUILD)"
               fi
             fi
@@ -86,14 +86,14 @@ jobs:
           NEW_VERSIONS="[]"
           for version in $(echo "$VELOCITY_VERSIONS" | jq -r '.[]'); do
             echo "Checking version: $version"
-            BUILD_ID=$(curl -s "https://api.papermc.io/v2/projects/velocity/versions/$version" | jq '.builds | max')
+            BUILD_ID=$(curl -s "https://api.papermc.io/v2/projects/velocity/versions/$version" | jq -r 'if .builds == null or (.builds | length) == 0 then empty else (.builds | max) end')
             echo "Latest build for $version: $BUILD_ID"
             
-            if [ "$BUILD_ID" != "null" ]; then
+            if [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ] && [ "$BUILD_ID" != "" ]; then
               SHOULD_ADD=$(echo "$CURRENT_VELOCITY" | jq --arg v "$version" --arg b "$BUILD_ID" '
                 if length == 0 then true
                 else
-                  (.[] | select(.version == $v) | .buildId // 0) as $current |
+                  (map(select(.version == $v)) | first | .buildId // 0) as $current |
                   if $current == 0 then true
                   else ($b | tonumber) > ($current | tonumber)
                   end
@@ -101,12 +101,12 @@ jobs:
               ')
               
               if [ "$SHOULD_ADD" = "true" ]; then
-                CURRENT_BUILD=$(echo "$CURRENT_VELOCITY" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_VELOCITY" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "New version found: $version build $BUILD_ID (current: $CURRENT_BUILD)"
-                NEW_VERSION="{\"version\": \"$version\", \"buildId\": $BUILD_ID}"
-                NEW_VERSIONS=$(echo "$NEW_VERSIONS $NEW_VERSION" | jq -s '.[0] + [.[1]]')
+                NEW_VERSION=$(echo "{}" | jq --arg v "$version" --argjson b "$BUILD_ID" '.version = $v | .buildId = $b')
+                NEW_VERSIONS=$(echo "$NEW_VERSIONS" | jq --argjson new "$NEW_VERSION" '. + [$new]')
               else
-                CURRENT_BUILD=$(echo "$CURRENT_VELOCITY" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_VELOCITY" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "Version $version build $BUILD_ID already exists or is older (current: $CURRENT_BUILD)"
               fi
             fi
@@ -140,17 +140,18 @@ jobs:
           for version in $(echo "$FOLIA_VERSIONS" | jq -r '.[]'); do
             echo "Checking version: $version"
             BUILD_DATA=$(curl -s "https://api.papermc.io/v2/projects/folia/versions/$version")
-            BUILD_ID=$(echo "$BUILD_DATA" | jq '.builds | max')
+            BUILD_ID=$(echo "$BUILD_DATA" | jq -r 'if .builds == null or (.builds | length) == 0 then empty else (.builds | max) end')
             echo "Latest build for $version: $BUILD_ID"
             
-            HASH=$(curl -s "https://api.papermc.io/v2/projects/folia/versions/$version/builds/$BUILD_ID" | jq -r '.downloads.application.sha256 // empty')
-            echo "Hash for $version build $BUILD_ID: $HASH"
-            
-            if [ "$BUILD_ID" != "null" ] && [ -n "$HASH" ]; then
+            if [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ] && [ "$BUILD_ID" != "" ]; then
+              HASH=$(curl -s "https://api.papermc.io/v2/projects/folia/versions/$version/builds/$BUILD_ID" | jq -r '.downloads.application.sha256 // empty')
+              echo "Hash for $version build $BUILD_ID: $HASH"
+              
+              if [ -n "$HASH" ]; then
               SHOULD_ADD=$(echo "$CURRENT_FOLIA" | jq --arg v "$version" --arg b "$BUILD_ID" '
                 if length == 0 then true
                 else
-                  (.[] | select(.version == $v) | .buildId // 0) as $current |
+                  (map(select(.version == $v)) | first | .buildId // 0) as $current |
                   if $current == 0 then true
                   else ($b | tonumber) > ($current | tonumber)
                   end
@@ -158,13 +159,14 @@ jobs:
               ')
               
               if [ "$SHOULD_ADD" = "true" ]; then
-                CURRENT_BUILD=$(echo "$CURRENT_FOLIA" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_FOLIA" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "New version found: $version build $BUILD_ID (current: $CURRENT_BUILD)"
-                NEW_VERSION="{\"version\": \"$version\", \"buildId\": \"$BUILD_ID\", \"hash\": \"$HASH\"}"
-                NEW_VERSIONS=$(echo "$NEW_VERSIONS $NEW_VERSION" | jq -s '.[0] + [.[1]]')
+                NEW_VERSION=$(echo "{}" | jq --arg v "$version" --arg b "$BUILD_ID" --arg h "$HASH" '.version = $v | .buildId = $b | .hash = $h')
+                NEW_VERSIONS=$(echo "$NEW_VERSIONS" | jq --argjson new "$NEW_VERSION" '. + [$new]')
               else
-                CURRENT_BUILD=$(echo "$CURRENT_FOLIA" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_FOLIA" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "Version $version build $BUILD_ID already exists or is older (current: $CURRENT_BUILD)"
+              fi
               fi
             fi
           done
@@ -200,14 +202,14 @@ jobs:
             NEW_VERSIONS="[]"
             for version in $(echo "$PURPUR_VERSIONS" | jq -r '.[]'); do
               echo "Checking version: $version"
-              BUILD_ID=$(curl -s "https://api.purpurmc.org/v2/purpur/$version" | jq '.builds | max')
+              BUILD_ID=$(curl -s "https://api.purpurmc.org/v2/purpur/$version" | jq -r 'if .builds == null or (.builds | length) == 0 then empty else (.builds | max) end')
               echo "Latest build for $version: $BUILD_ID"
               
-              if [ "$BUILD_ID" != "null" ]; then
+              if [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ] && [ "$BUILD_ID" != "" ]; then
                 SHOULD_ADD=$(echo "$CURRENT_PURPUR" | jq --arg v "$version" --arg b "$BUILD_ID" '
                   if length == 0 then true
                   else
-                    (.[] | select(.version == $v) | .buildId // 0) as $current |
+                    (map(select(.version == $v)) | first | .buildId // 0) as $current |
                     if $current == 0 then true
                     else ($b | tonumber) > ($current | tonumber)
                     end
@@ -215,12 +217,12 @@ jobs:
                 ')
                 
                 if [ "$SHOULD_ADD" = "true" ]; then
-                  CURRENT_BUILD=$(echo "$CURRENT_PURPUR" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                  CURRENT_BUILD=$(echo "$CURRENT_PURPUR" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                   echo "New version found: $version build $BUILD_ID (current: $CURRENT_BUILD)"
-                  NEW_VERSION="{\"version\": \"$version\", \"buildId\": \"$BUILD_ID\"}"
-                  NEW_VERSIONS=$(echo "$NEW_VERSIONS $NEW_VERSION" | jq -s '.[0] + [.[1]]')
+                  NEW_VERSION=$(echo "{}" | jq --arg v "$version" --arg b "$BUILD_ID" '.version = $v | .buildId = $b')
+                  NEW_VERSIONS=$(echo "$NEW_VERSIONS" | jq --argjson new "$NEW_VERSION" '. + [$new]')
                 else
-                  CURRENT_BUILD=$(echo "$CURRENT_PURPUR" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                  CURRENT_BUILD=$(echo "$CURRENT_PURPUR" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                   echo "Version $version build $BUILD_ID already exists or is older (current: $CURRENT_BUILD)"
                 fi
               fi
@@ -254,14 +256,14 @@ jobs:
           NEW_VERSIONS="[]"
           for version in $(echo "$WATERFALL_VERSIONS" | jq -r '.[]'); do
             echo "Checking version: $version"
-            BUILD_ID=$(curl -s "https://api.papermc.io/v2/projects/waterfall/versions/$version" | jq '.builds | max')
+            BUILD_ID=$(curl -s "https://api.papermc.io/v2/projects/waterfall/versions/$version" | jq -r 'if .builds == null or (.builds | length) == 0 then empty else (.builds | max) end')
             echo "Latest build for $version: $BUILD_ID"
             
-            if [ "$BUILD_ID" != "null" ]; then
+            if [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ] && [ "$BUILD_ID" != "" ]; then
               SHOULD_ADD=$(echo "$CURRENT_WATERFALL" | jq --arg v "$version" --arg b "$BUILD_ID" '
                 if length == 0 then true
                 else
-                  (.[] | select(.version == $v) | .buildId // 0) as $current |
+                  (map(select(.version == $v)) | first | .buildId // 0) as $current |
                   if $current == 0 then true
                   else ($b | tonumber) > ($current | tonumber)
                   end
@@ -269,12 +271,12 @@ jobs:
               ')
               
               if [ "$SHOULD_ADD" = "true" ]; then
-                CURRENT_BUILD=$(echo "$CURRENT_WATERFALL" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_WATERFALL" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "New version found: $version build $BUILD_ID (current: $CURRENT_BUILD)"
-                NEW_VERSION="{\"version\": \"$version\", \"buildId\": \"$BUILD_ID\"}"
-                NEW_VERSIONS=$(echo "$NEW_VERSIONS $NEW_VERSION" | jq -s '.[0] + [.[1]]')
+                NEW_VERSION=$(echo "{}" | jq --arg v "$version" --arg b "$BUILD_ID" '.version = $v | .buildId = $b')
+                NEW_VERSIONS=$(echo "$NEW_VERSIONS" | jq --argjson new "$NEW_VERSION" '. + [$new]')
               else
-                CURRENT_BUILD=$(echo "$CURRENT_WATERFALL" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_WATERFALL" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "Version $version build $BUILD_ID already exists or is older (current: $CURRENT_BUILD)"
               fi
             fi
@@ -322,7 +324,7 @@ jobs:
               SHOULD_ADD=$(echo "$CURRENT_LIMBO" | jq --arg v "$VERSION" --arg b "$BUILD_NUMBER" '
                 if length == 0 then true
                 else
-                  (.[] | select(.version == $v) | .buildId // 0) as $current |
+                  (map(select(.version == $v)) | first | .buildId // 0) as $current |
                   if $current == 0 then true
                   else ($b | tonumber) > ($current | tonumber)
                   end
@@ -330,12 +332,12 @@ jobs:
               ')
               
               if [ "$SHOULD_ADD" = "true" ]; then
-                CURRENT_BUILD=$(echo "$CURRENT_LIMBO" | jq --arg v "$VERSION" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_LIMBO" | jq -r --arg v "$VERSION" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "New version found: $VERSION build $BUILD_NUMBER (current: $CURRENT_BUILD)"
-                NEW_VERSION="{\"version\": \"$VERSION\", \"jarVersion\": \"$JAR_VERSION\", \"buildId\": \"$BUILD_NUMBER\"}"
-                NEW_VERSIONS=$(echo "$NEW_VERSIONS $NEW_VERSION" | jq -s '.[0] + [.[1]]')
+                NEW_VERSION=$(echo "{}" | jq --arg v "$VERSION" --arg j "$JAR_VERSION" --arg b "$BUILD_NUMBER" '.version = $v | .jarVersion = $j | .buildId = $b')
+                NEW_VERSIONS=$(echo "$NEW_VERSIONS" | jq --argjson new "$NEW_VERSION" '. + [$new]')
               else
-                CURRENT_BUILD=$(echo "$CURRENT_LIMBO" | jq --arg v "$VERSION" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_LIMBO" | jq -r --arg v "$VERSION" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "Version $VERSION build $BUILD_NUMBER already exists or is older (current: $CURRENT_BUILD)"
               fi
             fi
@@ -368,14 +370,14 @@ jobs:
           NEW_VERSIONS="[]"
           for version in $(echo "$LEAF_VERSIONS" | jq -r '.[]'); do
             echo "Checking version: $version"
-            BUILD_ID=$(curl -s "https://api.leafmc.one/v2/projects/leaf/versions/$version" | jq '.builds | max')
+            BUILD_ID=$(curl -s "https://api.leafmc.one/v2/projects/leaf/versions/$version" | jq -r 'if .builds == null or (.builds | length) == 0 then empty else (.builds | max) end')
             echo "Latest build for $version: $BUILD_ID"
             
-            if [ "$BUILD_ID" != "null" ]; then
+            if [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ] && [ "$BUILD_ID" != "" ]; then
               SHOULD_ADD=$(echo "$CURRENT_LEAF" | jq --arg v "$version" --arg b "$BUILD_ID" '
                 if length == 0 then true
                 else
-                  (.[] | select(.version == $v) | .buildId // 0) as $current |
+                  (map(select(.version == $v)) | first | .buildId // 0) as $current |
                   if $current == 0 then true
                   else ($b | tonumber) > ($current | tonumber)
                   end
@@ -383,12 +385,12 @@ jobs:
               ')
               
               if [ "$SHOULD_ADD" = "true" ]; then
-                CURRENT_BUILD=$(echo "$CURRENT_LEAF" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_LEAF" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "New version found: $version build $BUILD_ID (current: $CURRENT_BUILD)"
-                NEW_VERSION="{\"version\": \"$version\", \"buildId\": $BUILD_ID}"
-                NEW_VERSIONS=$(echo "$NEW_VERSIONS $NEW_VERSION" | jq -s '.[0] + [.[1]]')
+                NEW_VERSION=$(echo "{}" | jq --arg v "$version" --argjson b "$BUILD_ID" '.version = $v | .buildId = $b')
+                NEW_VERSIONS=$(echo "$NEW_VERSIONS" | jq --argjson new "$NEW_VERSION" '. + [$new]')
               else
-                CURRENT_BUILD=$(echo "$CURRENT_LEAF" | jq --arg v "$version" '.[] | select(.version == $v) | .buildId // "0"')
+                CURRENT_BUILD=$(echo "$CURRENT_LEAF" | jq -r --arg v "$version" 'if length == 0 then "0" else (map(select(.version == $v)) | first | .buildId // "0") // "0" end')
                 echo "Version $version build $BUILD_ID already exists or is older (current: $CURRENT_BUILD)"
               fi
             fi

@@ -38,7 +38,7 @@ class DockerTemplateStorage(val client: DockerClient) : RuntimeTemplateStorage<D
         TODO("Not yet implemented")
     }
 
-    override fun create(template: DockerImage) {
+    override fun create(name: String): DockerImage {
         TODO("Not yet implemented")
     }
 
@@ -67,6 +67,10 @@ class DockerTemplateStorage(val client: DockerClient) : RuntimeTemplateStorage<D
     }
 
     override fun findAsync(name: String): CompletableFuture<DockerImage?> {
+        TODO("Not yet implemented")
+    }
+
+    override fun reload() {
         TODO("Not yet implemented")
     }
 }

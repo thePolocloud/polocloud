@@ -9,6 +9,7 @@ import io.javalin.http.Context
 import io.javalin.websocket.WsCloseContext
 import io.javalin.websocket.WsConnectContext
 import io.javalin.websocket.WsMessageContext
+import java.io.InterruptedIOException
 
 class ServiceScreenWebSocket : BaseWebSocket("/service/{serviceName}/screen", "polocloud.service.screen"), SocketSender {
 
@@ -16,19 +17,42 @@ class ServiceScreenWebSocket : BaseWebSocket("/service/{serviceName}/screen", "p
         this.clients += context
 
         val serviceName = context.pathParam("serviceName")
+
         val service = Agent.serviceProvider().find(serviceName)
+
         if (service == null) {
             context.closeSession(1008, "Service not found")
             return
         }
 
-        (service as AbstractService).logs(5000).forEach {
-            context.send(it)
+        try {
+            (service as AbstractService).logs(5000).forEach {
+                try {
+                    if (context.session.isOpen) {
+                        context.send(it)
+                    }
+                } catch (e: InterruptedIOException) {
+                    return
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        } catch (e: InterruptedIOException) {
+            // Service is stopping, ignore the error
+            return
+        } catch (e: Exception) {
+            // Log other errors if needed
         }
 
         Agent.eventProvider().subscribe(ServiceLogEvent::class.java, { event ->
-            if (event.service == service && context.session.isOpen) {
-                context.send(event.line)
+            try {
+                if (event.service == service && context.session.isOpen) {
+                    context.send(event.line)
+                }
+            } catch (e: InterruptedIOException) {
+                // Service is stopping, ignore the error
+            } catch (e: Exception) {
+                // Log other errors if needed
             }
         })
 
@@ -41,17 +65,21 @@ class ServiceScreenWebSocket : BaseWebSocket("/service/{serviceName}/screen", "p
     }
 
     override fun onMessage(context: WsMessageContext) {
-
     }
 
     override fun onError(context: Context) {
-
     }
 
     override fun send(message: String) {
         this.clients.forEach { client ->
-            if (client.session.isOpen) {
-                client.send(message)
+            try {
+                if (client.session.isOpen) {
+                    client.send(message)
+                }
+            } catch (e: InterruptedIOException) {
+                // Service is stopping, ignore the error
+            } catch (e: Exception) {
+                // Log other errors if needed, but don't crash
             }
         }
     }

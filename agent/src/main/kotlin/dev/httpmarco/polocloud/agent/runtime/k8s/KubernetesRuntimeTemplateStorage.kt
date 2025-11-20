@@ -40,7 +40,7 @@ class KubernetesRuntimeTemplateStorage : RuntimeTemplateStorage<Template, Kubern
         TODO("Not yet implemented")
     }
 
-    override fun create(template: Template) {
+    override fun create(name: String): Template {
         TODO("Not yet implemented")
     }
 
@@ -49,6 +49,10 @@ class KubernetesRuntimeTemplateStorage : RuntimeTemplateStorage<Template, Kubern
     }
 
     override fun update(template: Template, newName: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun reload() {
         TODO("Not yet implemented")
     }
 

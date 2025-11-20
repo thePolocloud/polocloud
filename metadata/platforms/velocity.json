@@ -14,6 +14,38 @@
     {
       "version": "3.4.0-SNAPSHOT",
       "buildId": "557"
+    },
+    {
+      "version": "3.3.0-SNAPSHOT",
+      "buildId": 436
+    },
+    {
+      "version": "3.2.0-SNAPSHOT",
+      "buildId": 296
+    },
+    {
+      "version": "3.1.2-SNAPSHOT",
+      "buildId": 207
+    },
+    {
+      "version": "3.1.1-SNAPSHOT",
+      "buildId": 97
+    },
+    {
+      "version": "3.1.1",
+      "buildId": 102
+    },
+    {
+      "version": "3.1.0",
+      "buildId": 95
+    },
+    {
+      "version": "1.1.9",
+      "buildId": 447
+    },
+    {
+      "version": "1.0.10",
+      "buildId": 245
     }
   ]
 }

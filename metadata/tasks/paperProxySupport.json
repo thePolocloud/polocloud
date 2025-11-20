@@ -20,6 +20,16 @@
         "key": "proxies.velocity.secret",
         "value": "%velocityProxyToken%"
       }
+    },
+	{
+      "name": "Change bungeecord mode",
+      "description": "Set the bungeecord option in spigot.yml",
+      "filename": "spigot.yml",
+      "action": {
+        "type": "PlatformFilePropertyUpdateAction",
+        "key": "settings.bungeecord",
+        "value": "%bungeecord_use%"
+      }
     }
   ]
 }
