@@ -1,9 +1,9 @@
-use tonic::{Request, Status};
-use tonic::codegen::tokio_stream::StreamExt;
-use tonic::transport::Channel;
-use crate::Event;
+use crate::event::model::Event;
 use crate::polocloud::event_provider_client::EventProviderClient;
 use crate::polocloud::EventSubscribeRequest;
+use tonic::codegen::tokio_stream::StreamExt;
+use tonic::transport::Channel;
+use tonic::{Request, Status};
 
 pub struct EventProvider {
     event_stub: EventProviderClient<Channel>,
@@ -25,7 +25,7 @@ impl EventProvider {
     {
         let request = Request::new(EventSubscribeRequest {
             service_name: self.service_name.clone(),
-            event_name: T::event_name(),
+            event_name: T::event_name().to_string(),
         });
 
         let mut event_stub = self.event_stub.clone();

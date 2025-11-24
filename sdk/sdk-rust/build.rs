@@ -9,7 +9,7 @@ fn main() {
     let path_strs: Vec<String> = paths
         .filter_map(|entry| entry.ok())
         .map(|entry| entry.path())
-        .filter(|path| path.extension().map_or(false, |ext| ext == "proto"))
+        .filter(|path| path.extension().is_some_and(|ext| ext == "proto"))
         .map(|path| path.to_string_lossy().to_string())
         .collect();
 
