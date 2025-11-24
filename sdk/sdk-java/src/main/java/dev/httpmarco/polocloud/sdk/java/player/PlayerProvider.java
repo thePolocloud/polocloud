@@ -1,6 +1,6 @@
 package dev.httpmarco.polocloud.sdk.java.player;
 
-import com.google.protobuf.Any;
+import com.google.protobuf.Empty;
 import dev.httpmarco.polocloud.common.future.FutureConverterKt;
 import dev.httpmarco.polocloud.shared.player.PolocloudPlayer;
 import dev.httpmarco.polocloud.shared.player.SharedPlayerProvider;
@@ -23,17 +23,17 @@ public class PlayerProvider implements SharedPlayerProvider<PolocloudPlayer> {
         this.futureStub = PlayerControllerGrpc.newFutureStub(channel);
 
 
-        this.blockingStub.messageRegister(Any.newBuilder().build());
+        this.blockingStub.messageRegister(Empty.newBuilder().build());
     }
 
     @Override
     public @NotNull List<PolocloudPlayer> findAll() {
-        return this.blockingStub.findAll(Any.getDefaultInstance()).getPlayersList().stream().map(PolocloudPlayer.Companion::bindSnapshot).toList();
+        return this.blockingStub.findAll(Empty.getDefaultInstance()).getPlayersList().stream().map(PolocloudPlayer.Companion::bindSnapshot).toList();
     }
 
     @Override
     public @NotNull CompletableFuture<List<PolocloudPlayer>> findAllAsync() {
-        return FutureConverterKt.completableFromGuava(this.futureStub.findAll(Any.getDefaultInstance()), findAllPlayerResponse -> findAllPlayerResponse.getPlayersList().stream().map(PolocloudPlayer.Companion::bindSnapshot).toList());
+        return FutureConverterKt.completableFromGuava(this.futureStub.findAll(Empty.getDefaultInstance()), findAllPlayerResponse -> findAllPlayerResponse.getPlayersList().stream().map(PolocloudPlayer.Companion::bindSnapshot).toList());
     }
 
     @Override
@@ -64,6 +64,6 @@ public class PlayerProvider implements SharedPlayerProvider<PolocloudPlayer> {
 
     @Override
     public int playerCount() {
-        return this.blockingStub.playerCount(Any.getDefaultInstance()).getCount();
+        return this.blockingStub.playerCount(Empty.getDefaultInstance()).getCount();
     }
 }

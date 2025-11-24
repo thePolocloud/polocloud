@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
 
 package dev.httpmarco.polocloud.v1.proto;
 
@@ -8,11 +8,12 @@ option java_package = "dev.httpmarco.polocloud.v1.player";
 option java_multiple_files = true;
 
 service PlayerController {
-  rpc findAll (google.protobuf.Any) returns (PlayerFindResponse);
+  rpc findAll (google.protobuf.Empty) returns (PlayerFindResponse);
   rpc findByName (PlayerFindByNameRequest) returns (PlayerFindResponse);
   rpc findByService (PlayerFindByServiceRequest) returns (PlayerFindResponse);
-  rpc playerCount(google.protobuf.Any) returns (PlayerCountResponse);
-  rpc messageRegister(google.protobuf.Any) returns (PlayerCountResponse);
+  rpc playerCount(google.protobuf.Empty) returns (PlayerCountResponse);
+
+  rpc messageRegister(google.protobuf.Empty) returns (stream PlayerActorMessage);
 }
 
 message PlayerFindByNameRequest {
@@ -36,4 +37,9 @@ message PlayerFindResponse {
 
 message PlayerCountResponse {
   int32 count = 1;
+}
+
+message PlayerActorMessage {
+  string uuid = 1;
+  string message = 2;
 }

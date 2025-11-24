@@ -5,7 +5,6 @@ package dev.httpmarco.polocloud.v1.proto;
 option java_package = "dev.httpmarco.polocloud.v1.services";
 option java_multiple_files = true;
 
-import "google/protobuf/empty.proto";
 import "polocloud/v1/proto/object_utils.proto";
 import "polocloud/v1/proto/template_provider.proto";
 
