@@ -7,10 +7,12 @@ class AbstractPolocloudPlayer(
     name: String,
     uniqueId: UUID,
     currentServiceName: String,
+    currentProxyName: String,
 ) : PolocloudPlayer(
     name,
     uniqueId,
-    currentServiceName
+    currentServiceName,
+    currentProxyName
 ) {
 
 }

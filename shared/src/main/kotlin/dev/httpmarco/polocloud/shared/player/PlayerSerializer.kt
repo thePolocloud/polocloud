@@ -30,11 +30,13 @@ class PlayerSerializer : JsonSerializer<PolocloudPlayer>, JsonDeserializer<Poloc
         val uniqueId = obj.get("uniqueId").asString
         val name = obj.get("name").asString
         val currentService = obj.get("currentService").asString
+        val currentProxyName = obj.get("currentProxyName").asString
 
         return PolocloudPlayer(
             name = name,
             uniqueId = UUID.fromString(uniqueId),
-            currentServiceName = currentService
+            currentServiceName = currentService,
+            currentProxyName = currentProxyName
         )
     }
 }

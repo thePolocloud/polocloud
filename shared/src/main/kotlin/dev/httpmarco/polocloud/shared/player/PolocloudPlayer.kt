@@ -8,6 +8,7 @@ open class PolocloudPlayer(
     val name: String,
     val uniqueId: UUID,
     val currentServiceName: String,
+    val currentProxyName: String,
 ) {
 
     fun uniqueId(): String = uniqueId.toString()
@@ -17,7 +18,8 @@ open class PolocloudPlayer(
             return PolocloudPlayer(
                 name = snapshot.name,
                 uniqueId = UUID.fromString(snapshot.uniqueId),
-                currentServiceName = snapshot.currentServiceName
+                currentServiceName = snapshot.currentServiceName,
+                currentProxyName = snapshot.currentProxyName
             )
         }
     }
@@ -32,9 +34,11 @@ open class PolocloudPlayer(
 }
 
 fun PolocloudPlayer.toJson(): JsonObject {
+    // todo
     return JsonObject().apply {
         addProperty("name", name)
         addProperty("uniqueId", uniqueId.toString())
         addProperty("currentServiceName", currentServiceName)
+        addProperty("currentProxyName", currentProxyName)
     }
 }

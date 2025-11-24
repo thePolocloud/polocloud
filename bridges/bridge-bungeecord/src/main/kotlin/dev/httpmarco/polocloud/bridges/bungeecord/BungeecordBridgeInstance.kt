@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.bridges.bungeecord
 
 import dev.httpmarco.polocloud.bridge.api.BridgeInstance
+import dev.httpmarco.polocloud.sdk.java.Polocloud
 import dev.httpmarco.polocloud.shared.events.definitions.PlayerJoinEvent
 import dev.httpmarco.polocloud.shared.events.definitions.PlayerLeaveEvent
 import dev.httpmarco.polocloud.shared.player.PolocloudPlayer
@@ -50,7 +51,7 @@ class BungeecordBridgeInstance : BridgeInstance<ServerInfo, ServerInfo>(), Liste
         val serverInfo = event.server.info
         val serviceName = serverInfo.name
 
-        val cloudPlayer = PolocloudPlayer(player.name, player.uniqueId, serviceName)
+        val cloudPlayer = PolocloudPlayer(player.name, player.uniqueId, serviceName, Polocloud.instance().selfServiceName())
         updatePolocloudPlayer(PlayerJoinEvent(cloudPlayer))
     }
 
@@ -60,7 +61,8 @@ class BungeecordBridgeInstance : BridgeInstance<ServerInfo, ServerInfo>(), Liste
         val serverInfo = player.server?.info
         val serviceName = serverInfo?.name ?: "unknown"
 
-        val cloudPlayer = PolocloudPlayer(player.name, player.uniqueId, serviceName)
+        // TODO why is this needed? A new player? Fix this later
+        val cloudPlayer = PolocloudPlayer(player.name, player.uniqueId, serviceName, Polocloud.instance().selfServiceName())
         updatePolocloudPlayer(PlayerLeaveEvent(cloudPlayer))
     }
 

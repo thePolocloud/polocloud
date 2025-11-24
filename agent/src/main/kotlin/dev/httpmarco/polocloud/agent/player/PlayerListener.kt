@@ -12,7 +12,8 @@ class PlayerListener {
             val abstractPlayer = AbstractPolocloudPlayer(
                 name = player.name,
                 uniqueId = player.uniqueId,
-                currentServiceName = player.currentServiceName
+                currentServiceName = player.currentServiceName,
+                currentProxyName = player.currentProxyName
             )
 
             Agent.playerStorage.addPlayer(abstractPlayer)

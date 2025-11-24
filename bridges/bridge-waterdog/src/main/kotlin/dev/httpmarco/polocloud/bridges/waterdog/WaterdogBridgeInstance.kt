@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.bridges.waterdog
 
 import dev.httpmarco.polocloud.bridge.api.BridgeInstance
+import dev.httpmarco.polocloud.sdk.java.Polocloud
 import dev.httpmarco.polocloud.shared.events.definitions.PlayerJoinEvent
 import dev.httpmarco.polocloud.shared.events.definitions.PlayerLeaveEvent
 import dev.httpmarco.polocloud.shared.player.PolocloudPlayer
@@ -32,14 +33,20 @@ class WaterdogBridgeInstance : BridgeInstance<BedrockServerInfo, BedrockServerIn
 
         eventManager.subscribe(InitialServerConnectedEvent::class.java) { event ->
             val player = event.player
-            val cloudPlayer = PolocloudPlayer(player.name, player.uniqueId, event.serverInfo.serverName)
+            val cloudPlayer = PolocloudPlayer(
+                player.name,
+                player.uniqueId,
+                event.serverInfo.serverName,
+                Polocloud.instance().selfServiceName()
+            )
             updatePolocloudPlayer(PlayerJoinEvent(cloudPlayer))
         }
 
         eventManager.subscribe(PlayerDisconnectedEvent::class.java) { event ->
             val player = event.player
             val serverName = player.connectingServer?.serverName ?: "unknown"
-            val cloudPlayer = PolocloudPlayer(player.name, player.uniqueId, serverName)
+            val cloudPlayer =
+                PolocloudPlayer(player.name, player.uniqueId, serverName, Polocloud.instance().selfServiceName())
             updatePolocloudPlayer(PlayerLeaveEvent(cloudPlayer))
         }
     }

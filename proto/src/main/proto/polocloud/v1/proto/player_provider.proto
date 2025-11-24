@@ -26,7 +26,8 @@ message PlayerSnapshot {
   string unique_id = 1;
   string name = 2;
   string current_service_name = 3;
-  int64 first_time_joined = 4;
+  string current_proxy_name = 4;
+  int64 first_time_joined = 5;
 }
 
 message PlayerFindResponse {

@@ -9,14 +9,14 @@ interface SharedPlayerActor {
      *
      * @param message The message to send.
      */
-    fun message(message: String);
+    fun message(player : PolocloudPlayer, message: String);
 
     /**
      * Connects the player to the specified server.
      *
      * @param serverName The name of the server to connect to.
      */
-    fun toServer(serverName: String);
+    fun toServer(player : PolocloudPlayer, serverName: String);
 
 
     /**
@@ -24,8 +24,8 @@ interface SharedPlayerActor {
      *
      * @param service The service to connect to.
      */
-    fun toServer(service: Service) {
-        toServer(service.name())
+    fun toServer(player : PolocloudPlayer, service: Service) {
+        toServer(player, service.name())
     }
 
     /**
@@ -33,6 +33,6 @@ interface SharedPlayerActor {
      *
      * @param reason The reason for kicking the player.
      */
-    fun kick(reason: String);
+    fun kick(player : PolocloudPlayer, reason: String);
 
 }
