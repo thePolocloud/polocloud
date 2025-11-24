@@ -4,10 +4,10 @@ package dev.httpmarco.polocloud.v1.proto;
 
 service EventProvider {
 
-  rpc Subscribe (EventSubscribeRequest) returns (stream EventContext);
+  rpc subscribe (EventSubscribeRequest) returns (stream EventContext);
 
-  rpc Call (EventContext) returns (CallEventResponse);
-  rpc Unsubscribe(EventSubscribeRequest) returns (UnsubscribeResponse);
+  rpc call (EventContext) returns (CallEventResponse);
+  rpc unsubscribe(EventSubscribeRequest) returns (UnsubscribeResponse);
 }
 
 message EventSubscribeRequest {

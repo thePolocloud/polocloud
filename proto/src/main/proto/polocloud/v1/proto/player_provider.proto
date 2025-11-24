@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/any.proto";
 
 package dev.httpmarco.polocloud.v1.proto;
 
@@ -13,7 +14,7 @@ service PlayerController {
   rpc findByService (PlayerFindByServiceRequest) returns (PlayerFindResponse);
   rpc playerCount(google.protobuf.Empty) returns (PlayerCountResponse);
 
-  rpc messageRegister(google.protobuf.Empty) returns (stream PlayerActorMessage);
+  rpc registerActor(google.protobuf.Empty) returns (stream PlayerActorRegister);
 }
 
 message PlayerFindByNameRequest {
@@ -39,7 +40,29 @@ message PlayerCountResponse {
   int32 count = 1;
 }
 
+message PlayerActorRegister {
+  PlayerActorType type = 1;
+  google.protobuf.Any content = 2;
+}
+
+
+enum PlayerActorType {
+  MESSAGE = 0;
+  KICK = 1;
+  SEND = 2;
+}
+
 message PlayerActorMessage {
   string uuid = 1;
   string message = 2;
+}
+
+message PlayerActorKick {
+  string uuid = 1;
+  string message = 2;
+}
+
+message PlayerActorSend {
+  string uuid = 1;
+  string serviceId = 2;
 }

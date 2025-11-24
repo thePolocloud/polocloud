@@ -1,27 +1,62 @@
 package dev.httpmarco.polocloud.sdk.java.player;
 
 import com.google.protobuf.Empty;
+import com.google.protobuf.InvalidProtocolBufferException;
 import dev.httpmarco.polocloud.common.future.FutureConverterKt;
 import dev.httpmarco.polocloud.shared.player.PolocloudPlayer;
 import dev.httpmarco.polocloud.shared.player.SharedPlayerProvider;
 import dev.httpmarco.polocloud.shared.service.Service;
 import dev.httpmarco.polocloud.v1.player.*;
 import io.grpc.ManagedChannel;
+import io.grpc.stub.StreamObserver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public final class PlayerProvider implements SharedPlayerProvider<PolocloudPlayer> {
 
     private PlayerActorAdapter actorAdapter = new EmptyPlayerActor();
     private final PlayerControllerGrpc.PlayerControllerBlockingStub blockingStub;
+    private final PlayerControllerGrpc.PlayerControllerStub playerActorStub;
     private final PlayerControllerGrpc.PlayerControllerFutureStub futureStub;
 
     public PlayerProvider(ManagedChannel channel) {
         this.blockingStub = PlayerControllerGrpc.newBlockingStub(channel);
+        this.playerActorStub = PlayerControllerGrpc.newStub(channel);
         this.futureStub = PlayerControllerGrpc.newFutureStub(channel);
+
+        playerActorStub.withWaitForReady().registerActor(Empty.getDefaultInstance(), new StreamObserver<>() {
+            @Override
+            public void onNext(PlayerActorRegister value) {
+                try {
+                    if (value.getType() == PlayerActorType.KICK) {
+                        PlayerActorKick actorKick = value.getContent().unpack(PlayerActorKick.class);
+                        actorAdapter.kick(UUID.fromString(actorKick.getUuid()), actorKick.getMessage());
+                    } else if (value.getType() == PlayerActorType.MESSAGE) {
+                        PlayerActorMessage actorMessage = value.getContent().unpack(PlayerActorMessage.class);
+                        actorAdapter.kick(UUID.fromString(actorMessage.getUuid()), actorMessage.getMessage());
+                    } else if (value.getType() == PlayerActorType.SEND) {
+                        PlayerActorSend actorSend = value.getContent().unpack(PlayerActorSend.class);
+                        actorAdapter.kick(UUID.fromString(actorSend.getUuid()), actorSend.getServiceId());
+                    }
+                } catch (InvalidProtocolBufferException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+
+            @Override
+            public void onCompleted() {
+
+            }
+        });
     }
 
     @Override
