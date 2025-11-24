@@ -10,6 +10,9 @@ service PlayerController {
   rpc findByName (PlayerFindByNameRequest) returns (PlayerFindResponse);
   rpc findByService (PlayerFindByServiceRequest) returns (PlayerFindResponse);
   rpc playerCount(PlayerCountRequest) returns (PlayerCountResponse);
+  rpc message(PlayerActorMessage) returns (PlayerActorResponse);
+  rpc kick(PlayerActorKick) returns (PlayerActorResponse);
+  rpc toServer(PlayerActorSend) returns (PlayerActorResponse);
 }
 
 message PlayerFindRequest {}
@@ -43,6 +46,12 @@ message PlayerCountResponse {
 message PlayerActorMessage {
   string unique_id = 1;
   string message = 2;
+}
+
+message PlayerActorResponse {
+  string unique_id = 1;
+  bool success = 2;
+  string error_message = 3;
 }
 
 message PlayerActorKick {

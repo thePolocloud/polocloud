@@ -1,7 +1,5 @@
 package dev.httpmarco.polocloud.agent.player
 
-import dev.httpmarco.polocloud.sdk.java.player.PlayerActor
-import dev.httpmarco.polocloud.shared.player.SharedPlayerActor
 import dev.httpmarco.polocloud.shared.service.Service
 import java.util.UUID
 import java.util.concurrent.CompletableFuture

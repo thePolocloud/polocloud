@@ -15,13 +15,14 @@ import java.util.concurrent.CompletableFuture;
 
 public final class PlayerProvider implements SharedPlayerProvider<PolocloudPlayer> {
 
-    private final PlayerActor actor = new PlayerActor();
+    private final PlayerActor actor;
     private final PlayerControllerGrpc.PlayerControllerBlockingStub blockingStub;
     private final PlayerControllerGrpc.PlayerControllerFutureStub futureStub;
 
     public PlayerProvider(ManagedChannel channel) {
         this.blockingStub = PlayerControllerGrpc.newBlockingStub(channel);
         this.futureStub = PlayerControllerGrpc.newFutureStub(channel);
+        this.actor = new PlayerActor(this.blockingStub);
     }
 
     @Override
