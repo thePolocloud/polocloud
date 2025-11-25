@@ -3,7 +3,8 @@ version = "1.0"
 
 [versions]
 
-nexus-publish = "2.0.0"
+# polocloud-version
+polocloud = "3.0.0-pre.7-SNAPSHOT"
 
 # libraries
 gson = "2.13.2"
@@ -59,6 +60,8 @@ lombok = "1.18.42"
 nrc-server-api = "0.1.1"
 
 [libraries]
+
+polocloud-proto =  { group = "dev.httpmarco.polocloud", name = "proto", version.ref = "polocloud" }
 
 # libraries
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
@@ -126,10 +129,6 @@ nrc-paper = { group = "gg.norisk", name = "nrc-server-api-paper", version.ref = 
 nrc-velocity = { group = "gg.norisk", name = "nrc-server-api-velocity", version.ref = "nrc-server-api" }
 nrc-spigot = { group = "gg.norisk", name = "nrc-server-api-spigot", version.ref = "nrc-server-api" }
 nrc-bungeecord = { group = "gg.norisk", name = "nrc-server-api-bungeecord", version.ref = "nrc-server-api" }
-
-
-[plugins]
-nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish" }
 
 [bundles]
 confirationPool = ["configurate-yaml", "configurate-core", "configurate-alt-toml", "snake-yaml"]

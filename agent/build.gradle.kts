@@ -7,7 +7,7 @@ dependencies {
 
     implementation(libs.bundles.proto)
     implementation(libs.grpc.netty)
-    implementation(projects.proto)
+    implementation(libs.polocloud.proto)
     implementation(projects.shared)
 
     implementation(libs.bundles.terminal)

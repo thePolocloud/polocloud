@@ -1,7 +1,3 @@
-plugins {
-    alias(libs.plugins.nexus.publish)
-}
-
 allprojects {
     apply(plugin = "maven-publish")
 
@@ -10,19 +6,10 @@ allprojects {
 
     repositories {
         mavenCentral()
-    }
-}
 
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/releases/"))
-            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
-
-            username.set(System.getenv("ossrhUsername") ?: "")
-            password.set(System.getenv("ossrhPassword") ?: "")
+        maven {
+            name = "polocloud-snapshots"
+            url = uri("https://central.sonatype.com/repository/maven-snapshots/")
         }
     }
-    // todo find a better way to determine if we are in a staging or release build
-    useStaging.set(!project.rootProject.version.toString().endsWith("-SNAPSHOT"))
 }

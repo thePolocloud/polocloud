@@ -5,7 +5,7 @@ plugins {
 dependencies {
     testImplementation(kotlin("test"))
     api(libs.gson)
-    compileOnly(projects.proto)
+    compileOnly(libs.polocloud.proto)
 }
 
 tasks.test {

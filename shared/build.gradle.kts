@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly(projects.proto)
+    compileOnly(libs.polocloud.proto)
     compileOnly(libs.gson)
 }
 

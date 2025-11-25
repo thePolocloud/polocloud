@@ -5,11 +5,11 @@ plugins {
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation(projects.common)
-    testImplementation(projects.proto)
+    testImplementation(libs.polocloud.proto)
 
     compileOnly(libs.bundles.confirationPool)
 
-    compileOnly(projects.proto)
+    compileOnly(libs.polocloud.proto)
     compileOnly(project(":common"))
 }
 
