@@ -1,9 +1,0 @@
-{
-  "title": "Modules",
-  "description": "PoloCloud modules and extensions",
-  "root": true,
-  "icon": "Package",
-  "pages": [
-    "rest-module"
-  ]
-}
