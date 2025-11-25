@@ -1,5 +1,0 @@
-name: PoloCloud-Hub
-main: dev.httpmarco.polocloud.addons.hub.platform.WaterdogPlatform
-url: https://github.com/HttpMarco/polocloud
-version: ${version}
-author: PoloCloud, RECHERGG

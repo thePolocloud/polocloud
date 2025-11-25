@@ -1,8 +1,0 @@
-name: PoloCloud-Signs
-main:  dev.httpmarco.polocloud.addons.signs.bukkit.BukkitBootstrap
-url: https://github.com/HttpMarco/polocloud
-version: ${version}
-api-version: 1.13
-author: PoloCloud, RECHERGG
-commands:
-  signs:

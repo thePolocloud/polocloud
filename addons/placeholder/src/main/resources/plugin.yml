@@ -1,8 +1,0 @@
-name: PoloCloudPlaceholder
-version: '${version}'
-main: dev.httpmarco.polocloud.addons.placeholder.PlaceholderAddon
-api-version: '1.21'
-author: jakubxyz
-description: PoloCloud Placeholder Addon for Spigot
-website: https://polocloud.de
-softdepend: [PlaceholderAPI]

@@ -1,8 +1,0 @@
-{
-  "id": "polocloud-proxy",
-  "name": "PoloCloud-Proxy",
-  "version": "${version}",
-  "main": "dev.httpmarco.polocloud.addons.proxy.platform.velocity.VelocityPlatform",
-  "url": "https://github.com/HttpMarco/polocloud",
-  "authors": ["PoloCloud", "RECHERGG"]
-}

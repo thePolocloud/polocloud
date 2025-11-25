@@ -1,5 +1,0 @@
-name: PoloCloud-Notify
-main: dev.httpmarco.polocloud.addons.notify.platform.waterdog.WaterdogPlatform
-url: https://github.com/HttpMarco/polocloud
-version: ${version}
-author: PoloCloud, RECHERGG

@@ -1,6 +1,0 @@
-name: PoloCloud-Signs
-main:  dev.httpmarco.polocloud.addons.signs.nukkit.NukkitBootstrap
-url: https://github.com/HttpMarco/polocloud
-version: ${version}
-api: 1.0.0
-author: PoloCloud, RECHERGG
