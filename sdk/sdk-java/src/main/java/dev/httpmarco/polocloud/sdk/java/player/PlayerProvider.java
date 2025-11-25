@@ -3,6 +3,7 @@ package dev.httpmarco.polocloud.sdk.java.player;
 import com.google.protobuf.Empty;
 import com.google.protobuf.InvalidProtocolBufferException;
 import dev.httpmarco.polocloud.common.future.FutureConverterKt;
+import dev.httpmarco.polocloud.sdk.java.Polocloud;
 import dev.httpmarco.polocloud.shared.player.PolocloudPlayer;
 import dev.httpmarco.polocloud.shared.player.SharedPlayerProvider;
 import dev.httpmarco.polocloud.shared.service.Service;
@@ -28,7 +29,7 @@ public final class PlayerProvider implements SharedPlayerProvider<PolocloudPlaye
         this.playerActorStub = PlayerControllerGrpc.newStub(channel);
         this.futureStub = PlayerControllerGrpc.newFutureStub(channel);
 
-        playerActorStub.withWaitForReady().registerActor(Empty.getDefaultInstance(), new StreamObserver<>() {
+        playerActorStub.withWaitForReady().registerActor(PlayerActorAuthRequest.newBuilder().setServiceId(Polocloud.instance().selfServiceName()).build(), new StreamObserver<>() {
             @Override
             public void onNext(PlayerActorRegister value) {
                 try {
@@ -54,7 +55,7 @@ public final class PlayerProvider implements SharedPlayerProvider<PolocloudPlaye
 
             @Override
             public void onCompleted() {
-
+                // ignore here
             }
         });
     }
@@ -102,5 +103,20 @@ public final class PlayerProvider implements SharedPlayerProvider<PolocloudPlaye
 
     public void updateActorAdapter(@NotNull PlayerActorAdapter adapter) {
         this.actorAdapter = adapter;
+    }
+
+    @Override
+    public void message(@NotNull PolocloudPlayer player, @NotNull String message) {
+
+    }
+
+    @Override
+    public void kick(@NotNull PolocloudPlayer player, @NotNull String message) {
+
+    }
+
+    @Override
+    public void toServer(@NotNull PolocloudPlayer player, @NotNull String serviceName) {
+
     }
 }

@@ -39,4 +39,10 @@ interface SharedPlayerProvider<P : PolocloudPlayer> {
     fun findByServiceAsync(service: Service): CompletableFuture<List<P>>
 
     fun playerCount(): Int
+
+    fun message(player: PolocloudPlayer, message: String)
+
+    fun kick(player: PolocloudPlayer, message: String)
+
+    fun toServer(player: PolocloudPlayer, serviceName: String)
 }

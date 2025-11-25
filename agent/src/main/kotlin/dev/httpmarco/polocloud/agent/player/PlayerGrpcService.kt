@@ -3,11 +3,15 @@ package dev.httpmarco.polocloud.agent.player
 import com.google.protobuf.Any
 import com.google.protobuf.Empty
 import dev.httpmarco.polocloud.agent.Agent
+import dev.httpmarco.polocloud.v1.player.PlayerActorAuthRequest
+import dev.httpmarco.polocloud.v1.player.PlayerActorRegister
 import dev.httpmarco.polocloud.v1.player.PlayerControllerGrpc
 import dev.httpmarco.polocloud.v1.player.PlayerCountResponse
 import dev.httpmarco.polocloud.v1.player.PlayerFindByNameRequest
 import dev.httpmarco.polocloud.v1.player.PlayerFindByServiceRequest
 import dev.httpmarco.polocloud.v1.player.PlayerFindResponse
+import dev.httpmarco.polocloud.v1.proto.EventProviderOuterClass
+import io.grpc.stub.ServerCallStreamObserver
 import io.grpc.stub.StreamObserver
 
 class PlayerGrpcService : PlayerControllerGrpc.PlayerControllerImplBase() {
@@ -71,5 +75,16 @@ class PlayerGrpcService : PlayerControllerGrpc.PlayerControllerImplBase() {
 
         responseObserver.onNext(response)
         responseObserver.onCompleted()
+    }
+
+    override fun registerActor(request: PlayerActorAuthRequest, responseObserver: StreamObserver<PlayerActorRegister?>?) {
+        val service = Agent.serviceProvider().find(request.serviceId)
+        val observer = responseObserver as ServerCallStreamObserver<*>
+
+        observer.setOnCancelHandler {
+            //TODO
+            //Agent.eventService.detach(request.eventName, request.serviceName)
+        }
+
     }
 }

@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.shared.player
 
 import com.google.gson.JsonObject
+import dev.httpmarco.polocloud.shared.service.Service
 import dev.httpmarco.polocloud.v1.player.PlayerSnapshot
 import java.util.UUID
 
@@ -28,6 +29,22 @@ open class PolocloudPlayer(
             .setUniqueId(uniqueId.toString())
             .setCurrentServiceName(currentServiceName)
             .build()
+    }
+
+    fun message(message: String) {
+
+    }
+
+    fun kick(message: String) {
+
+    }
+
+    fun toServer(serviceName: String) {
+
+    }
+
+    fun toServer(service: Service) {
+        this.toServer(service.name())
     }
 }
 

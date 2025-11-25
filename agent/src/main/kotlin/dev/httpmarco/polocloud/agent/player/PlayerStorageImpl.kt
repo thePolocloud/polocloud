@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.agent.player
 
+import dev.httpmarco.polocloud.shared.player.PolocloudPlayer
 import dev.httpmarco.polocloud.shared.service.Service
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -40,4 +41,15 @@ class PlayerStorageImpl : PlayerStorage {
     }
 
     override fun playerCount(): Int = cachedPlayers.size
+    override fun message(player: PolocloudPlayer, message: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun kick(player: PolocloudPlayer, message: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun toServer(player: PolocloudPlayer, serviceName: String) {
+        TODO("Not yet implemented")
+    }
 }

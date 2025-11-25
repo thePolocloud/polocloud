@@ -14,7 +14,7 @@ service PlayerController {
   rpc findByService (PlayerFindByServiceRequest) returns (PlayerFindResponse);
   rpc playerCount(google.protobuf.Empty) returns (PlayerCountResponse);
 
-  rpc registerActor(google.protobuf.Empty) returns (stream PlayerActorRegister);
+  rpc registerActor(PlayerActorAuthRequest) returns (stream PlayerActorRegister);
 }
 
 message PlayerFindByNameRequest {
@@ -45,6 +45,9 @@ message PlayerActorRegister {
   google.protobuf.Any content = 2;
 }
 
+message PlayerActorAuthRequest {
+  string serviceId = 1;
+}
 
 enum PlayerActorType {
   MESSAGE = 0;
