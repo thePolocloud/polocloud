@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation("com.google.guava:guava:33.5.0-jre")
     testImplementation(kotlin("test"))
     api(libs.gson)
     compileOnly(libs.polocloud.proto)

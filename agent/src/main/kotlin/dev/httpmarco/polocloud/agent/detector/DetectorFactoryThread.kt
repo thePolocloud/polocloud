@@ -13,7 +13,7 @@ class DetectorFactoryThread(detector: Detector) {
                 Thread.currentThread().interrupt()
                 break
             } catch (e: Exception) {
-                logger.throwable(e)
+                logger.error(e)
             }
         }
     }

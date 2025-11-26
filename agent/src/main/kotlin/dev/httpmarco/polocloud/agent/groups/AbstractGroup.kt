@@ -10,7 +10,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import dev.httpmarco.polocloud.shared.properties.PropertyHolder
 import dev.httpmarco.polocloud.shared.template.Template
-import dev.httpmarco.polocloud.v1.GroupType
+import dev.httpmarco.polocloud.v1.groups.GroupType
 
 open class AbstractGroup(
     name: String,
@@ -18,7 +18,7 @@ open class AbstractGroup(
     maxMemory: Int,
     minOnlineServices: Int,
     maxOnlineServices: Int,
-    percentageToStartNewService: Double,
+    startThreshold: Double,
     platform: PlatformIndex,
     createdAt: Long,
     templates: List<Template>,
@@ -30,8 +30,8 @@ open class AbstractGroup(
         maxMemory,
         minOnlineServices,
         maxOnlineServices,
+        startThreshold,
         platform,
-        percentageToStartNewService,
         createdAt,
         templates,
         properties
@@ -82,8 +82,8 @@ open class AbstractGroup(
         this.maxOnlineService = maxOnlineServices
     }
 
-    fun updatePercentageToStartNewService(percentageToStartNewService: Double) {
-        this.percentageToStartNewService = percentageToStartNewService
+    fun updateStartThreshold(startThreshold: Double) {
+        this.startThreshold = startThreshold
     }
 
     fun startServices(amount: Int): List<AbstractService> {

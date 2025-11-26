@@ -1,10 +1,7 @@
 package dev.httpmarco.polocloud.agent.services
 
 import dev.httpmarco.polocloud.agent.Agent
-import dev.httpmarco.polocloud.agent.runtime.local.LocalService
-import dev.httpmarco.polocloud.agent.utils.IndexDetector
 import dev.httpmarco.polocloud.shared.template.Template
-import dev.httpmarco.polocloud.v1.GroupType
 import dev.httpmarco.polocloud.v1.services.ServiceBootRequest
 import dev.httpmarco.polocloud.v1.services.ServiceBootResponse
 import dev.httpmarco.polocloud.v1.services.ServiceBootWithConfigurationRequest
@@ -86,7 +83,7 @@ class ServiceGrpcService : ServiceControllerGrpc.ServiceControllerImplBase() {
         }
 
         val updatedTemplates = service.templates.toMutableList()
-        updatedTemplates += Template.bindSnapshot(request.templatesList)
+        updatedTemplates += Template.fromSnapshotList(request.templatesList)
 
         request.excludedTemplatesList.forEach { template ->
             updatedTemplates.removeIf { it.name == template.name }

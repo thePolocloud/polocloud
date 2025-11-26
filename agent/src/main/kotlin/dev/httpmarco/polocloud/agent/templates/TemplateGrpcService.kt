@@ -20,7 +20,7 @@ class TemplateGrpcService : TemplateControllerGrpc.TemplateControllerImplBase() 
         }
 
         for (template in templatesToReturn) {
-            builder.addTemplate(template.toSnapshot())
+            builder.addTemplate(template.to())
         }
 
         responseObserver.onNext(builder.build())

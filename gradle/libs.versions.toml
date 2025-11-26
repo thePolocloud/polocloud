@@ -2,9 +2,10 @@
 version = "1.0"
 
 [versions]
+nexus-publish = "2.0.0"
 
 # polocloud-version
-polocloud = "3.0.0-pre.7-SNAPSHOT"
+polocloud = "3.0.0-pre.8-SNAPSHOT"
 
 # libraries
 gson = "2.13.2"
@@ -14,9 +15,6 @@ oshi="6.9.1"
 configurate = "4.2.0"
 yaml = "2.5"
 tomlj = "1.1.1"
-
-# networking
-grpc = "1.77.0"
 
 # terminal
 jline = "3.30.6"
@@ -62,6 +60,7 @@ nrc-server-api = "0.1.1"
 [libraries]
 
 polocloud-proto =  { group = "dev.httpmarco.polocloud", name = "proto", version.ref = "polocloud" }
+polocloud-shared =  { group = "dev.httpmarco.polocloud", name = "shared", version.ref = "polocloud" }
 
 # libraries
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
@@ -72,12 +71,6 @@ configurate-core = { group = "org.spongepowered", name = "configurate-core", ver
 configurate-yaml = { group = "org.spongepowered", name = "configurate-yaml", version.ref = "configurate" }
 configurate-alt-toml = { group = "org.tomlj", name = "tomlj", version.ref = "tomlj" }
 snake-yaml = { group = "org.yaml", name = "snakeyaml", version.ref = "yaml" }
-
-# networking
-grpc-netty = { group = "io.grpc", name = "grpc-netty-shaded", version.ref = "grpc" }
-grpc-protobuf = { group = "io.grpc", name = "grpc-protobuf", version.ref = "grpc" }
-grpc-stub = { group = "io.grpc", name = "grpc-stub", version.ref = "grpc" }
-grpc-services = { group = "io.grpc", name = "grpc-services", version.ref = "grpc" }
 
 # terminal
 jline = { group = "org.jline", name = "jline", version.ref = "jline" }
@@ -130,9 +123,11 @@ nrc-velocity = { group = "gg.norisk", name = "nrc-server-api-velocity", version.
 nrc-spigot = { group = "gg.norisk", name = "nrc-server-api-spigot", version.ref = "nrc-server-api" }
 nrc-bungeecord = { group = "gg.norisk", name = "nrc-server-api-bungeecord", version.ref = "nrc-server-api" }
 
+[plugins]
+nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish" }
+
 [bundles]
 confirationPool = ["configurate-yaml", "configurate-core", "configurate-alt-toml", "snake-yaml"]
-proto = ["grpc-protobuf", "grpc-stub", "grpc-services"]
 terminal = ["slf4j", "log4j-api", "log4j-core", "log4j-slf4j2-impl"]
 runtime = ["docker", "docker-http", "k8s"]
 jline = ["jline", "jline-console-ui"]

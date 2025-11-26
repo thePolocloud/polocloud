@@ -6,7 +6,6 @@ import dev.httpmarco.polocloud.agent.i18n
 import dev.httpmarco.polocloud.agent.player.PlayerGrpcService
 import dev.httpmarco.polocloud.agent.services.ServiceGrpcService
 import dev.httpmarco.polocloud.agent.information.CloudInformationGrpcService
-import dev.httpmarco.polocloud.agent.logging.LoggerGrpcService
 import dev.httpmarco.polocloud.agent.platform.PlatformGrpcService
 import dev.httpmarco.polocloud.agent.templates.TemplateGrpcService
 import io.grpc.Server
@@ -23,7 +22,6 @@ class GrpcServerEndpoint {
             .addService(ServiceGrpcService())
             .addService(PlayerGrpcService())
             .addService(CloudInformationGrpcService())
-            .addService(LoggerGrpcService())
             .addService(PlatformGrpcService())
             .addService(TemplateGrpcService())
             .build()

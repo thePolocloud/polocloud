@@ -1,9 +1,0 @@
-accessWidener v2 named
-
-accessible field net/minecraft/network/ClientConnection address Ljava/net/SocketAddress;
-
-accessible method net/minecraft/server/network/ServerLoginNetworkHandler onHello (Lnet/minecraft/network/packet/c2s/login/LoginHelloC2SPacket;)V
-accessible field net/minecraft/server/network/ServerLoginNetworkHandler connection Lnet/minecraft/network/ClientConnection;
-accessible field net/minecraft/server/network/ServerLoginNetworkHandler profile Lcom/mojang/authlib/GameProfile;
-
-accessible method net/minecraft/server/network/ServerPlayNetworkHandler getSignedMessage (Lnet/minecraft/network/packet/c2s/play/ChatMessageC2SPacket;Lnet/minecraft/network/message/LastSeenMessageList;)Lnet/minecraft/network/message/SignedMessage;

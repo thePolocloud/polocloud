@@ -1,3 +1,10 @@
+plugins {
+    id("java-library")
+    alias(libs.plugins.nexus.publish)
+
+    `maven-publish`
+}
+
 allprojects {
     apply(plugin = "maven-publish")
 
@@ -12,4 +19,18 @@ allprojects {
             url = uri("https://central.sonatype.com/repository/maven-snapshots/")
         }
     }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/releases/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+
+            username.set(System.getenv("ossrhUsername") ?: "")
+            password.set(System.getenv("ossrhPassword") ?: "")
+        }
+    }
+    // todo find a better way to determine if we are in a staging or release build
+    useStaging.set(!project.rootProject.version.toString().endsWith("-SNAPSHOT"))
 }

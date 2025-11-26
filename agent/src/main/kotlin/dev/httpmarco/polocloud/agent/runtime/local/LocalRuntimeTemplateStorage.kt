@@ -5,7 +5,7 @@ import dev.httpmarco.polocloud.agent.runtime.RuntimeTemplateStorage
 import dev.httpmarco.polocloud.common.filesystem.copyDirectory
 import dev.httpmarco.polocloud.common.filesystem.deleteDirectory
 import dev.httpmarco.polocloud.shared.template.Template
-import dev.httpmarco.polocloud.v1.GroupType
+import dev.httpmarco.polocloud.v1.groups.GroupType
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption

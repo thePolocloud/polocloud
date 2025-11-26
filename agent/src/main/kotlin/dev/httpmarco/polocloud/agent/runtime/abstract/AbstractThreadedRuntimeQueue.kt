@@ -50,7 +50,7 @@ open class AbstractThreadedRuntimeQueue : Thread("polocloud-local-runtime-queue"
             // Thread was interrupted intentionally → exit gracefully
         } catch (e: Throwable) {
             // Log unexpected errors
-            logger.throwable(e)
+            logger.error(e)
         }
     }
 
@@ -91,7 +91,7 @@ open class AbstractThreadedRuntimeQueue : Thread("polocloud-local-runtime-queue"
             val currentUsagePercent = (avgOnlinePlayers / avgMaxPlayers) * 100.0
 
             // Start an extra service if utilization exceeds the threshold
-            if (currentUsagePercent >= group.percentageToStartNewService) {
+            if (currentUsagePercent >= group.startThreshold) {
                 required += 1
             }
         }

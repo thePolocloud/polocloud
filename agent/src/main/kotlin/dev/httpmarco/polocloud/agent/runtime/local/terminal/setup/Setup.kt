@@ -31,7 +31,9 @@ abstract class Setup<T>(private val name: String, private val canExited: Boolean
     fun stop() {
         this.terminal.clearScreen()
         this.terminal.resetPrompt()
-        logger.flushLogs()
+
+        //todo
+        //logger.flushLogs()
         i18n.info("agent.local-runtime.setup.exited", this.name)
     }
 

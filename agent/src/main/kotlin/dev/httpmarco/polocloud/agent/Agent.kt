@@ -6,7 +6,6 @@ import dev.httpmarco.polocloud.agent.detector.OnlineStateDetector
 import dev.httpmarco.polocloud.agent.events.EventService
 import dev.httpmarco.polocloud.agent.grpc.GrpcServerEndpoint
 import dev.httpmarco.polocloud.agent.i18n.I18nPolocloudAgent
-import dev.httpmarco.polocloud.agent.logging.LoggerImpl
 import dev.httpmarco.polocloud.agent.module.ModuleProvider
 import dev.httpmarco.polocloud.agent.player.PlayerListener
 import dev.httpmarco.polocloud.agent.player.PlayerStorageImpl
@@ -18,7 +17,6 @@ import dev.httpmarco.polocloud.platforms.PlatformPool
 import dev.httpmarco.polocloud.shared.PolocloudShared
 import dev.httpmarco.polocloud.shared.events.SharedEventProvider
 import dev.httpmarco.polocloud.shared.groups.SharedGroupProvider
-import dev.httpmarco.polocloud.shared.logging.Logger
 import dev.httpmarco.polocloud.shared.player.SharedPlayerProvider
 import dev.httpmarco.polocloud.shared.service.SharedServiceProvider
 import dev.httpmarco.polocloud.shared.information.SharedCloudInformationProvider
@@ -27,10 +25,11 @@ import dev.httpmarco.polocloud.agent.platform.PlatformStorageImpl
 import dev.httpmarco.polocloud.shared.platform.SharedPlatformProvider
 import dev.httpmarco.polocloud.shared.template.SharedTemplateProvider
 import dev.httpmarco.polocloud.updater.Updater
+import org.apache.logging.log4j.LogManager
 
 // global terminal instance for the agent
 // this is used to print messages to the console
-val logger = LoggerImpl()
+val logger = LogManager.getLogger("PoloCloud")
 val i18n = I18nPolocloudAgent()
 
 object Agent : PolocloudShared(true) {
@@ -125,18 +124,17 @@ object Agent : PolocloudShared(true) {
         logger.info("You are running the latest version of the agent.")
     }
 
-    override fun eventProvider(): SharedEventProvider = this.eventService
+    override fun eventProvider() = this.eventService
 
-    override fun serviceProvider(): SharedServiceProvider<*> = this.runtime.serviceStorage()
+    override fun serviceProvider() = this.runtime.serviceStorage()
 
-    override fun groupProvider(): SharedGroupProvider<*> = this.runtime.groupStorage()
+    override fun groupProvider() = this.runtime.groupStorage()
 
-    override fun playerProvider(): SharedPlayerProvider<*> = this.playerStorage
+    override fun playerProvider() = this.playerStorage
 
-    override fun cloudInformationProvider(): SharedCloudInformationProvider<*> = this.cloudInformationStorage
+    override fun cloudInformationProvider() = this.cloudInformationStorage
 
-    override fun logger(): Logger = logger
+    override fun platformProvider() = this.platformStorage
 
-    override fun platformProvider(): SharedPlatformProvider<*> = this.platformStorage
-    override fun templateProvider(): SharedTemplateProvider<*> = this.runtime.templateStorage()
+    override fun templateProvider() = this.runtime.templateStorage()
 }

@@ -5,6 +5,7 @@ import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.shared.platform.PlatformIndex
 import dev.httpmarco.polocloud.shared.properties.PropertyHolder
 import dev.httpmarco.polocloud.shared.template.Template
+import dev.httpmarco.polocloud.v1.groups.DeleteGroupResponse
 import dev.httpmarco.polocloud.v1.groups.FindGroupRequest
 import dev.httpmarco.polocloud.v1.groups.FindGroupResponse
 import dev.httpmarco.polocloud.v1.groups.GroupControllerGrpc
@@ -28,7 +29,7 @@ class GroupGrpcService : GroupControllerGrpc.GroupControllerImplBase() {
         }
 
         for (group in groupsToReturn) {
-            builder.addGroups(group.toSnapshot())
+            builder.addGroups(group.to())
         }
 
         responseObserver.onNext(builder.build())
@@ -53,19 +54,19 @@ class GroupGrpcService : GroupControllerGrpc.GroupControllerImplBase() {
 
         val group = AbstractGroup(
             request.name,
-            request.minimumMemory,
-            request.maximumMemory,
-            request.minimumOnline,
-            request.maximumOnline,
-            request.percentageToStartNewService,
+            request.minMemory,
+            request.maxMemory,
+            request.minOnline,
+            request.maxOnline,
+            request.startThreshold,
             PlatformIndex(request.platform.name, request.platform.version),
             System.currentTimeMillis(),
-            Template.bindSnapshot(request.templatesList),
+            Template.fromSnapshotList(request.templatesList),
             properties
         )
 
         Agent.runtime.groupStorage().create(group)
-        responseObserver.onNext(group.toSnapshot())
+        responseObserver.onNext(group.to())
         responseObserver.onCompleted()
 
     }
@@ -93,23 +94,24 @@ class GroupGrpcService : GroupControllerGrpc.GroupControllerImplBase() {
 
         val group = AbstractGroup(
             request.name,
-            request.minimumMemory,
-            request.maximumMemory,
-            request.minimumOnline,
-            request.maximumOnline,
-            request.percentageToStartNewService,
+            request.minMemory,
+            request.maxMemory,
+            request.minOnline,
+            request.maxOnline,
+            request.startThreshold,
             PlatformIndex(request.platform.name, request.platform.version),
             request.createdAt,
-            Template.bindSnapshot(request.templatesList),
+            Template.fromSnapshotList(request.templatesList),
             properties
         )
 
         Agent.runtime.groupStorage().update(group)
-        responseObserver.onNext(group.toSnapshot())
+        responseObserver.onNext(group.to())
         responseObserver.onCompleted()
     }
 
-    override fun delete(request: GroupDeleteRequest, responseObserver: StreamObserver<GroupSnapshot>) {
+    override fun delete(request: GroupDeleteRequest, responseObserver: StreamObserver<DeleteGroupResponse>) {
+
         val groupStorage = Agent.runtime.groupStorage()
 
         val group = groupStorage.find(request.name)
@@ -120,7 +122,7 @@ class GroupGrpcService : GroupControllerGrpc.GroupControllerImplBase() {
 
         Agent.runtime.serviceStorage().findByGroup(group).forEach { it.shutdown() }
         Agent.runtime.groupStorage().delete(group.name)
-        responseObserver.onNext(group.toSnapshot())
+        responseObserver.onNext(DeleteGroupResponse.newBuilder().setDeleted(true).build())
         responseObserver.onCompleted()
     }
 }

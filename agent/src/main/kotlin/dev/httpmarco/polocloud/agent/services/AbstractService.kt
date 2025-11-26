@@ -11,7 +11,7 @@ import dev.httpmarco.polocloud.shared.events.definitions.service.ServiceChangeSt
 import dev.httpmarco.polocloud.shared.service.Service
 import dev.httpmarco.polocloud.shared.service.ServiceInformation
 import dev.httpmarco.polocloud.shared.template.Template
-import dev.httpmarco.polocloud.v1.GroupType
+import dev.httpmarco.polocloud.v1.groups.GroupType
 import dev.httpmarco.polocloud.v1.services.ServiceState
 import java.nio.file.Path
 

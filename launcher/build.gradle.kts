@@ -1,4 +1,7 @@
 import java.security.MessageDigest
+import org.w3c.dom.Document
+import java.net.URL
+import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
     id("java")
@@ -23,14 +26,7 @@ tasks.jar {
         includeLibs("common"),
         includeLibs("agent"),
         includeLibs("platforms"),
-        includeLibs("proto"),
         includeLibs("updater"),
-
-        includeLibs(":bridges:bridge-velocity", "shadowJar"),
-        includeLibs(":bridges:bridge-bungeecord", "shadowJar"),
-        includeLibs(":bridges:bridge-gate", "shadowJar"),
-        includeLibs(":bridges:bridge-waterdog", "shadowJar"),
-        includeLibs(":bridges:bridge-fabric", "mergeFabricVersions")
     )
 
     manifest {
@@ -64,6 +60,7 @@ tasks.register("buildDependencies") {
     doLast {
         val agentProject = project(":agent")
         val mavenCentralBase = "https://repo1.maven.org/maven2"
+        val mavenCentralSnapshot = "https://central.sonatype.com/repository/maven-snapshots"
         val runtimeClasspath = agentProject.configurations.getByName("runtimeClasspath")
 
         val outputFile = file("src/main/resources/dependencies.blob")
@@ -71,13 +68,30 @@ tasks.register("buildDependencies") {
             if (runtimeClasspath.isCanBeResolved) {
                 runtimeClasspath.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
                     val group = artifact.moduleVersion.id.group
-                    if (group == "dev.httpmarco.polocloud") return@forEach
                     val name = artifact.name
                     val version = artifact.moduleVersion.id.version
                     val file = artifact.file
                     val fileName = file.name
                     val groupPath = group.replace(".", "/")
-                    val url = "$mavenCentralBase/$groupPath/$name/$version/$fileName"
+
+                    var url = "$mavenCentralBase/$groupPath/$name/$version/$fileName"
+
+                    if (group == "dev.httpmarco.polocloud") {
+                        if (name == "proto" || name == "shared") {
+                            val fileUrl = getLatestSnapshotFile(
+                                baseUrl = mavenCentralSnapshot,
+                                group = group,
+                                name = name,
+                                version = version,
+                                extension = "jar"
+                            )
+
+                            url = fileUrl
+                        } else {
+                            return@forEach
+                        }
+                    }
+
 
                     val sha256 = file.inputStream().use { input ->
                         val digest = MessageDigest.getInstance("SHA-256")
@@ -97,6 +111,59 @@ tasks.register("buildDependencies") {
     }
 }
 
+fun getLatestSnapshotFile(
+    baseUrl: String,
+    group: String,
+    name: String,
+    version: String,
+    extension: String
+): String {
+    val groupPath = group.replace(".", "/")
+    val metadataUrl = "$baseUrl/$groupPath/$name/$version/maven-metadata.xml"
+
+    // maven-metadata.xml laden
+    val xml: Document = DocumentBuilderFactory
+        .newInstance()
+        .newDocumentBuilder()
+        .parse(URL(metadataUrl).openStream())
+
+    xml.documentElement.normalize()
+
+    // Die neueste Snapshot-Version extrahieren
+    val snapshotVersions = xml.getElementsByTagName("snapshotVersion")
+    var latestValue: String? = null
+    var latestUpdated: Long = 0
+
+    for (i in 0 until snapshotVersions.length) {
+        val node = snapshotVersions.item(i)
+        val child = node.childNodes
+
+        var value: String? = null
+        var updated: Long = 0
+
+        for (j in 0 until child.length) {
+            val c = child.item(j)
+            when (c.nodeName) {
+                "value" -> value = c.textContent
+                "updated" -> updated = c.textContent.toLong()
+            }
+        }
+
+        if (value != null && updated > latestUpdated) {
+            latestUpdated = updated
+            latestValue = value
+        }
+    }
+
+    require(latestValue != null) {
+        "Konnte keine Snapshot-Version in $metadataUrl finden"
+    }
+
+    val fileName = "$name-$latestValue.$extension"
+    return "$baseUrl/$groupPath/$name/$version/$fileName"
+}
+
+
 tasks.register<Exec>("dockerBuild") {
     dependsOn(tasks.jar)
     val imageName = "polocloud:development"
@@ -110,3 +177,6 @@ tasks.register<Exec>("dockerBuild") {
         "."
     )
 }
+
+
+

@@ -1,7 +1,0 @@
-{
-  "id":  "example-module",
-  "name": "Example Module",
-  "description": "This is just a simple Example Module!",
-  "author": "RECHERGG",
-  "main": "dev.httpmarco.polocloud.modules.example.ExampleModule"
-}

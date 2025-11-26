@@ -11,7 +11,7 @@ import dev.httpmarco.polocloud.platforms.exceptions.PlatformCacheMissingExceptio
 import dev.httpmarco.polocloud.platforms.exceptions.PlatformVersionInvalidException
 import dev.httpmarco.polocloud.platforms.tasks.PlatformTask
 import dev.httpmarco.polocloud.platforms.tasks.PlatformTaskPool
-import dev.httpmarco.polocloud.v1.GroupType
+import dev.httpmarco.polocloud.v1.groups.GroupType
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path

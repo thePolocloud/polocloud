@@ -12,7 +12,8 @@ class SetupController(private val terminal: JLine3Terminal) {
             return
         }
 
-        logger.enableLogBuffering()
+        // todo
+       // logger.enableLogBuffering()
 
         this.displayedSetup = setup
         displayedSetup?.start(terminal)
@@ -27,7 +28,8 @@ class SetupController(private val terminal: JLine3Terminal) {
     }
 
     fun completeCurrentSetup() {
-        logger.flushLogs()
+        //todo
+      //  logger.flushLogs()
         displayedSetup = null
     }
 

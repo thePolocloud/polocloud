@@ -1,1 +1,0 @@
-screen -S Polocloud-Agent java -jar polocloud-launcher.jar

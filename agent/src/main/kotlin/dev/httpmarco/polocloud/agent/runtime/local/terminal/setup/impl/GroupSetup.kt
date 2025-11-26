@@ -11,8 +11,7 @@ import dev.httpmarco.polocloud.shared.platform.PlatformIndex
 import dev.httpmarco.polocloud.shared.properties.FALLBACK
 import dev.httpmarco.polocloud.shared.properties.PropertyHolder
 import dev.httpmarco.polocloud.shared.properties.STATIC
-import dev.httpmarco.polocloud.shared.template.Template
-import dev.httpmarco.polocloud.v1.GroupType
+import dev.httpmarco.polocloud.v1.groups.GroupType
 
 class GroupSetup : Setup<AbstractGroup>("Group setup") {
 

@@ -30,7 +30,7 @@ class LocalRuntimeExpender : RuntimeExpender<LocalService> {
             return true
         } catch (e: IOException) {
             i18n.warn("agent.local-runtime.expender.execute.error")
-            logger.throwable(e)
+            logger.error(e)
             return false
         }
     }

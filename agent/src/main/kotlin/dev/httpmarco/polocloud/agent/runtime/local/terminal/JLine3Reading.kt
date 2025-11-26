@@ -53,7 +53,7 @@ class JLine3Reading(
                 exitPolocloud(cleanShutdown = false)
                 break
             } catch (e: Throwable) {
-                logger.throwable(e)
+                logger.error(e)
             }
         }
     }

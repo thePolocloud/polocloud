@@ -4,7 +4,7 @@ import dev.httpmarco.polocloud.platforms.PlatformPool
 import dev.httpmarco.polocloud.shared.platform.Platform
 import dev.httpmarco.polocloud.shared.platform.PlatformVersion
 import dev.httpmarco.polocloud.shared.platform.SharedPlatformProvider
-import dev.httpmarco.polocloud.v1.GroupType
+import dev.httpmarco.polocloud.v1.groups.GroupType
 
 class PlatformStorageImpl : SharedPlatformProvider<Platform> {
     override fun findAll(): List<Platform> {

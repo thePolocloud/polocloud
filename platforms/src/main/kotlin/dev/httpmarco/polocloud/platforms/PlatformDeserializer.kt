@@ -8,7 +8,7 @@ import dev.httpmarco.polocloud.common.language.Language
 import dev.httpmarco.polocloud.common.os.OS
 import java.lang.reflect.Type
 import dev.httpmarco.polocloud.platforms.bridge.Bridge
-import dev.httpmarco.polocloud.v1.GroupType
+import dev.httpmarco.polocloud.v1.groups.GroupType
 
 class PlatformDeserializer : JsonDeserializer<Platform> {
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Platform {

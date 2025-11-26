@@ -4,11 +4,8 @@ plugins {
 
 dependencies {
     testImplementation(kotlin("test"))
-
-    implementation(libs.bundles.proto)
-    implementation(libs.grpc.netty)
     implementation(libs.polocloud.proto)
-    implementation(projects.shared)
+    implementation(libs.polocloud.shared)
 
     implementation(libs.bundles.terminal)
     implementation(libs.bundles.runtime)
@@ -21,7 +18,6 @@ dependencies {
     implementation(projects.platforms)
     implementation(projects.common)
     implementation(projects.updater)
-    implementation(projects.bridges.bridgeApi)
 }
 
 tasks.jar {

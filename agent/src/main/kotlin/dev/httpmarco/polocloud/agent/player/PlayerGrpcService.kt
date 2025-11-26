@@ -17,7 +17,7 @@ class PlayerGrpcService : PlayerControllerGrpc.PlayerControllerImplBase() {
         val playerStorage = Agent.playerStorage
 
         for (player in playerStorage.findAll()) {
-            builder.addPlayers(player.toSnapshot())
+            builder.addPlayers(player.to())
         }
 
         responseObserver.onNext(builder.build())
@@ -35,7 +35,7 @@ class PlayerGrpcService : PlayerControllerGrpc.PlayerControllerImplBase() {
         }
 
         for (player in playerToReturn) {
-            builder.addPlayers(player.toSnapshot())
+            builder.addPlayers(player.to())
         }
 
         responseObserver.onNext(builder.build())
@@ -56,7 +56,7 @@ class PlayerGrpcService : PlayerControllerGrpc.PlayerControllerImplBase() {
         }
 
         for (player in playerToReturn) {
-            builder.addPlayers(player.toSnapshot())
+            builder.addPlayers(player.to())
         }
 
         responseObserver.onNext(builder.build())

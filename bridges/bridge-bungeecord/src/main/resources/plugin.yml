@@ -1,4 +1,0 @@
-name: Pololcoud-BungeeCord-Bridge
-main:  dev.httpmarco.polocloud.bridges.bungeecord.BungeecordBridge
-version: ${version}
-author: Polocloud

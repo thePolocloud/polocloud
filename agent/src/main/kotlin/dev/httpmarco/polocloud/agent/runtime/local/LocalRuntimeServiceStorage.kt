@@ -3,10 +3,9 @@ package dev.httpmarco.polocloud.agent.runtime.local
 import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.runtime.RuntimeServiceStorage
 import dev.httpmarco.polocloud.agent.services.AbstractService
-import dev.httpmarco.polocloud.agent.utils.IndexDetector
 import dev.httpmarco.polocloud.shared.groups.Group
 import dev.httpmarco.polocloud.shared.service.SharedBootConfiguration
-import dev.httpmarco.polocloud.v1.GroupType
+import dev.httpmarco.polocloud.v1.groups.GroupType
 import dev.httpmarco.polocloud.v1.services.ServiceSnapshot
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CopyOnWriteArrayList

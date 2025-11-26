@@ -17,7 +17,9 @@ class ServiceScreenController(val terminal: JLine3Terminal) {
         displayedAbstractService = abstractService
 
         terminal.clearScreen()
-        logger.enableLogBuffering()
+
+        // todo
+        //logger.enableLogBuffering()
 
         abstractService.logs(5000).forEach {
             terminal.display(it)
@@ -36,7 +38,9 @@ class ServiceScreenController(val terminal: JLine3Terminal) {
 
         terminal.clearScreen()
         terminal.resetPrompt()
-        logger.flushLogs()
+
+        //todo
+       // logger.flushLogs()
     }
 
     fun isServiceRecoding(abstractService: AbstractService): Boolean {

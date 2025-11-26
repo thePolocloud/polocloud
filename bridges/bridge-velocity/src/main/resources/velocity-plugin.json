@@ -1,8 +1,0 @@
-{
-  "id": "polocloud-bridge",
-  "name": "PoloCloud-Bridge",
-  "version": "${version}",
-  "main": "dev.httpmarco.polocloud.bridges.velocity.VelocityBridge",
-  "url": "https://github.com/HttpMarco/polocloud",
-  "authors": ["PoloCloud", "RECHERGG"]
-}
