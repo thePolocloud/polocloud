@@ -1,7 +1,7 @@
 package dev.httpmarco.polocloud.agent.runtime.k8s
 
 import dev.httpmarco.polocloud.agent.runtime.Runtime
-import dev.httpmarco.polocloud.agent.runtime.abstract.AbstractServiceStatsThread
+import dev.httpmarco.polocloud.agent.runtime.abstracts.AbstractServiceStatsThread
 import io.fabric8.kubernetes.client.KubernetesClient
 
 class KubernetesRuntime(client: KubernetesClient) : Runtime() {

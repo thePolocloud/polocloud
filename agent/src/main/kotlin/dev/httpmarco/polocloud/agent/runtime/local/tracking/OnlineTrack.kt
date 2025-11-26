@@ -1,6 +1,6 @@
 package dev.httpmarco.polocloud.agent.runtime.local.tracking
 
-import dev.httpmarco.polocloud.agent.runtime.abstract.Track
+import dev.httpmarco.polocloud.agent.runtime.abstracts.Track
 import dev.httpmarco.polocloud.agent.runtime.local.LocalService
 
 class OnlineTrack(private val localService: LocalService) : Track() {

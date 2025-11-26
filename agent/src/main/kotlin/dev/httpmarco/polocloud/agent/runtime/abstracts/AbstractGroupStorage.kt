@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.agent.runtime.abstract
+package dev.httpmarco.polocloud.agent.runtime.abstracts
 
 import com.google.gson.GsonBuilder
 import dev.httpmarco.polocloud.agent.groups.AbstractGroup

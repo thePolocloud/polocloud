@@ -4,7 +4,7 @@ import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.api.exception.NotModifiedException
 import com.github.dockerjava.api.model.*
 import dev.httpmarco.polocloud.agent.groups.AbstractGroup
-import dev.httpmarco.polocloud.agent.runtime.abstract.AbstractRuntimeFactory
+import dev.httpmarco.polocloud.agent.runtime.abstracts.AbstractRuntimeFactory
 import dev.httpmarco.polocloud.v1.groups.GroupType
 import java.nio.file.Files
 import java.nio.file.Paths

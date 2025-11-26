@@ -1,6 +1,6 @@
 package dev.httpmarco.polocloud.agent.runtime.local
 
-import dev.httpmarco.polocloud.agent.runtime.abstract.AbstractServiceStatsThread
+import dev.httpmarco.polocloud.agent.runtime.abstracts.AbstractServiceStatsThread
 import dev.httpmarco.polocloud.common.math.convertBytesToMegabytes
 import oshi.SystemInfo
 import java.math.BigDecimal

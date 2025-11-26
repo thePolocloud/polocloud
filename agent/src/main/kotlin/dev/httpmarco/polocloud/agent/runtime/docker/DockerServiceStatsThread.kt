@@ -3,7 +3,7 @@ package dev.httpmarco.polocloud.agent.runtime.docker
 import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.api.async.ResultCallback
 import com.github.dockerjava.api.model.Statistics
-import dev.httpmarco.polocloud.agent.runtime.abstract.AbstractServiceStatsThread
+import dev.httpmarco.polocloud.agent.runtime.abstracts.AbstractServiceStatsThread
 import dev.httpmarco.polocloud.common.math.convertBytesToMegabytes
 import java.math.BigDecimal
 import java.math.RoundingMode

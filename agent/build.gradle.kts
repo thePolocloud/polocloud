@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.2.21"
+    kotlin("kapt") version "2.2.21"
 }
 
 dependencies {
@@ -8,6 +9,8 @@ dependencies {
     implementation(libs.polocloud.shared)
 
     implementation(libs.bundles.terminal)
+    kapt(libs.bundles.terminal)
+
     implementation(libs.bundles.runtime)
     implementation(libs.bundles.jline)
 
@@ -18,6 +21,9 @@ dependencies {
     implementation(projects.platforms)
     implementation(projects.common)
     implementation(projects.updater)
+
+    // todo versions -> toml
+    implementation("io.grpc:grpc-netty:1.77.0")
 }
 
 tasks.jar {

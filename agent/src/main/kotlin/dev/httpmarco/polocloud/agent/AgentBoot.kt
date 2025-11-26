@@ -1,7 +1,8 @@
 package dev.httpmarco.polocloud.agent
 
-import org.apache.logging.log4j.core.config.Configurator
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
+import dev.httpmarco.polocloud.agent.logging.LoggingAgent
+import dev.httpmarco.polocloud.agent.logging.LoggingLayout
+import org.apache.logging.log4j.Logger
 import java.lang.instrument.Instrumentation
 
 fun main(args: Array<String>) {
@@ -15,26 +16,42 @@ fun main(args: Array<String>) {
     // register a clean hook for good shutdown
     registerHook()
 
-
-    // initialize logging early
-    val builder = ConfigurationBuilderFactory.newConfigurationBuilder()
-    builder.setStatusLevel(org.apache.logging.log4j.Level.ERROR)
-
-    val layout = builder.newLayout("PoloLayout")
-    val appender = builder.newAppender("PoloAppender", "PoloAppender").add(layout)
-
-    builder.add(appender)
-    builder.add(builder.newRootLogger(org.apache.logging.log4j.Level.INFO).add(builder.newAppenderRef("PoloAppender")))
-
-    Configurator.initialize(builder.build())
-
     Thread.currentThread().uncaughtExceptionHandler = Thread.UncaughtExceptionHandler { _, throwable ->
         // todo fix logging here -> bad logs are printed with the logger
         throwable.printStackTrace()
     }
-
     Agent
 }
+
+fun initLogging(debugMode: Boolean = false): Logger {
+    val ctx = org.apache.logging.log4j.core.LoggerContext.getContext(false)
+    val config = ctx.configuration
+
+    // RootLogger vorbereiten
+    val rootLoggerConfig = config.rootLogger
+
+    // Alle alten Appender entfernen
+    rootLoggerConfig.appenderRefs.forEach { ref -> rootLoggerConfig.removeAppender(ref.ref) }
+    rootLoggerConfig.isAdditive = false
+
+    // Custom Layout und Appender erzeugen
+    val layout = LoggingLayout.createLayout()
+    val appender = LoggingAgent.create("LoggingAgent", layout)
+    appender.start()
+    config.addAppender(appender)
+
+    // Root Logger konfigurieren
+    rootLoggerConfig.level = if (debugMode) org.apache.logging.log4j.Level.DEBUG else org.apache.logging.log4j.Level.INFO
+    rootLoggerConfig.addAppender(appender, rootLoggerConfig.level, null)
+
+    // LoggerContext updaten
+    ctx.updateLoggers()
+
+    // Logger zurückgeben
+    return org.apache.logging.log4j.LogManager.getLogger("PoloCloud")
+}
+
+
 
 fun premain(agentArgs: String?, inst: Instrumentation) {
 

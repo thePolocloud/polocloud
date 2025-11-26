@@ -3,8 +3,8 @@ package dev.httpmarco.polocloud.agent.runtime.local
 import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.i18n
 import dev.httpmarco.polocloud.agent.runtime.Runtime
-import dev.httpmarco.polocloud.agent.runtime.abstract.AbstractServiceStatsThread
-import dev.httpmarco.polocloud.agent.runtime.abstract.AbstractThreadedRuntimeQueue
+import dev.httpmarco.polocloud.agent.runtime.abstracts.AbstractServiceStatsThread
+import dev.httpmarco.polocloud.agent.runtime.abstracts.AbstractThreadedRuntimeQueue
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.JLine3Terminal
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.GroupCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.PlatformCommand

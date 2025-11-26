@@ -29,7 +29,7 @@ import org.apache.logging.log4j.LogManager
 
 // global terminal instance for the agent
 // this is used to print messages to the console
-val logger = LogManager.getLogger("PoloCloud")
+var logger = initLogging()
 val i18n = I18nPolocloudAgent()
 
 object Agent : PolocloudShared(true) {

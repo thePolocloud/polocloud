@@ -1,7 +1,7 @@
 package dev.httpmarco.polocloud.agent.runtime.local.tracking
 
 import dev.httpmarco.polocloud.agent.Agent
-import dev.httpmarco.polocloud.agent.runtime.abstract.Track
+import dev.httpmarco.polocloud.agent.runtime.abstracts.Track
 import dev.httpmarco.polocloud.agent.runtime.local.LocalRuntime
 import dev.httpmarco.polocloud.agent.runtime.local.LocalService
 import dev.httpmarco.polocloud.shared.events.definitions.service.ServiceLogEvent
