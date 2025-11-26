@@ -3,7 +3,6 @@ package dev.httpmarco.polocloud.agent.logging
 import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.runtime.local.LocalRuntime
 import dev.httpmarco.polocloud.agent.shutdownProcess
-import dev.httpmarco.polocloud.shared.events.definitions.PolocloudLogEvent
 import org.apache.logging.log4j.core.Appender
 import org.apache.logging.log4j.core.Filter
 import org.apache.logging.log4j.core.Layout
@@ -16,8 +15,8 @@ import org.apache.logging.log4j.core.layout.PatternLayout
 class LoggingAgent(
     name: String,
     filter: Filter?,
-    layout: Layout<*>
-) : AbstractAppender(name, filter, layout, false) {
+    layout: Layout<*>,
+) : AbstractAppender(name, filter, layout, true, null) {
 
     override fun append(event: LogEvent) {
         val formatted = layout.toSerializable(event).toString()
@@ -35,7 +34,7 @@ class LoggingAgent(
         @JvmStatic
         fun create(
             @PluginAttribute("name") name: String,
-            @PluginElement("Layout") layout: Layout<*>?
+            @PluginElement("Layout") layout: Layout<*>?,
         ): Appender {
             val layoutUsed = layout ?: PatternLayout.createDefaultLayout()
             return LoggingAgent(name, null, layoutUsed)

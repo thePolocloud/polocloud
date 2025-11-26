@@ -26,12 +26,16 @@ fun main(args: Array<String>) {
 fun initLogging(debugMode: Boolean = false): Logger {
     val ctx = org.apache.logging.log4j.core.LoggerContext.getContext(false)
     val config = ctx.configuration
-
-    // RootLogger vorbereiten
     val rootLoggerConfig = config.rootLogger
 
-    // Alle alten Appender entfernen
-    rootLoggerConfig.appenderRefs.forEach { ref -> rootLoggerConfig.removeAppender(ref.ref) }
+    // Remove old appenders
+    val existingAppenderList = ArrayList(rootLoggerConfig.appenders.values)
+    existingAppenderList.forEach { appender ->
+        appender.stop()
+        rootLoggerConfig.removeAppender(appender.name)
+        config.appenders.remove(appender.name)
+    }
+
     rootLoggerConfig.isAdditive = false
 
     // Custom Layout und Appender erzeugen
