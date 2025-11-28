@@ -31,16 +31,11 @@ javalin-jwt = "0.7.0"
 
 argon2 = "2.12"
 
-npc-bukkit = "3.0.0-beta.16"
-
 # placeholder api
 placeholderapi = "2.11.6"
 
 # utils
 lombok = "1.18.42"
-
-# nrc
-nrc-server-api = "0.1.1"
 
 [libraries]
 
@@ -78,20 +73,8 @@ java-jwt = { group = "com.auth0", name = "java-jwt", version.ref = "jwt" }
 javalin-jwt = { group = "com.github.kmehrunes", name = "javalin-jwt", version.ref = "javalin-jwt" }
 argon2 = { group = "de.mkammerer", name = "argon2-jvm", version.ref = "argon2" }
 
-npc-bukkit = { group = "io.github.juliarn", name = "npc-lib-bukkit", version.ref = "npc-bukkit" }
-
-# placeholder api
-placeholderapi = { group = "me.clip", name = "placeholderapi", version.ref = "placeholderapi" }
-
 # utils
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
-
-# nrc
-nrc-core = { group = "gg.norisk", name = "nrc-server-api-core", version.ref = "nrc-server-api" }
-nrc-paper = { group = "gg.norisk", name = "nrc-server-api-paper", version.ref = "nrc-server-api" }
-nrc-velocity = { group = "gg.norisk", name = "nrc-server-api-velocity", version.ref = "nrc-server-api" }
-nrc-spigot = { group = "gg.norisk", name = "nrc-server-api-spigot", version.ref = "nrc-server-api" }
-nrc-bungeecord = { group = "gg.norisk", name = "nrc-server-api-bungeecord", version.ref = "nrc-server-api" }
 
 [plugins]
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish" }
@@ -102,4 +85,3 @@ terminal = ["slf4j", "log4j-api", "log4j-core", "log4j-slf4j2-impl"]
 runtime = ["docker", "docker-http", "k8s"]
 jline = ["jline", "jline-console-ui"]
 jwt = [ "java-jwt", "javalin-jwt" ]
-nrc = ["nrc-core", "nrc-paper", "nrc-velocity", "nrc-spigot", "nrc-bungeecord"]
