@@ -3,7 +3,6 @@ package dev.httpmarco.polocloud.platforms
 import com.google.gson.GsonBuilder
 import dev.httpmarco.polocloud.common.json.RuntimeTypeAdapterFactory
 import dev.httpmarco.polocloud.platforms.bridge.Bridge
-import dev.httpmarco.polocloud.platforms.bridge.BridgeSerializer
 import dev.httpmarco.polocloud.platforms.tasks.actions.PlatformAction
 import dev.httpmarco.polocloud.platforms.tasks.actions.PlatformDirectoryDeleteAction
 import dev.httpmarco.polocloud.platforms.tasks.actions.PlatformDownloadAction
@@ -17,12 +16,11 @@ import dev.httpmarco.polocloud.platforms.tasks.actions.PlatformFileWriteAction
 import kotlin.io.path.Path
 
 val PLATFORM_PATH = Path("local/metadata")
-const val PLATFORM_METADATA_URL = "https://raw.githubusercontent.com/HttpMarco/polocloud/refs/heads/master/metadata/"
+const val PLATFORM_METADATA_URL = "https://raw.githubusercontent.com/thePolocloud/polocloud/refs/heads/master/metadata/"
 
 val PLATFORM_GSON =
     GsonBuilder().setPrettyPrinting().serializeNulls()
         .registerTypeHierarchyAdapter(PlatformVersion::class.java, PlatformVersionSerializer())
-        .registerTypeHierarchyAdapter(Bridge::class.java, BridgeSerializer())
         .registerTypeAdapter(Platform::class.java, PlatformDeserializer())
         .registerTypeAdapterFactory(
             RuntimeTypeAdapterFactory

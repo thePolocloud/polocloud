@@ -61,7 +61,7 @@ class KubernetesRuntimeGroupStorage(private val kubeClient: KubernetesClient) : 
         TODO("Not yet implemented")
     }
 
-    override fun delete(name: String): AbstractGroup? {
+    override fun delete(name: String): Boolean {
         TODO("Not yet implemented")
     }
 }

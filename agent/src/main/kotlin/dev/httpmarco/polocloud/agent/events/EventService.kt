@@ -3,6 +3,7 @@ package dev.httpmarco.polocloud.agent.events
 import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.i18n
 import dev.httpmarco.polocloud.shared.events.Event
+import dev.httpmarco.polocloud.shared.events.EventCallback
 import dev.httpmarco.polocloud.shared.events.SharedEventProvider
 import dev.httpmarco.polocloud.shared.service.Service
 import dev.httpmarco.polocloud.v1.proto.EventProviderOuterClass
@@ -57,10 +58,12 @@ class EventService : SharedEventProvider() {
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : Event> subscribe(eventType: Class<T>, result: (T) -> Any) {
+    override fun <T : Event> subscribe(
+        eventType: Class<T>,
+        result: EventCallback<T>
+    ) {
         val eventName = eventType.simpleName
         localSubscribers.computeIfAbsent(eventName) { mutableListOf() }
-            .add { e -> result(e as T) }
+            .add { e -> result.call(e as T) }
     }
 }

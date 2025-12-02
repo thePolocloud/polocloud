@@ -29,7 +29,7 @@ class PlatformCommand() : Command("platform", "Manage the platforms") {
 
             var bridge = platform.bridge
             if(bridge!= null) {
-                i18n.info("agent.terminal.command.platform.info.bridge", bridge.name, bridge.type.name)
+                i18n.info("agent.terminal.command.platform.info.bridge", bridge.id, bridge.type().name)
             }
 
             i18n.info("agent.terminal.command.platform.info.line.1", platform.language)

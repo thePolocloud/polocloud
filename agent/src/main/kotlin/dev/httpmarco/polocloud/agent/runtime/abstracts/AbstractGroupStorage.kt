@@ -83,11 +83,11 @@ abstract class AbstractGroupStorage(val path: Path = Path("local/groups")) : Run
         return CompletableFuture.completedFuture(update(group))
     }
 
-    override fun delete(name: String): AbstractGroup? {
-        val group = this.find(name) ?: return null
+    override fun delete(name: String): Boolean {
+        val group = this.find(name) ?: return false
         this.cachedAbstractGroups.remove(group)
         this.groupPath(group).deleteIfExists()
-        return group
+        return true
     }
 
     private fun groupPath(abstractGroup: AbstractGroup): Path {

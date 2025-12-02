@@ -11,9 +11,6 @@ object PlatformPool {
     private val platformBridges = ArrayList<Bridge>()
 
     init {
-        // read all bridges before we start the platform pool
-        platformBridges.addAll(scanForBridges("local/libs"))
-
         // load all tasks bevor we start the platform pool
         MetadataTranslator.read()
 
@@ -39,7 +36,7 @@ object PlatformPool {
 
     fun platforms() = platformPool
 
-    fun findBindBridge(name: String): Bridge? {
-        return platformBridges.firstOrNull { it.name == name }
+    fun findBindBridge(id: String): Bridge? {
+        return platformBridges.firstOrNull { it.id == id }
     }
 }
