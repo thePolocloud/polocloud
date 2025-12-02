@@ -9,6 +9,7 @@ dependencies {
 
     compileOnly(libs.bundles.confirationPool)
 
+    compileOnly(libs.log4j.api)
     compileOnly(libs.polocloud.proto)
     compileOnly(project(":common"))
 }

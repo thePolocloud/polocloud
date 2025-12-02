@@ -4,19 +4,22 @@ import com.google.gson.JsonObject
 import dev.httpmarco.polocloud.platforms.PLATFORM_GSON
 import dev.httpmarco.polocloud.platforms.PLATFORM_METADATA_URL
 import dev.httpmarco.polocloud.platforms.PLATFORM_PATH
-import dev.httpmarco.polocloud.platforms.exceptions.PlatformMetadataNotLoadableException
+import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
 import java.util.zip.ZipFile
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import kotlin.system.exitProcess
 
 /**
  * Responsible for loading platform metadata from GitHub, classpath resources, or local cache.
  * Ensures that metadata is always available at runtime in the local storage directory.
  */
 object MetadataTranslator {
+
+    private val logger = LogManager.getLogger()
 
     /**
      * Tries to load metadata from local disk, GitHub, or classpath.
@@ -25,7 +28,8 @@ object MetadataTranslator {
     fun read() {
         if (!(PLATFORM_PATH.resolve("tasks").exists() && PLATFORM_PATH.resolve("platforms").exists())) {
             if (!copyFromGitHub() && !copyFromClasspath()) {
-                throw PlatformMetadataNotLoadableException()
+                logger.error("Could not load platform metadata! This is required to run PoloCloud Platforms.")
+                exitProcess(-1);
             }
         }
     }
