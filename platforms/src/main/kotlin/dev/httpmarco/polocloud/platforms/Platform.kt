@@ -81,7 +81,7 @@ class Platform(
         }
 
         if(!bridge.isDownloaded()) {
-            bridge.download();
+            bridge.download()
         }
 
         //on_promise situation -> copy files to the service path

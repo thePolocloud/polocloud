@@ -16,7 +16,7 @@ import dev.httpmarco.polocloud.platforms.tasks.actions.PlatformFileWriteAction
 import kotlin.io.path.Path
 
 val PLATFORM_PATH = Path("local/metadata")
-const val PLATFORM_METADATA_URL = "https://raw.githubusercontent.com/thePolocloud/polocloud/refs/heads/master/metadata/"
+const val PLATFORM_METADATA_URL = "https://raw.githubusercontent.com/thePolocloud/polocloud-metadata/refs/heads/master/"
 
 val PLATFORM_GSON =
     GsonBuilder().setPrettyPrinting().serializeNulls()
