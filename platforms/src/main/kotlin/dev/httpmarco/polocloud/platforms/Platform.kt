@@ -86,9 +86,9 @@ class Platform(
 
         //on_promise situation -> copy files to the service path
         if (bridge.type() == BridgeType.ON_PREMISE) {
-            val targetBridge = servicePath.resolve(bridgePath + "/" + bridge.path.name)
+            val targetBridge = servicePath.resolve(bridgePath + "/" + bridge.path().name)
             targetBridge.parent.createDirectories()
-            Files.copy(bridge.path, targetBridge, StandardCopyOption.REPLACE_EXISTING)
+            Files.copy(bridge.path(), targetBridge, StandardCopyOption.REPLACE_EXISTING)
             return
         }
 

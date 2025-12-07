@@ -1,7 +1,6 @@
 package dev.httpmarco.polocloud.platforms
 
 import dev.httpmarco.polocloud.platforms.bridge.Bridge
-import dev.httpmarco.polocloud.platforms.bridge.scanForBridges
 import dev.httpmarco.polocloud.platforms.metadata.MetadataReader
 import dev.httpmarco.polocloud.platforms.metadata.MetadataTranslator
 

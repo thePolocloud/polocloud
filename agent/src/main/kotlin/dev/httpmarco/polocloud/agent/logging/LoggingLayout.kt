@@ -5,7 +5,6 @@ import org.apache.logging.log4j.core.LogEvent
 import org.apache.logging.log4j.core.layout.AbstractStringLayout
 import org.apache.logging.log4j.core.config.plugins.Plugin
 import org.apache.logging.log4j.core.config.plugins.PluginFactory
-import org.jline.jansi.AnsiColors
 import java.nio.charset.StandardCharsets
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -26,7 +25,19 @@ class LoggingLayout : AbstractStringLayout(StandardCharsets.UTF_8) {
             else -> "&f"
         }
 
-        return LoggingColor.translate("&7$timestamp &8| $color${event.level}&8: &7${event.message.formattedMessage}\n")
+        val msg = StringBuilder()
+        msg.append(LoggingColor.translate("&7$timestamp &8| $color${event.level}&8: &7${event.message.formattedMessage}\n"))
+
+        event.thrown?.let { throwable ->
+            throwable.stackTrace.forEach { element ->
+                msg.append(LoggingColor.translate("&7\tat ${element.className}.${element.methodName}(${element.fileName}:${element.lineNumber})\n"))
+            }
+            throwable.cause?.let { cause ->
+                msg.append(LoggingColor.translate("&7Caused by: ${cause}\n"))
+            }
+        }
+
+        return msg.toString()
     }
 
     companion object {
