@@ -51,7 +51,7 @@ data class Bridge(val id: String, val version: String) {
 
                 val config = GSON.fromJson(json, BridgeConfig::class.java)
 
-                this.type = config.bridgeType
+                this.type = config.type
                 this.bridgeClass = config.className
             }
         }
