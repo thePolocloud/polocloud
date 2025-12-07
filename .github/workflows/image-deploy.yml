@@ -1,4 +1,4 @@
-name: Image and sdk deploy
+name: Docker Image deployment
 
 on:
   push:
@@ -17,17 +17,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Set up Gradle dependencies cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -72,9 +61,3 @@ jobs:
           if [[ "${GITHUB_REF_NAME}" == "master" ]]; then
             docker push $LATEST
           fi
-
-      - name: Publish java sdk to Sonatype
-        env:
-          ossrhUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          ossrhPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-        run: ./gradlew :sdk:sdk-java:publish
