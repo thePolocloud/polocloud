@@ -39,10 +39,10 @@ jobs:
         id: vars
         run: |
           if [[ "${GITHUB_REF_NAME}" == "master" ]]; then
-            echo "TAG=ghcr.io/httpmarco/polocloud:master" >> $GITHUB_ENV
-            echo "LATEST=ghcr.io/httpmarco/polocloud:latest" >> $GITHUB_ENV
+            echo "TAG=ghcr.io/thepolocloud/polocloud:master" >> $GITHUB_ENV
+            echo "LATEST=ghcr.io/thepolocloud/polocloud:latest" >> $GITHUB_ENV
           elif [[ "${GITHUB_REF_NAME}" == "development" ]]; then
-            echo "TAG=ghcr.io/httpmarco/polocloud:development" >> $GITHUB_ENV
+            echo "TAG=ghcr.io/thepolocloud/polocloud:development" >> $GITHUB_ENV
           fi
 
       - name: Build & Tag
