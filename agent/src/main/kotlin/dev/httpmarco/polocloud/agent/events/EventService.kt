@@ -47,9 +47,9 @@ class EventService : SharedEventProvider() {
                     } catch (e: Exception) {
                         logger.warn("Event stream already closed for service ${service.name()}: ${e.message}")
                     }
-                    return@removeIf true;
+                    return@removeIf true
                 }
-                return@removeIf false;
+                return@removeIf false
             }
         }
     }
