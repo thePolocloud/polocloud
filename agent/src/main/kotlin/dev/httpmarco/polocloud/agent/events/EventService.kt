@@ -2,6 +2,7 @@ package dev.httpmarco.polocloud.agent.events
 
 import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.i18n
+import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.shared.events.Event
 import dev.httpmarco.polocloud.shared.events.EventCallback
 import dev.httpmarco.polocloud.shared.events.SharedEventProvider
@@ -16,7 +17,11 @@ class EventService : SharedEventProvider() {
     private val remoteEvents = ConcurrentHashMap<String, MutableList<EventSubscription>>()
     private val localSubscribers = ConcurrentHashMap<String, MutableList<(Event) -> Unit>>()
 
-    fun attach(event: String, serviceName: String, observer: ServerCallStreamObserver<EventProviderOuterClass.EventContext>) {
+    fun attach(
+        event: String,
+        serviceName: String,
+        observer: ServerCallStreamObserver<EventProviderOuterClass.EventContext>
+    ) {
         val service = Agent.runtime.serviceStorage().find(serviceName)
 
         if (service == null) {
@@ -35,7 +40,17 @@ class EventService : SharedEventProvider() {
 
     fun dropServiceSubscriptions(service: Service) {
         remoteEvents.forEach { (_, subs) ->
-            subs.removeIf { it.service == service }
+            subs.removeIf {
+                if (it.service == service) {
+                    try {
+                        it.sub.onCompleted()
+                    } catch (e: Exception) {
+                        logger.warn("Event stream already closed for service ${service.name()}: ${e.message}")
+                    }
+                    return@removeIf true;
+                }
+                return@removeIf false;
+            }
         }
     }
 
