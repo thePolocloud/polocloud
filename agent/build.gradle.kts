@@ -30,7 +30,6 @@ tasks.jar {
     archiveFileName.set("polocloud-agent-$version.jar")
     manifest {
         attributes("Main-Class" to "dev.httpmarco.polocloud.agent.AgentBootKt")
-        attributes("Premain-Class" to "dev.httpmarco.polocloud.agent.AgentBootKt")
     }
 }
 

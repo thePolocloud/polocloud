@@ -54,9 +54,3 @@ fun initLogging(debugMode: Boolean = false): Logger {
     // Logger zurückgeben
     return org.apache.logging.log4j.LogManager.getLogger("PoloCloud")
 }
-
-
-
-fun premain(agentArgs: String?, inst: Instrumentation) {
-
-}
