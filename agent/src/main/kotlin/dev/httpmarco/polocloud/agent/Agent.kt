@@ -56,6 +56,10 @@ object Agent : PolocloudShared(true) {
             i18n.warn("agent.version.warn")
         }
 
+        if (!Updater.hasSyncGitHubVersion()) {
+            i18n.warn("agent.version.unavailable")
+        }
+
         this.checkForUpdates()
         this.runtime = Runtime.create()
         this.runtime.initialize()

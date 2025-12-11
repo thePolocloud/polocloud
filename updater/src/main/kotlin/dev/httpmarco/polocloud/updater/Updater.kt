@@ -8,6 +8,7 @@ import java.util.LinkedList
 
 object Updater {
 
+    private var syncGitHubVersion = false
     private val versions = LinkedList<String>()
 
     init {
@@ -21,6 +22,8 @@ object Updater {
     fun newVersionAvailable(): Boolean {
         return polocloudVersion() != latestVersion() && versions.contains(polocloudVersion())
     }
+
+    fun hasSyncGitHubVersion() = syncGitHubVersion
 
     fun availableVersions(): List<String> {
         return versions
@@ -57,5 +60,11 @@ object Updater {
     fun tryUpdate() {
         this.versions.clear()
         this.versions += readTags()
+
+        if (!versions.isEmpty()) {
+            syncGitHubVersion = true
+        } else {
+            versions += polocloudVersion()
+        }
     }
 }

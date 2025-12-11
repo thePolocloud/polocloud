@@ -44,8 +44,8 @@ fun exitPolocloud(cleanShutdown: Boolean = true, shouldUpdate: Boolean = false) 
         Agent.close()
 
         AnsiConsole.systemUninstall()
-    } catch (e: Exception) {
-        logger.error(e)
+    } catch (e: Throwable) {
+        logger.error("Error on shutdown: ", e)
     }
 
     i18n.info("agent.shutdown.successful")

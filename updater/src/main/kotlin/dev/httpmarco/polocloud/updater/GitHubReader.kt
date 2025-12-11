@@ -38,7 +38,6 @@ fun readTags(): List<String> {
             emptyList()
         }
     } catch (e: Exception) {
-        e.printStackTrace()
         emptyList()
     }
 }

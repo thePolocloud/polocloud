@@ -41,7 +41,7 @@ class EventService : SharedEventProvider() {
     fun dropServiceSubscriptions(service: Service) {
         remoteEvents.forEach { (_, subs) ->
             subs.removeIf {
-                if (it.service == service) {
+                if (it.service.name() == service.name()) {
                     try {
                         it.sub.onCompleted()
                     } catch (e: Exception) {
