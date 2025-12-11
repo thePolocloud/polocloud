@@ -31,9 +31,6 @@ javalin-jwt = "0.7.0"
 
 argon2 = "2.12"
 
-# placeholder api
-placeholderapi = "2.11.6"
-
 # utils
 lombok = "1.18.42"
 

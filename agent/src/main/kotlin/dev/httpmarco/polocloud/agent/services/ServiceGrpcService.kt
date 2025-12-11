@@ -56,7 +56,7 @@ class ServiceGrpcService : ServiceControllerGrpc.ServiceControllerImplBase() {
 
         Agent.runtime.serviceStorage().deployAbstractService(service)
         Agent.runtime.factory().bootApplication(service)
-        builder.setService(service.toSnapshot())
+        builder.service = service.toSnapshot()
 
         responseObserver.onNext(builder.build())
         responseObserver.onCompleted()
