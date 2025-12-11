@@ -3,6 +3,7 @@ package dev.httpmarco.polocloud.agent.player
 import com.google.protobuf.Any
 import com.google.protobuf.Empty
 import dev.httpmarco.polocloud.agent.Agent
+import dev.httpmarco.polocloud.v1.player.PlayerActorIdentifier
 import dev.httpmarco.polocloud.v1.player.PlayerActorResponse
 import dev.httpmarco.polocloud.v1.player.PlayerConnectActorRequest
 import dev.httpmarco.polocloud.v1.player.PlayerControllerGrpc
@@ -11,7 +12,10 @@ import dev.httpmarco.polocloud.v1.player.PlayerFindByNameRequest
 import dev.httpmarco.polocloud.v1.player.PlayerFindByServiceRequest
 import dev.httpmarco.polocloud.v1.player.PlayerFindResponse
 import dev.httpmarco.polocloud.v1.player.PlayerMessageActorRequest
+import dev.httpmarco.polocloud.v1.proto.EventProviderOuterClass
+import io.grpc.stub.ServerCallStreamObserver
 import io.grpc.stub.StreamObserver
+import java.util.UUID
 
 class PlayerGrpcService : PlayerControllerGrpc.PlayerControllerImplBase() {
 
@@ -94,10 +98,38 @@ class PlayerGrpcService : PlayerControllerGrpc.PlayerControllerImplBase() {
         request: PlayerConnectActorRequest,
         responseObserver: StreamObserver<PlayerActorResponse>
     ) {
-        TODO()
+        val player = Agent.playerStorage.findByUniqueId(UUID.fromString(request.uniqueId))
+
+        if (player == null) {
+            responseObserver.onNext(
+                PlayerActorResponse.newBuilder().setSuccess(false).setErrorMessage("Player is not online.").build()
+            )
+            responseObserver.onCompleted()
+            return
+        }
+
+        val proxy = Agent.runtime.serviceStorage().find(player.currentProxyName)
+
+        if(!(proxy != null && proxy.actorService.isActive())) {
+            responseObserver.onNext(
+                PlayerActorResponse.newBuilder().setSuccess(false).setErrorMessage("Player proxy server not found or proxy is invalid session type.").build()
+            )
+            responseObserver.onCompleted()
+            return
+        }
+
+     //   TODO("testing")
+        proxy.actorService.stream(Any.pack(request))
     }
 
-    override fun actorStreaming(request: Empty?, responseObserver: StreamObserver<Any?>?) {
+    override fun actorStreaming(request: PlayerActorIdentifier, responseObserver: StreamObserver<Any>) {
+        val service = Agent.runtime.serviceStorage().find(request.serviceName)
 
+        if (service == null) {
+            responseObserver.onCompleted()
+            return
+        }
+
+        service.actorService.updateStream(responseObserver as ServerCallStreamObserver<Any>)
     }
 }
