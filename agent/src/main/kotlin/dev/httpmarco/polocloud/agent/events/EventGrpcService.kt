@@ -13,17 +13,10 @@ class EventGrpcService : EventProviderGrpc.EventProviderImplBase() {
         request: EventProviderOuterClass.EventSubscribeRequest,
         responseObserver: StreamObserver<EventProviderOuterClass.EventContext>
     ) {
-        val observer = responseObserver as ServerCallStreamObserver<EventProviderOuterClass.EventContext>
-
-        observer.setOnCancelHandler {
-            //TODO
-            //Agent.eventService.detach(request.eventName, request.serviceName)
-        }
-
         Agent.eventService.attach(
             request.eventName,
             request.serviceName,
-            responseObserver
+            responseObserver as ServerCallStreamObserver<EventProviderOuterClass.EventContext>
         )
     }
 

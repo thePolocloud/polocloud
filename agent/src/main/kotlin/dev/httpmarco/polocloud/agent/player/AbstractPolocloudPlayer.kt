@@ -6,11 +6,13 @@ import java.util.UUID
 class AbstractPolocloudPlayer(
     name: String,
     uniqueId: UUID,
-    currentServiceName: String,
+    currentServerName: String,
+    currentProxyName: String
 ) : PolocloudPlayer(
     name,
     uniqueId,
-    currentServiceName
+    currentServerName,
+    currentProxyName
 ) {
 
 }
