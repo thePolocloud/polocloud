@@ -71,7 +71,10 @@ class PlatformFilePropertyUpdateAction(
     private fun handleConfigurateYaml(file: Path, value: Any?) {
         val loader = YamlConfigurationLoader.builder().path(file).build()
         val root = if (file.exists()) loader.load() else loader.createNode()
-        val path = key.split(".").map { it.toIntOrNull() ?: it }.toTypedArray()
+        val path: Array<Any> =
+            key.split(".")
+                .map { it.toIntOrNull() ?: it }
+                .toTypedArray()
 
         root.node(*path).set(value)
         loader.save(root)
