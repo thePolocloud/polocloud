@@ -37,7 +37,7 @@ class PlayerStorageImpl : PlayerStorage {
     }
 
     override fun findByService(serviceName: String): List<AbstractPolocloudPlayer> {
-        return cachedPlayers.values.filter { it.currentServiceName.equals(serviceName, ignoreCase = true) }
+        return cachedPlayers.values.filter { it.currentServerName.equals(serviceName, ignoreCase = true) }
     }
 
     override fun findByServiceAsync(service: Service): CompletableFuture<List<AbstractPolocloudPlayer>> {
