@@ -6,7 +6,7 @@ polocloud = "3.0.0-pre.8-SNAPSHOT"
 
 # libraries
 gson = "2.13.2"
-oshi="6.9.1"
+oshi="6.9.2"
 
 # configuration
 configurate = "4.2.0"
