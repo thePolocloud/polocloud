@@ -165,15 +165,16 @@ fun getLatestSnapshotFile(
 
 
 tasks.register<Exec>("dockerBuild") {
-    dependsOn(tasks.jar)
     val imageName = "polocloud:development"
+
+    workingDir = rootProject.projectDir
 
     // Docker build
     commandLine(
         "docker", "build",
         "--build-arg", "POLOCLOUD_VERSION=$version",
         "-t", imageName,
-        "-f", "../docker/Dockerfile",
+        "-f", "docker/Dockerfile",
         "."
     )
 }

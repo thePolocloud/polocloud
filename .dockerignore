@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.vscode
+.gradle
+**/.gradle
+**/build
+**/out
+**/.classpath
+**/.project
+**/.settings
+**/*.iml
+**/*.log
+local/
