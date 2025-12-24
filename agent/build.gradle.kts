@@ -23,7 +23,7 @@ dependencies {
     implementation(projects.updater)
 
     // todo versions -> toml
-    implementation("io.grpc:grpc-netty:1.77.0")
+    implementation("io.grpc:grpc-netty:1.78.0")
 }
 
 tasks.jar {
