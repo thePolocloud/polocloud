@@ -8,6 +8,7 @@ import dev.httpmarco.polocloud.agent.runtime.abstracts.AbstractThreadedRuntimeQu
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.JLine3Terminal
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.GroupCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.PlatformCommand
+import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.PlayersCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.ServiceCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.commands.impl.TemplateCommand
 import dev.httpmarco.polocloud.agent.runtime.local.terminal.setup.impl.OnboardingSetup
@@ -32,6 +33,7 @@ class LocalRuntime : Runtime() {
         terminal.commandService.registerCommand(ServiceCommand(runtimeServiceStorage, terminal))
         terminal.commandService.registerCommand(PlatformCommand())
         terminal.commandService.registerCommand(TemplateCommand())
+        terminal.commandService.registerCommand(PlayersCommand())
 
         this.runtimeQueue.start()
         this.runtimeCloudInformationThread.start()
