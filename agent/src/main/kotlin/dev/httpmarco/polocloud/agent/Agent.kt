@@ -89,7 +89,7 @@ object Agent : PolocloudShared(true) {
 
         this.grpcServerEndpoint.connect(this.config.port)
 
-        this.runtime.boot()
+        this.runtime.prepareBoot()
 
         val groups = runtime.groupStorage().findAll()
 

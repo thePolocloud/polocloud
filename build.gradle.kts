@@ -12,7 +12,6 @@ allprojects {
     version = "3.0.0-pre.6.2-SNAPSHOT"
 
     repositories {
-        mavenLocal()
         mavenCentral()
 
         maven {

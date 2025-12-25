@@ -43,13 +43,17 @@ abstract class Runtime {
         // Default implementation does nothing.
         // This method can be overridden by specific runtime implementations
         // to perform any necessary initialization.
-        // its called before the boot method
+        // it's called before the boot method
 
         // if nothing is done here, the boot method is called directly
         Agent.boot()
+    }
 
+    open fun prepareBoot() {
         // start the service stats thread
         serviceStatsThread().start()
+        // call the boot method
+        this.boot()
     }
 
     open fun boot() {
