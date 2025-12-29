@@ -1,0 +1,34 @@
+name: agent deployment on sonatype
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build Launcher with Gradle
+        run: ./gradlew :agent:clean shadowJar
+
+      - name: Publish shared to Sonatype
+        env:
+          ossrhUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ossrhPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+        run: ./gradlew publish
