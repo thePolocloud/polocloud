@@ -24,11 +24,14 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build Launcher with Gradle
-        run: ./gradlew :agent:clean :agent:jar
-
-      - name: Publish shared to Sonatype
+      - name: Publish agent to Sonatype
         env:
           ossrhUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ossrhPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-        run: ./gradlew :agent:publish
+        run: ./gradlew :common:publish
+
+      - name: Publish common to Sonatype
+        env:
+          ossrhUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ossrhPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+        run: ./gradlew :common:publish
