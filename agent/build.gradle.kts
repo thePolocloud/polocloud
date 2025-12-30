@@ -41,13 +41,10 @@ kotlin {
     jvmToolchain(21)
 }
 
-
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            artifact(tasks.named("jar")) {
-                classifier = null
-            }
+            artifact(tasks.jar.get())
 
             pom {
                 description.set("PoloCloud gRPC API with bundled dependencies")
