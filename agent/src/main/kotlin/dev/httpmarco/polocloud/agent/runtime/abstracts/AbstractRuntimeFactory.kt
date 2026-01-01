@@ -164,6 +164,7 @@ abstract class AbstractRuntimeFactory<T : AbstractService>(val factoryPath: Path
         val modernForwardingMode = groupStorage.findAll().filter { it.isServer() }.all { it.platform().forwarding == ServerPlatformForwarding.MODERN }
 
         environment.addParameter("forwarding", (if(modernForwardingMode) ServerPlatformForwarding.MODERN.name else ServerPlatformForwarding.LEGACY.name).lowercase())
+        environment.addParameter("use_modern_forwarding", modernForwardingMode)
 
         // platforms usage detection for all setup scripts
         PlatformPool.platforms().forEach {
