@@ -11,9 +11,11 @@ import dev.httpmarco.polocloud.common.os.currentOS
 import dev.httpmarco.polocloud.common.version.polocloudVersion
 import dev.httpmarco.polocloud.platforms.Platform
 import dev.httpmarco.polocloud.platforms.PlatformParameters
+import dev.httpmarco.polocloud.platforms.PlatformPool
 import dev.httpmarco.polocloud.platforms.ServerPlatformForwarding
 import dev.httpmarco.polocloud.shared.events.definitions.service.ServiceChangeStateEvent
 import dev.httpmarco.polocloud.shared.properties.JAVA_PATH
+import dev.httpmarco.polocloud.v1.groups.GroupType
 import dev.httpmarco.polocloud.v1.services.ServiceSnapshot
 import dev.httpmarco.polocloud.v1.services.ServiceState
 import org.yaml.snakeyaml.util.Tuple
@@ -163,11 +165,21 @@ abstract class AbstractRuntimeFactory<T : AbstractService>(val factoryPath: Path
 
         environment.addParameter("forwarding", (if(modernForwardingMode) ServerPlatformForwarding.MODERN.name else ServerPlatformForwarding.LEGACY.name).lowercase())
 
-        // TODO USE THIS WITH ALL PLATFORMS
-        environment.addParameter("velocity_use", groupStorage.findAll().stream().anyMatch { velocityPlatforms.contains(it.platform().name) })
-        environment.addParameter("bungeecord_use", groupStorage.findAll().stream().anyMatch { it.platform().name == "bungeecord" })
-        environment.addParameter("version", polocloudVersion())
+        // platforms usage detection for all setup scripts
+        PlatformPool.platforms().forEach {
+            environment.addParameter(it.name + "_use", groupStorage.findAll().stream().anyMatch {s -> it.name.contains(s.platform.name) })
+        }
 
+        // overwrite for special platforms
+        environment.addParameter("velocity_use", groupStorage.findAll().stream().anyMatch { velocityPlatforms.contains(it.platform().name) })
+
+        // for proxy detection in platforms
+        // if users want to have a custom proxy platform name, they can use the generic parameter above
+        // also the transfer proxy platforms will be detected here
+        environment.addParameter("proxy_use", groupStorage.findAll().stream().anyMatch { it.platform().type == GroupType.PROXY })
+
+        // general parameters
+        environment.addParameter("version", polocloudVersion())
         return environment
     }
 
