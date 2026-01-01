@@ -7,6 +7,7 @@ dependencies {
     testImplementation(kotlin("test"))
     api(libs.gson)
     compileOnly(libs.polocloud.proto)
+    compileOnly(libs.log4j.api)
 }
 
 tasks.test {

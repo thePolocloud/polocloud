@@ -1,15 +1,15 @@
 package dev.httpmarco.polocloud.common.filesystem
 
 import java.io.IOException
-import java.nio.file.CopyOption
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.BasicFileAttributes
-import kotlin.io.path.isDirectory
-import kotlin.io.path.listDirectoryEntries
+import org.apache.logging.log4j.LogManager
+
+private val log = LogManager.getLogger()
 
 fun copyDirectory(sourcePath: Path, targetPath: Path) {
     Files.walkFileTree(sourcePath, object : SimpleFileVisitor<Path>() {
@@ -29,7 +29,7 @@ fun copyDirectory(sourcePath: Path, targetPath: Path) {
                     StandardCopyOption.REPLACE_EXISTING
                 )
             } catch (e: IOException) {
-                System.err.println("Cannot copy file ${file.fileName}: ${e.message}")
+                log.warn("Cannot copy file ${file.fileName}: ${e.message}")
             }
             return FileVisitResult.CONTINUE
         }
