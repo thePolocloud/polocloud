@@ -38,4 +38,12 @@ class SecurityProvider {
                 ServerPlatformForwarding.MODERN
             }
         }
+
+    fun isLegacyForwarding(): Boolean {
+        return globalForwarding == ServerPlatformForwarding.LEGACY
+    }
+
+    fun isModernForwarding(): Boolean {
+        return globalForwarding == ServerPlatformForwarding.MODERN
+    }
 }

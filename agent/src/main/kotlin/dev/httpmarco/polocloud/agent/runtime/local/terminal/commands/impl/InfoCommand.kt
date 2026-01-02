@@ -24,6 +24,7 @@ class InfoCommand : Command("info", "Used to display information about the agent
             i18n.info("agent.terminal.command.info.line.5", usedMemory())
             i18n.info("agent.terminal.command.info.line.6", maxMemory())
             i18n.info("agent.terminal.command.info.line.7", Agent.eventService.registeredAmount())
+            i18n.info("agent.terminal.command.info.security.forwarding", Agent.securityProvider.globalForwarding.name)
         }
     }
 
