@@ -169,8 +169,9 @@ class ModuleProvider : Reloadable {
                     GSON.fromJson(stream.reader(), ModuleMetadata::class.java)
                 }
             }
-        }.onFailure { _ ->
+        }.onFailure { exception ->
             i18n.error("agent.module.metadata.read.failed", file.name)
+            exception.printStackTrace()
         }.getOrNull()
     }
 
