@@ -1,84 +1,8 @@
 [versions]
-nexus-publish = "2.0.0"
-
-# polocloud-version
-polocloud = "3.0.0-pre.7-SNAPSHOT"
-
-# libraries
-gson = "2.13.2"
-oshi="6.9.2"
-
-# configuration
-configurate = "4.2.0"
-yaml = "2.5"
-tomlj = "1.1.1"
-
-# terminal
-jline = "3.30.6"
-
-slf4j = "2.0.17"
-log4j = "2.25.3"
-
-# runtime
-docker = "3.7.0"
-k8s = "7.4.0"
-
-# rest
-javalin = "6.7.0"
-
-jwt = "4.5.0"
-javalin-jwt = "0.7.0"
-
-argon2 = "2.12"
-
-# utils
-lombok = "1.18.42"
 
 [libraries]
 
-polocloud-proto =  { group = "dev.httpmarco.polocloud", name = "proto", version.ref = "polocloud" }
-polocloud-shared =  { group = "dev.httpmarco.polocloud", name = "shared", version.ref = "polocloud" }
-
-# libraries
-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
-oshi = { group = "com.github.oshi", name = "oshi-core", version.ref = "oshi" }
-
-# configuration
-configurate-core = { group = "org.spongepowered", name = "configurate-core", version.ref = "configurate" }
-configurate-yaml = { group = "org.spongepowered", name = "configurate-yaml", version.ref = "configurate" }
-configurate-alt-toml = { group = "org.tomlj", name = "tomlj", version.ref = "tomlj" }
-snake-yaml = { group = "org.yaml", name = "snakeyaml", version.ref = "yaml" }
-
-# terminal
-jline = { group = "org.jline", name = "jline", version.ref = "jline" }
-jline-console-ui = { group = "org.jline", name = "jline-console-ui", version.ref = "jline" }
-
-slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
-log4j-api = { group = "org.apache.logging.log4j", name = "log4j-api", version.ref = "log4j" }
-log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version.ref = "log4j" }
-log4j-slf4j2-impl = { group = "org.apache.logging.log4j", name = "log4j-slf4j2-impl", version.ref = "log4j" }
-
-# runtime
-docker = { group = "com.github.docker-java", name = "docker-java", version.ref = "docker" }
-docker-http = { group = "com.github.docker-java", name = "docker-java-transport-httpclient5", version.ref = "docker" }
-k8s = { group = "io.fabric8", name = "kubernetes-client", version.ref = "k8s" }
-
-# rest
-javalin = { group = "io.javalin", name = "javalin", version.ref = "javalin" }
-javalin-ssl = { group = "io.javalin.community.ssl", name = "ssl-plugin", version.ref = "javalin" }
-java-jwt = { group = "com.auth0", name = "java-jwt", version.ref = "jwt" }
-javalin-jwt = { group = "com.github.kmehrunes", name = "javalin-jwt", version.ref = "javalin-jwt" }
-argon2 = { group = "de.mkammerer", name = "argon2-jvm", version.ref = "argon2" }
-
-# utils
-lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
-
 [plugins]
-nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish" }
+
 
 [bundles]
-confirationPool = ["configurate-yaml", "configurate-core", "configurate-alt-toml", "snake-yaml"]
-terminal = ["slf4j", "log4j-api", "log4j-core", "log4j-slf4j2-impl"]
-runtime = ["docker", "docker-http", "k8s"]
-jline = ["jline", "jline-console-ui"]
-jwt = [ "java-jwt", "javalin-jwt" ]

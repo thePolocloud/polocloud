@@ -1,3 +1,0 @@
-files:
-  - source: '**/i18n/*_en.properties'
-    translation: /%original_path%/polocloud-agent_%two_letters_code%.properties
