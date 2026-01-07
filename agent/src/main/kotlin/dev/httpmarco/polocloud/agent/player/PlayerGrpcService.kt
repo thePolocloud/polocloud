@@ -1,8 +1,6 @@
 package dev.httpmarco.polocloud.agent.player
 
-import com.google.protobuf.Any
 import com.google.protobuf.Empty
-import com.google.protobuf.Message
 import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.v1.player.PlayerActorIdentifier
 import dev.httpmarco.polocloud.v1.player.PlayerActorResponse
@@ -12,6 +10,7 @@ import dev.httpmarco.polocloud.v1.player.PlayerCountResponse
 import dev.httpmarco.polocloud.v1.player.PlayerFindByNameRequest
 import dev.httpmarco.polocloud.v1.player.PlayerFindByServiceRequest
 import dev.httpmarco.polocloud.v1.player.PlayerFindResponse
+import dev.httpmarco.polocloud.v1.player.PlayerKickActorRequest
 import dev.httpmarco.polocloud.v1.player.PlayerMessageActorRequest
 import dev.httpmarco.polocloud.v1.player.StreamingAlert
 import io.grpc.stub.ServerCallStreamObserver
@@ -85,44 +84,24 @@ class PlayerGrpcService : PlayerControllerGrpc.PlayerControllerImplBase() {
         request: PlayerMessageActorRequest,
         responseObserver: StreamObserver<PlayerActorResponse>
     ) {
-        this.redirectActorToProxy(request, request.uniqueId, responseObserver)
+        responseObserver.onNext( Agent.playerStorage.messagePlayer(UUID.fromString(request.uniqueId), request.message))
+        responseObserver.onCompleted()
     }
 
     override fun kickPlayer(
-        request: PlayerMessageActorRequest,
+        request: PlayerKickActorRequest,
         responseObserver: StreamObserver<PlayerActorResponse>
     ) {
-        this.redirectActorToProxy(request, request.uniqueId, responseObserver)
+        responseObserver.onNext( Agent.playerStorage.kickPlayer(UUID.fromString(request.uniqueId), request.reason))
+        responseObserver.onCompleted()
     }
 
     override fun connectPlayer(
         request: PlayerConnectActorRequest,
         responseObserver: StreamObserver<PlayerActorResponse>
     ) {
-        this.redirectActorToProxy(request, request.uniqueId, responseObserver)
-    }
-
-    private fun redirectActorToProxy(message: Message, uuid: String, responseObserver: StreamObserver<PlayerActorResponse>) {
-        val player = Agent.playerStorage.findByUniqueId(UUID.fromString(uuid))
-
-        if (player == null) {
-            responseObserver.onNext(
-                PlayerActorResponse.newBuilder().setSuccess(false).setErrorMessage("Player is not online.").build()
-            )
-            responseObserver.onCompleted()
-            return
-        }
-
-        val proxy = Agent.runtime.serviceStorage().find(player.currentProxyName)
-
-        if(!(proxy != null && proxy.actorService.isActive())) {
-            responseObserver.onNext(
-                PlayerActorResponse.newBuilder().setSuccess(false).setErrorMessage("Player proxy server not found or proxy is invalid session type.").build()
-            )
-            responseObserver.onCompleted()
-            return
-        }
-        proxy.actorService.stream(StreamingAlert.newBuilder().setClassName(message.javaClass.name).setActor(Any.pack(message)).build())
+        responseObserver.onNext( Agent.playerStorage.connectPlayerToService(UUID.fromString(request.uniqueId), request.targetServiceName))
+        responseObserver.onCompleted()
     }
 
     override fun actorStreaming(request: PlayerActorIdentifier, responseObserver: StreamObserver<StreamingAlert>) {
