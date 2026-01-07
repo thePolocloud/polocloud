@@ -1,13 +1,14 @@
 package dev.httpmarco.polocloud.updater
 
 import com.google.gson.reflect.TypeToken
+import dev.httpmarco.polocloud.common.PolocloudUrl
 import dev.httpmarco.polocloud.common.json.GSON
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
-private const val GITHUB_API_URL = "https://api.github.com/repos/thePolocloud/polocloud/tags"
+private const val GITHUB_API_URL = PolocloudUrl.GITHUB_ORGA + "/polocloud/tags"
 
 /**
  * Fetches a list of tag names from the GitHub API for the PoloCloud repository.

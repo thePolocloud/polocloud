@@ -1,5 +1,7 @@
 package dev.httpmarco.polocloud.updater;
 
+import dev.httpmarco.polocloud.common.PolocloudUrl;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URI;
@@ -16,7 +18,7 @@ public class UpdaterRuntime {
         System.out.println("Updating to version " + version + "...");
 
         var targetFile = new File("../../" + LAUNCHER_JAR);
-        var downloadUrl = "https://github.com/HttpMarco/polocloud/releases/download/" + version + "/" + LAUNCHER_JAR;
+        var downloadUrl = PolocloudUrl.GITHUB_ORGA + "polocloud/releases/download/" + version + "/" + LAUNCHER_JAR;
 
         if (!downloadJar(downloadUrl, targetFile)) {
             System.err.println("Update aborted.");
