@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.launcher.dependencies;
+package dev.httpmarco.polocloud.dependency.platform;
 
 import java.io.File;
 import java.io.FileInputStream;
