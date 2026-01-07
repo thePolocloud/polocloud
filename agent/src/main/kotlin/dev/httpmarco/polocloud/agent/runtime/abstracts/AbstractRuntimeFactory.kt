@@ -146,6 +146,7 @@ abstract class AbstractRuntimeFactory<T : AbstractService>(val factoryPath: Path
             versionObject
         )
 
+        val securityProvider = Agent.securityProvider
         val serverIcon = this.javaClass.classLoader.getResource("server-icon.png")!!
 
         environment.addParameter("hostname", service.hostname)
@@ -154,29 +155,29 @@ abstract class AbstractRuntimeFactory<T : AbstractService>(val factoryPath: Path
         environment.addParameter("agent_port", Agent.config.port)
         environment.addParameter("agent_hostname", Agent.runtime.detectLocalAddress())
         environment.addParameter("service-name", service.name())
-        environment.addParameter("velocityProxyToken", Agent.securityProvider.proxySecureToken)
         environment.addParameter("file_suffix", platform.language.suffix())
         environment.addParameter("filename", service.group().applicationPlatformFile().name)
 
         val velocityPlatforms = listOf("velocity", "gate")
+        val cachedGroups = Agent.runtime.groupStorage().findAll()
 
-        val groupStorage = Agent.runtime.groupStorage()
-        val modernForwardingMode = groupStorage.findAll().filter { it.isServer() }.all { it.platform().forwarding == ServerPlatformForwarding.MODERN }
-
-        environment.addParameter("forwarding", (if(modernForwardingMode) ServerPlatformForwarding.MODERN.name else ServerPlatformForwarding.LEGACY.name).lowercase())
+        environment.addParameter("velocityProxyToken", securityProvider.proxySecureToken)
+        environment.addParameter("forwarding", securityProvider.globalForwarding)
+        environment.addParameter("use_modern_forwarding", securityProvider.isModernForwarding())
+        environment.addParameter("use_legacy_forwarding", securityProvider.isLegacyForwarding())
 
         // platforms usage detection for all setup scripts
         PlatformPool.platforms().forEach {
-            environment.addParameter(it.name + "_use", groupStorage.findAll().stream().anyMatch {s -> it.name.contains(s.platform.name) })
+            environment.addParameter(it.name + "_use", cachedGroups.stream().anyMatch { s -> it.name.contains(s.platform.name) })
         }
 
         // overwrite for special platforms
-        environment.addParameter("velocity_use", groupStorage.findAll().stream().anyMatch { velocityPlatforms.contains(it.platform().name) })
+        environment.addParameter("velocity_use", cachedGroups.stream().anyMatch { velocityPlatforms.contains(it.platform().name) })
 
         // for proxy detection in platforms
         // if users want to have a custom proxy platform name, they can use the generic parameter above
         // also the transfer proxy platforms will be detected here
-        environment.addParameter("proxy_use", groupStorage.findAll().stream().anyMatch { it.platform().type == GroupType.PROXY })
+        environment.addParameter("proxy_use", cachedGroups.stream().anyMatch { it.platform().type == GroupType.PROXY })
 
         // general parameters
         environment.addParameter("version", polocloudVersion())
