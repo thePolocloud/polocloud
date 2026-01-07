@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.launcher;
+package dev.httpmarco.polocloud.cli;
 
 import java.io.IOException;
 

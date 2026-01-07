@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.launcher.validator;
+package dev.httpmarco.polocloud.cli.validator;
 
 public interface BootReasonValidator extends BootValidator{
 

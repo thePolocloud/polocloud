@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.launcher.validator;
+package dev.httpmarco.polocloud.cli.validator;
 
 /**
  * Utility class for validating the currently running Java runtime version.

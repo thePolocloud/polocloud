@@ -13,4 +13,5 @@ plugins {
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "polocloudv3"
-include("launcher", "frames", "frames:frame-gradle-plugin", "frames:frame-api", "cli")
+include("frames", "frames:frame-gradle-plugin", "frames:frame-api", "cli")
+include("runner")

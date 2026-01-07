@@ -6,7 +6,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.tasks.bundling.Jar
 
-class PolocloudDependencyPlatformPlugin : Plugin<Project> {
+class PolocloudDependencyPlugin : Plugin<Project> {
 
     companion object {
         private val runtimeDependencies = mutableListOf<String>()
@@ -55,6 +55,6 @@ class PolocloudDependencyPlatformPlugin : Plugin<Project> {
 
 fun DependencyHandler.polocloudRuntime(notation: Any) {
     val notationString = notation.toString()
-    PolocloudDependencyPlatformPlugin.addDependency(notationString)
+    PolocloudDependencyPlugin.addDependency(notationString)
     add("implementation", notation)
 }

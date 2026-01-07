@@ -1,6 +1,6 @@
-package dev.httpmarco.polocloud.launcher;
+package dev.httpmarco.polocloud.cli;
 
-import dev.httpmarco.polocloud.launcher.validator.*;
+import dev.httpmarco.polocloud.cli.validator.*;
 
 import java.util.ArrayList;
 import java.util.List;
