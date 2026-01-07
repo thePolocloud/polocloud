@@ -1,7 +1,7 @@
 pluginManagement {
+    //includeBuild("dependency-platform")
     repositories {
         gradlePluginPortal()
-        maven("https://maven.fabricmc.net/")
     }
 }
 
@@ -17,3 +17,6 @@ include("frames")
 include("frames:frame-gradle-plugin")
 include("frames:frame-api")
 include("cli")
+include("dependencies")
+include("dependencies:platform")
+include("dependencies:plugin")
