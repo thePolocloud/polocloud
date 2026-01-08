@@ -7,6 +7,9 @@ polocloud {
     mainClass = "dev.httpmarco.polocloud.runner.PolocloudRuntimeLauncher"
 }
 
-tasks.jar {
-    from(project(":cli").tasks.getByPath(":cli:jar"))
+tasks.named<Jar>("jar") {
+    val cliJar = project(":cli").tasks.named<Jar>("jar").get().archiveFile.get().asFile
+    from(cliJar) {
+        into(".cache")
+    }
 }
