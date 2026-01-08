@@ -5,7 +5,7 @@ final class PolocloudRuntimeLauncher {
     private PolocloudRuntimeLauncher() {
     }
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         PolocloudRuntimeBootValidator validator = new PolocloudRuntimeBootValidator();
 
         if (!validator.isValid()) {

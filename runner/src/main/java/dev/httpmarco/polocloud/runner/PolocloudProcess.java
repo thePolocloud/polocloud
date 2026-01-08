@@ -1,5 +1,7 @@
 package dev.httpmarco.polocloud.runner;
 
+import dev.httpmarco.polocloud.runner.expender.Expender;
+
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -12,6 +14,8 @@ public final class PolocloudProcess {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .command("java", "-jar", "polocloud-server.jar")
                 .inheritIO();
+
+        Expender.scanJarCache();
 
         try {
             this.process = processBuilder.start();
