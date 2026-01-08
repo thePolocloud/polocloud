@@ -1,6 +1,6 @@
 package dev.httpmarco.polocloud.runner;
 
-import dev.httpmarco.polocloud.runner.expender.Expender;
+import dev.httpmarco.polocloud.runner.expender.ExpenderRuntimeCache;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,11 +11,11 @@ public final class PolocloudProcess {
     private Process process;
 
     public void start() {
+        ExpenderRuntimeCache.migrateCacheFiles();
+
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .command("java", "-jar", "polocloud-server.jar")
                 .inheritIO();
-
-        Expender.scanJarCache();
 
         try {
             this.process = processBuilder.start();

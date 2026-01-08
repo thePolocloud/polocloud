@@ -1,13 +1,10 @@
 package dev.httpmarco.polocloud.runner.expender;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.jar.*;
 
 /**
@@ -24,33 +21,31 @@ public final class Expender {
 
     /**
      * Scans the current JAR for all files located under the ".cache" directory
-     * and prints the manifests of all embedded JAR files in ".cache".
+     * and returns them as ExpenderElements with artifactId, groupId, version, and file.
      *
-     * @return a list of relative paths for all files in ".cache"
+     * @return a list of ExpenderElements representing each embedded JAR in ".cache"
      */
-    public static List<Path> scanJarCache() {
+    public static List<ExpenderElements> scanJarCache() {
+        List<ExpenderElements> elements = new ArrayList<>();
         try {
             Path jarPath = getOwnJarPath();
-
-            // Print manifests for embedded JARs
-            printEmbeddedJarManifests(jarPath);
-
-            // Return all files under .cache
-            return scanCacheFilesInJar(jarPath);
-
+            elements.addAll(scanCacheElementsInJar(jarPath));
         } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
+            e.printStackTrace(System.err);
         }
+        return elements;
     }
 
     /**
-     * Prints the manifest of all JAR files located under ".cache" inside the main JAR.
+     * Reads the given JAR file and returns all embedded JAR files under ".cache" as ExpenderElements.
      *
-     * @param jarPath path to the main JAR file
-     * @throws IOException if the JAR file cannot be read
+     * @param jarPath the path to the main JAR
+     * @return list of ExpenderElements
+     * @throws IOException if reading the JAR fails
      */
-    private static void printEmbeddedJarManifests(Path jarPath) throws IOException {
+    private static List<ExpenderElements> scanCacheElementsInJar(Path jarPath) throws IOException {
+        List<ExpenderElements> elements = new ArrayList<>();
+
         try (JarFile jarFile = new JarFile(jarPath.toFile())) {
             Enumeration<JarEntry> entries = jarFile.entries();
 
@@ -58,48 +53,37 @@ public final class Expender {
                 JarEntry entry = entries.nextElement();
 
                 if (entry.getName().startsWith(CACHE_DIRECTORY + "/") && entry.getName().endsWith(".jar")) {
-                    System.out.println("\nManifest of embedded JAR: " + entry.getName());
+                    File tempFile = Files.createTempFile("expender-", ".jar").toFile();
+                    tempFile.deleteOnExit();
 
                     try (InputStream is = jarFile.getInputStream(entry);
-                         JarInputStream jis = new JarInputStream(is)) {
+                         OutputStream os = new FileOutputStream(tempFile)) {
+                        is.transferTo(os);
+                    }
 
+                    try (JarInputStream jis = new JarInputStream(new FileInputStream(tempFile))) {
                         Manifest manifest = jis.getManifest();
+                        String artifactId = "unknown";
+                        String groupId = "unknown";
+                        String version = "unknown";
+
                         if (manifest != null) {
-                            manifest.getMainAttributes().forEach((key, value) ->
-                                    System.out.println(key + ": " + value)
-                            );
-                        } else {
-                            System.out.println("No manifest found in " + entry.getName());
+                            Attributes attrs = manifest.getMainAttributes();
+                            artifactId = attrs.getValue("artifactId") != null
+                                    ? attrs.getValue("artifactId") : artifactId;
+                            groupId = attrs.getValue("groupId") != null
+                                    ? attrs.getValue("groupId") : groupId;
+                            version = attrs.getValue("version") != null
+                                    ? attrs.getValue("version") : version;
                         }
+
+                        elements.add(new ExpenderElements(artifactId, groupId, version, tempFile));
                     }
                 }
             }
         }
-    }
 
-    /**
-     * Reads the given JAR file and returns all files located under ".cache".
-     *
-     * @param jarPath the path to the JAR file
-     * @return a list of relative paths for all files in ".cache"
-     * @throws IOException if the JAR cannot be read
-     */
-    private static List<Path> scanCacheFilesInJar(Path jarPath) throws IOException {
-        List<Path> cacheFiles = new ArrayList<>();
-
-        try (JarFile jarFile = new JarFile(jarPath.toFile())) {
-            Enumeration<JarEntry> entries = jarFile.entries();
-
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-
-                if (entry.getName().startsWith(CACHE_DIRECTORY + "/") && !entry.isDirectory()) {
-                    cacheFiles.add(Paths.get(entry.getName()));
-                }
-            }
-        }
-
-        return cacheFiles;
+        return elements;
     }
 
     /**

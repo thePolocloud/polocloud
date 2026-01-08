@@ -34,7 +34,7 @@ class PolocloudDependencyPlugin : Plugin<Project> {
 
                     attributes(
                         "groupId" to project.group.toString(),
-                        "artifact" to project.name,
+                        "artifactId" to project.name,
                         "version" to project.version.toString()
                     )
                 }
