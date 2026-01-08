@@ -5,6 +5,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.kotlin.dsl.attributes
 
 class PolocloudDependencyPlugin : Plugin<Project> {
 
@@ -17,8 +18,27 @@ class PolocloudDependencyPlugin : Plugin<Project> {
     }
 
     override fun apply(project: Project) {
+
+        val extension = project.extensions.create(
+            "polocloud",
+            PolocloudDependencyExtension::class.java
+        )
+
         project.afterEvaluate {
             project.tasks.withType(Jar::class.java).all {
+
+                manifest {
+                    extension.mainClass?.let { main ->
+                        attributes("Main-Class" to main)
+                    }
+
+                    attributes(
+                        "groupId" to project.group.toString(),
+                        "artifact" to project.name,
+                        "version" to project.version.toString()
+                    )
+                }
+
                 val txtFile = project.layout.buildDirectory.file("dependencies.blob").get().asFile
                 txtFile.parentFile.mkdirs()
 

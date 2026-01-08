@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.cli;
+package dev.httpmarco.polocloud.runner;
 
 final class PolocloudRuntimeLauncher {
 
@@ -11,7 +11,6 @@ final class PolocloudRuntimeLauncher {
         if (!validator.isValid()) {
             System.exit(1);
             return;
-
         }
 
         PolocloudProcess process = new PolocloudProcess();

@@ -1,6 +1,6 @@
-package dev.httpmarco.polocloud.cli.validator;
+package dev.httpmarco.polocloud.runner.validator;
 
-public interface BootReasonValidator extends BootValidator{
+public interface BootReasonValidator extends BootValidator {
 
     /**
      * Called when {@link #isValid()} returns {@code false}.

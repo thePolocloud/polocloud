@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.cli.validator;
+package dev.httpmarco.polocloud.runner.validator;
 
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -15,8 +15,8 @@ public final class DuplicateRuntimeCheck implements BootReasonValidator {
     private FileLock lock;
     private File lockFile;
 
-    @Override
     @SuppressWarnings("resource")
+    @Override
     public boolean isValid() {
         try {
             lockFile = new File(System.getProperty("user.dir"), LOCK_FILE_NAME);

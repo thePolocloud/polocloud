@@ -1,4 +1,4 @@
-package dev.httpmarco.polocloud.cli.validator;
+package dev.httpmarco.polocloud.runner.validator;
 
 /**
  * Represents a boot-time validator for the PoloCloud launcher.

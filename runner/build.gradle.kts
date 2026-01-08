@@ -1,10 +1,12 @@
 plugins {
     id("java")
+    id("dev.httpmarco.polocloud")
 }
 
-dependencies {
+polocloud {
+    mainClass = "dev.httpmarco.polocloud.runner.PolocloudRuntimeLauncher"
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.jar {
+    from(project(":cli").tasks.getByPath(":cli:jar"))
 }

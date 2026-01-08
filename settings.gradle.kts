@@ -1,5 +1,5 @@
 pluginManagement {
-    includeBuild("dependency")
+    includeBuild("gradle-plugin")
     repositories {
         gradlePluginPortal()
         mavenCentral()
@@ -13,5 +13,4 @@ plugins {
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "polocloudv3"
-include("frames", "frames:frame-gradle-plugin", "frames:frame-api", "cli")
-include("runner")
+include("frames", "frames:frame-gradle-plugin", "frames:frame-api", "cli", "runner")

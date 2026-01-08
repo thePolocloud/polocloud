@@ -1,11 +1,12 @@
-package dev.httpmarco.polocloud.cli;
+package dev.httpmarco.polocloud.runner;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 public final class PolocloudProcess {
 
+    private static final Path runtimeCacheDirectory = Path.of(System.getProperty("user.dir"), ".cache", "libs", "");
     private Process process;
-
 
     public void start() {
         ProcessBuilder processBuilder = new ProcessBuilder()

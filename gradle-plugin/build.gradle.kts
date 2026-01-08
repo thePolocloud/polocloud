@@ -5,8 +5,8 @@ plugins {
 
 gradlePlugin {
     plugins {
-        create("dependencyPlugin") {
-            id = "dev.httpmarco.polocloud.dependencies"
+        create("polocloud-plugin") {
+            id = "dev.httpmarco.polocloud"
             implementationClass = "dev.httpmarco.polocloud.dependency.plugin.PolocloudDependencyPlugin"
         }
     }
