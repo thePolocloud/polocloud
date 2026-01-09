@@ -17,3 +17,9 @@ tasks.named<Jar>("jar") {
         into(".cache")
     }
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}

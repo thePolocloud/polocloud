@@ -58,7 +58,13 @@ public final class Expender {
 
                     try (InputStream is = jarFile.getInputStream(entry);
                          OutputStream os = new FileOutputStream(tempFile)) {
-                        is.transferTo(os);
+
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            os.write(buffer, 0, bytesRead);
+                        }
                     }
 
                     try (JarInputStream jis = new JarInputStream(new FileInputStream(tempFile))) {

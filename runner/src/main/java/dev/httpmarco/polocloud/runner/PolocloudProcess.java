@@ -4,10 +4,11 @@ import dev.httpmarco.polocloud.runner.expender.ExpenderRuntimeCache;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public final class PolocloudProcess {
 
-    private static final Path bootJar = Path.of(".cache");
+    private static final Path bootJar = Paths.get(".cache");
     private Process process;
 
     public void start(String runtimeVersion) {

@@ -3,12 +3,13 @@ package dev.httpmarco.polocloud.runner.expender;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public final class ExpenderRuntimeCache {
 
-    private static final Path RUNTIME_CACHE_DIRECTORY = Path.of(".cache");
+    private static final Path RUNTIME_CACHE_DIRECTORY = Paths.get(".cache");
 
     public static void migrateCacheFiles() {
         List<ExpenderElements> elements = Expender.scanJarCache();

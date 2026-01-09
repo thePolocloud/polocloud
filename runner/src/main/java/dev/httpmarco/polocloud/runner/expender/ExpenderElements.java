@@ -2,6 +2,7 @@ package dev.httpmarco.polocloud.runner.expender;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class ExpenderElements {
 
@@ -17,23 +18,16 @@ public class ExpenderElements {
         this.file = file;
     }
 
-    public String getArtifactId() {
-        return artifactId;
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
     public File getFile() {
         return file;
     }
 
     public Path bindPath() {
-        return Path.of(groupId.replace(".", "/"), artifactId, version, artifactId + "-" + version + ".jar");
+        return Paths.get(
+                groupId.replace(".", "/"),
+                artifactId,
+                version,
+                artifactId + "-" + version + ".jar"
+        );
     }
 }
