@@ -39,9 +39,11 @@ final class PolocloudRuntimeLauncher {
                 .getMainAttributes()
                 .getValue(PolocloudParameters.VERSION_ENV);
 
-        final PolocloudProcess process = new PolocloudProcess();
-        process.start(runtimeVersion);
+        System.setProperty(PolocloudParameters.VERSION_ENV, runtimeVersion);
 
-        System.exit(process.waitForExit());
+        final PolocloudProcess process = new PolocloudProcess();
+        final int status = process.start();
+
+        System.exit(status);
     }
 }

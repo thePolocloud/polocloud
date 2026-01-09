@@ -1,5 +1,7 @@
 package dev.httpmarco.polocloud.runner.expender;
 
+import dev.httpmarco.polocloud.runner.PolocloudParameters;
+
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -12,8 +14,6 @@ import java.util.jar.*;
  * and to read the manifests of embedded JAR files.
  */
 public final class Expender {
-
-    private static final Path CACHE_DIRECTORY = Paths.get(".cache");
 
     private Expender() {
         // Prevent instantiation
@@ -52,7 +52,7 @@ public final class Expender {
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
 
-                if (entry.getName().startsWith(CACHE_DIRECTORY + "/") && entry.getName().endsWith(".jar")) {
+                if (entry.getName().startsWith(PolocloudParameters.EXPENDER_RUNTIME_CACHE + "/") && entry.getName().endsWith(".jar")) {
                     File tempFile = Files.createTempFile("expender-", ".jar").toFile();
                     tempFile.deleteOnExit();
 
