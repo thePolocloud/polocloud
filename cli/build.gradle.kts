@@ -8,3 +8,7 @@ plugins {
 dependencies {
     polocloudRuntime("com.google.code.gson:gson:2.10.1")
 }
+
+polocloud {
+    mainClass = "dev.httpmarco.polocloud.cli.PolocloudCliKt"
+}

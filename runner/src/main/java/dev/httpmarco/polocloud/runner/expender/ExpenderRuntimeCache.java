@@ -3,6 +3,7 @@ package dev.httpmarco.polocloud.runner.expender;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public final class ExpenderRuntimeCache {
@@ -13,7 +14,6 @@ public final class ExpenderRuntimeCache {
         List<ExpenderElements> elements = Expender.scanJarCache();
 
         for (ExpenderElements element : elements) {
-            System.out.println("Migrating " + element.getGroupId() + ":" + element.getArtifactId() + ":" + element.getVersion());
             cloneElement(element);
         }
     }
@@ -22,9 +22,8 @@ public final class ExpenderRuntimeCache {
         try {
             Path target = RUNTIME_CACHE_DIRECTORY.resolve(element.bindPath());
 
-
             Files.createDirectories(target.getParent());
-            Files.copy(element.getFile().toPath(), RUNTIME_CACHE_DIRECTORY.resolve(element.bindPath()));
+            Files.copy(element.getFile().toPath(), RUNTIME_CACHE_DIRECTORY.resolve(element.bindPath()), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

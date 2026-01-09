@@ -34,6 +34,6 @@ public class ExpenderElements {
     }
 
     public Path bindPath() {
-        return Path.of(groupId, artifactId, version, artifactId + "-" + version + ".jar");
+        return Path.of(groupId.replace(".", "/"), artifactId, version, artifactId + "-" + version + ".jar");
     }
 }

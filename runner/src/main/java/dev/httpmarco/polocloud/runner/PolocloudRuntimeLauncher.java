@@ -1,5 +1,7 @@
 package dev.httpmarco.polocloud.runner;
 
+import dev.httpmarco.polocloud.runner.utils.Manifests;
+
 final class PolocloudRuntimeLauncher {
 
     private PolocloudRuntimeLauncher() {
@@ -13,8 +15,10 @@ final class PolocloudRuntimeLauncher {
             return;
         }
 
+        String runtimeVersion = Manifests.readOwnManifest().getMainAttributes().getValue(PolocloudParameters.VERSION_ENV);
+
         PolocloudProcess process = new PolocloudProcess();
-        process.start();
+        process.start(runtimeVersion);
         System.exit(process.waitForExit());
     }
 }
