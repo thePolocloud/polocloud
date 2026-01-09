@@ -45,6 +45,10 @@ public final class PolocloudParameters {
         throw new UnsupportedOperationException("This is a utility class");
     }
 
+    /**
+     * Gets the Polocloud version from the environment variable.
+     * @return the Polocloud version
+     */
     public static String version() {
         return System.getProperty(VERSION_ENV);
     }
