@@ -23,3 +23,9 @@ java {
         languageVersion = JavaLanguageVersion.of(8)
     }
 }
+
+tasks.withType<JavaCompile>().configureEach {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
+    options.encoding = "UTF-8"
+}

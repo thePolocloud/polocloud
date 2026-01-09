@@ -4,7 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ExpenderElements {
+public final class ExpenderElements {
 
     private final String artifactId;
     private final String groupId;

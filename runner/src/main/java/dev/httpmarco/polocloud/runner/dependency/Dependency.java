@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.MessageDigest;
 
-public class Dependency {
+public final class Dependency {
 
     private final String artifactId;
     private final String url;
