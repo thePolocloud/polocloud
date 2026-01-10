@@ -57,7 +57,7 @@ public final class Expender {
                     tempFile.deleteOnExit();
 
                     try (InputStream is = jarFile.getInputStream(entry);
-                         OutputStream os = new FileOutputStream(tempFile)) {
+                         OutputStream os = Files.newOutputStream(tempFile.toPath())) {
 
                         byte[] buffer = new byte[8192];
                         int bytesRead;
@@ -69,21 +69,17 @@ public final class Expender {
 
                     try (JarInputStream jis = new JarInputStream(new FileInputStream(tempFile))) {
                         Manifest manifest = jis.getManifest();
-                        String artifactId = "unknown";
-                        String groupId = "unknown";
-                        String version = "unknown";
-
                         if (manifest != null) {
                             Attributes attrs = manifest.getMainAttributes();
-                            artifactId = attrs.getValue("artifactId") != null
-                                    ? attrs.getValue("artifactId") : artifactId;
-                            groupId = attrs.getValue("groupId") != null
-                                    ? attrs.getValue("groupId") : groupId;
-                            version = attrs.getValue("version") != null
-                                    ? attrs.getValue("version") : version;
+
+                            String artifactId = attrs.getValue("artifactId");
+                            String groupId = attrs.getValue("groupId");
+                            String version = attrs.getValue(PolocloudParameters.VERSION_ENV);
+                            String mainClass = attrs.getValue("Main-Class");
+
+                            elements.add(new ExpenderElements(artifactId, groupId, version, tempFile, mainClass));
                         }
 
-                        elements.add(new ExpenderElements(artifactId, groupId, version, tempFile));
                     }
                 }
             }

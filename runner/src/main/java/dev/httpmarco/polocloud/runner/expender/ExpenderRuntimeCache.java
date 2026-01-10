@@ -13,19 +13,34 @@ import java.util.List;
  */
 public final class ExpenderRuntimeCache {
 
+    private static final List<ExpenderElements> elements = Expender.scanJarCache();
+
     /**
      * Clone all cached expender files to the runtime cache directory.
      */
     public static void migrateCacheFiles() {
-        List<ExpenderElements> elements = Expender.scanJarCache();
-
         for (ExpenderElements element : elements) {
             cloneElement(element);
         }
     }
 
     /**
+     * Finds an expender element by its artifact ID.
+     * @param artifactId the artifact ID to search for
+     * @return the matching expender element, or null if not found
+     */
+    public static ExpenderElements findElementByArtifactId(String artifactId) {
+        for (ExpenderElements element : elements) {
+            if (element.artifactId().equals(artifactId)) {
+                return element;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Clones a single expender element to the runtime cache directory.
+     *
      * @param element the expender element to clone
      */
     private static void cloneElement(ExpenderElements element) {

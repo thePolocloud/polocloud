@@ -4,15 +4,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Holds constant parameter and environment variable names
+ * Holds constant parameters, paths, and environment variable names
  * used by the Polocloud runner.
  *
- * <p>This class is not intended to be instantiated.</p>
+ * <p>This class is a utility class and is not intended to be instantiated.</p>
  */
 public final class PolocloudParameters {
 
     /**
-     * Environment variable that defines the Polocloud version
+     * Environment variable or system property that defines the Polocloud version
      * used by the runner.
      *
      * <p>Example value: {@code 1.0.0}</p>
@@ -20,14 +20,19 @@ public final class PolocloudParameters {
     public static final String VERSION_ENV = "version";
 
     /**
-     * Environment variable that defines the cache folder
-     * used by the runner.
+     * Path to the runtime cache folder used by Polocloud for temporary and cached files.
+     *
+     * <p>This folder is created in the current working directory.</p>
      */
     public static final Path EXPENDER_RUNTIME_CACHE = Paths.get(".cache");
 
     /**
-     * Environment variable that defines the boot jar
-     * used by the runner.
+     * Path to the Polocloud CLI boot JAR file.
+     *
+     * <p>The path is resolved relative to {@link #EXPENDER_RUNTIME_CACHE} and depends
+     * on the Polocloud version returned by {@link #version()}.</p>
+     *
+     * <p>Example: {@code .cache/dev/httpmarco/polocloud/cli/1.0.0/cli-1.0.0.jar}</p>
      */
     public static final Path BOOT_CLI = EXPENDER_RUNTIME_CACHE.resolve(Paths.get(
             "dev",
@@ -35,19 +40,56 @@ public final class PolocloudParameters {
             "polocloud",
             "cli",
             version(),
-            "/cli-" + version() + ".jar"
+            "cli-" + version() + ".jar"
     ));
 
     /**
-     * Private constructor to prevent instantiation.
+     * Version of the Kotlin runtime used by Polocloud.
+     */
+    public static final String KOTLIN_VERSION = "2.3.0";
+
+    /**
+     * URL from which the Kotlin runtime JAR can be downloaded.
+     *
+     * <p>Example:
+     * {@code https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.3.0/kotlin-stdlib-2.3.0.jar}</p>
+     */
+    public static final String KOTLIN_DOWNLOAD_URL =
+            "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/"
+                    + KOTLIN_VERSION
+                    + "/kotlin-stdlib-"
+                    + KOTLIN_VERSION
+                    + ".jar";
+
+    /**
+     * Path to the Kotlin runtime JAR used by Polocloud.
+     *
+     * <p>The path is resolved relative to {@link #EXPENDER_RUNTIME_CACHE}.</p>
+     *
+     * <p>Example: {@code .cache/org/jetbrains/kotlin/kotlin-stdlib/2.3.0/kotlin-stdlib-2.3.0.jar}</p>
+     */
+    public static final Path BOOT_KOTLIN = EXPENDER_RUNTIME_CACHE.resolve(Paths.get(
+            "org",
+            "jetbrains",
+            "kotlin",
+            "kotlin-stdlib",
+            KOTLIN_VERSION,
+            "kotlin-stdlib-" + KOTLIN_VERSION + ".jar"
+    ));
+
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     *
+     * @throws UnsupportedOperationException always
      */
     private PolocloudParameters() {
-        throw new UnsupportedOperationException("This is a utility class");
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 
     /**
-     * Gets the Polocloud version from the environment variable.
-     * @return the Polocloud version
+     * Retrieves the Polocloud version from the system property or environment variable.
+     *
+     * @return the Polocloud version, or {@code null} if not set
      */
     public static String version() {
         return System.getProperty(VERSION_ENV);
