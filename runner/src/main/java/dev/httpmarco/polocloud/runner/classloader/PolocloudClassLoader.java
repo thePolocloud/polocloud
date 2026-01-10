@@ -38,4 +38,9 @@ public final class PolocloudClassLoader extends URLClassLoader {
     public void close() throws IOException {
         super.close();
     }
+
+    @Override
+    public void addURL(URL url) {
+        super.addURL(url);
+    }
 }

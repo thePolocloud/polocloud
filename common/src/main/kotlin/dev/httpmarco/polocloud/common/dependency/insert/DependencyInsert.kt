@@ -1,9 +1,13 @@
 package dev.httpmarco.polocloud.common.dependency.insert
 
-interface DependencyInsert<T> {
+import dev.httpmarco.polocloud.common.dependency.Dependency
 
-    fun renderDependency() : T
+abstract class DependencyInsert<T> {
 
-    fun connect()
+    abstract fun renderDependency(dependency: Dependency): T
+
+    abstract fun connect(element: T)
+
+    fun register(dependency: Dependency) = connect(renderDependency(dependency))
 
 }

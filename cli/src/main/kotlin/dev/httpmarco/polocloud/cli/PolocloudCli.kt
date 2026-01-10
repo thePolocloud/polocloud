@@ -9,7 +9,11 @@ fun main() {
 
     val dependencyRegistry = DependencyRegistry(ClasspathInsert())
 
-    dependencyRegistry.scan(OwnBlobScanner(Path.of(".cache/dev/httpmarco/polocloud/cli/3.0.0-pre.10-SNAPSHOT/cli-3.0.0-pre.10-SNAPSHOT.jar").toFile()));
-
+    dependencyRegistry.scan(
+        OwnBlobScanner(
+            Path.of(".cache/dev/httpmarco/polocloud/cli/3.0.0-pre.10-SNAPSHOT/cli-3.0.0-pre.10-SNAPSHOT.jar").toFile()
+        )
+    );
+    dependencyRegistry.downloadAndRegister()
 
 }
