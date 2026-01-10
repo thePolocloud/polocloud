@@ -7,4 +7,5 @@ data class Dependency(
     val url: String,
     val checksum: String
 ) {
+
 }
