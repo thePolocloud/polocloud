@@ -45,7 +45,9 @@ public final class PolocloudProcess {
     private ProcessBuilder createProcessBuilder() {
         String classpath = PolocloudParameters.BOOT_KOTLIN
                 + java.io.File.pathSeparator
-                + PolocloudParameters.BOOT_CLI;
+                + PolocloudParameters.expenderRuntimeCache("cli")
+                + java.io.File.pathSeparator
+                + PolocloudParameters.expenderRuntimeCache("common");
 
         return new ProcessBuilder(
                 "java",

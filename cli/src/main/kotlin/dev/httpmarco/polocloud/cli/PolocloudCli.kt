@@ -1,5 +1,9 @@
 package dev.httpmarco.polocloud.cli
 
+import dev.httpmarco.polocloud.common.dependency.DependencyRegistry
+
 fun main() {
-    println("Hello, PoloCloud CLI!")
+
+    val dependencyRegistry = DependencyRegistry()
+
 }

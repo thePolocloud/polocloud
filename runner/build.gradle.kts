@@ -9,11 +9,16 @@ polocloud {
 
 // TODO use gradle plugin here
 tasks.named<Jar>("jar") {
-    dependsOn(":cli:jar")
+    dependsOn(":cli:jar", ":common:jar")
 
     val cliJar = project(":cli").tasks.named<Jar>("jar").get().archiveFile.get().asFile
+    val commonJar = project(":common").tasks.named<Jar>("jar").get().archiveFile.get().asFile
 
     from(cliJar) {
+        into(".cache")
+    }
+
+    from(commonJar) {
         into(".cache")
     }
 }

@@ -27,23 +27,6 @@ public final class PolocloudParameters {
     public static final Path EXPENDER_RUNTIME_CACHE = Paths.get(".cache");
 
     /**
-     * Path to the Polocloud CLI boot JAR file.
-     *
-     * <p>The path is resolved relative to {@link #EXPENDER_RUNTIME_CACHE} and depends
-     * on the Polocloud version returned by {@link #version()}.</p>
-     *
-     * <p>Example: {@code .cache/dev/httpmarco/polocloud/cli/1.0.0/cli-1.0.0.jar}</p>
-     */
-    public static final Path BOOT_CLI = EXPENDER_RUNTIME_CACHE.resolve(Paths.get(
-            "dev",
-            "httpmarco",
-            "polocloud",
-            "cli",
-            version(),
-            "cli-" + version() + ".jar"
-    ));
-
-    /**
      * Version of the Kotlin runtime used by Polocloud.
      */
     public static final String KOTLIN_VERSION = "2.3.0";
@@ -93,5 +76,24 @@ public final class PolocloudParameters {
      */
     public static String version() {
         return System.getProperty(VERSION_ENV);
+    }
+
+    /**
+     * Path to the Polocloud CLI boot JAR file.
+     *
+     * <p>The path is resolved relative to {@link #EXPENDER_RUNTIME_CACHE} and depends
+     * on the Polocloud version returned by {@link #version()}.</p>
+     *
+     * <p>Example: {@code .cache/dev/httpmarco/polocloud/cli/1.0.0/cli-1.0.0.jar}</p>
+     */
+    public static Path expenderRuntimeCache(String project) {
+        return EXPENDER_RUNTIME_CACHE.resolve(Paths.get(
+                "dev",
+                "httpmarco",
+                "polocloud",
+                project,
+                version(),
+                project + "-" + version() + ".jar"
+        ));
     }
 }
