@@ -1,4 +1,8 @@
 package dev.httpmarco.polocloud.common.dependency
 
-class DependencyRegistry {
+import dev.httpmarco.polocloud.common.dependency.scanning.DependencyScanner
+
+class DependencyRegistry(val scanner: DependencyScanner<*>) {
+
+
 }
