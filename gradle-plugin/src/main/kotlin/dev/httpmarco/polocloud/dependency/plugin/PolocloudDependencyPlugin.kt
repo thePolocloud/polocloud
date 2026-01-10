@@ -1,5 +1,6 @@
 package dev.httpmarco.polocloud.dependency.plugin
 
+import dev.httpmarco.polocloud.dependency.plugin.dependency.Dependency
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.DependencyHandler
@@ -42,7 +43,7 @@ class PolocloudDependencyPlugin : Plugin<Project> {
                 val txtFile = project.layout.buildDirectory.file("dependencies.blob").get().asFile
                 txtFile.parentFile.mkdirs()
 
-                val dependencyUrls = mutableListOf<String>()
+                val dependencies = mutableListOf<Dependency>()
 
                 val primaryRepo = project.repositories.firstOrNull {
                     it is MavenArtifactRepository
@@ -57,11 +58,11 @@ class PolocloudDependencyPlugin : Plugin<Project> {
                         val version = parts[2]
 
                         val url = "${primaryRepo.trimEnd('/')}/$group/$name/$version/$name-$version.jar"
-                        dependencyUrls.add(url)
+                        dependencies.add(Dependency(group, name, version, url, fetchChecksum(url)))
                     }
                 }
 
-                val content = dependencyUrls.joinToString("\n")
+                val content = dependencies.joinToString("\n") { it.toNotation() }
                 txtFile.writeText(content)
 
                 from(txtFile.parentFile) {
@@ -71,6 +72,20 @@ class PolocloudDependencyPlugin : Plugin<Project> {
             }
         }
     }
+}
+
+fun fetchChecksum(jarUrl: String): String {
+    val sha256Url = "$jarUrl.sha256"
+    val sha1Url = "$jarUrl.sha1"
+
+    fun tryLoad(url: String): String? =
+        runCatching {
+            java.net.URL(url).readText().trim().split(" ")[0]
+        }.getOrNull()
+
+    return tryLoad(sha256Url)
+        ?: tryLoad(sha1Url)
+        ?: error("Keine Checksum gefunden für $jarUrl")
 }
 
 fun DependencyHandler.polocloudRuntime(notation: Any) {

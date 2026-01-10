@@ -19,7 +19,6 @@ public final class PolocloudRuntimeBootValidator implements BootValidator {
     private final BootReasonValidator[] validators = new BootReasonValidator[]{
             new JavaRuntimeVersionCheck(),
             new FileSecurityCheck(),
-            new DependencyStateCheck(),
             new DuplicateRuntimeCheck()
     };
 
