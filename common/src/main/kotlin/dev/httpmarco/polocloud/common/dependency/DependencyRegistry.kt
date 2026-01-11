@@ -21,10 +21,6 @@ class DependencyRegistry(val insert: DependencyInsert<*>) {
      */
     fun scan(scanner: DependencyScanner<*>) {
         this.registeredDependencies.addAll(scanner.doScanning().blobEntries)
-
-        this.registeredDependencies.forEach {
-            println("Registered dependency: ${it.groupId}:${it.artifactId}:${it.version}")
-        }
     }
 
     /**

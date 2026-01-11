@@ -3,13 +3,13 @@ package dev.httpmarco.polocloud.dependency.plugin
 import dev.httpmarco.polocloud.dependency.plugin.dependency.Dependency
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.attributes
 import java.net.URL
 import java.nio.charset.StandardCharsets
-
+import org.gradle.api.artifacts.MinimalExternalModuleDependency
+import org.gradle.api.provider.Provider
 /**
  * Gradle plugin that embeds a `dependencies.blob` file into the produced JAR.
  *
@@ -128,11 +128,28 @@ fun fetchChecksum(jarUrl: String): String {
  *
  * @param notation dependency notation (`group:artifact:version`)
  */
-fun Project.polocloudRuntime(notation: Any) {
-    extensions
-        .getByType(PolocloudDependencyExtension::class.java)
-        .projects
-        .add(notation.toString())
 
-    dependencies.add("implementation", notation)
+fun Project.polocloudRuntime(notation: Any) {
+
+    val extension = extensions.getByType(PolocloudDependencyExtension::class.java)
+
+    when (notation) {
+
+        is Provider<*> -> {
+            notation.map { dep ->
+                if (dep is MinimalExternalModuleDependency) {
+                    val gav =
+                        "${dep.module.group}:${dep.module.name}:${dep.versionConstraint.requiredVersion}"
+
+                    extension.projects.add(gav)
+                }
+            }.get()
+            dependencies.add("implementation", notation)
+        }
+
+        else -> {
+            extension.projects.add(notation.toString())
+            dependencies.add("implementation", notation)
+        }
+    }
 }

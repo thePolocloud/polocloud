@@ -1,6 +1,7 @@
 package dev.httpmarco.polocloud.common.dependency
 
 import dev.httpmarco.polocloud.common.dependency.checksum.FileChecksum.sha1
+import dev.httpmarco.polocloud.common.dependency.checksum.FileChecksum.sha256
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
@@ -53,6 +54,8 @@ data class Dependency(
             Files.copy(input, tempFile, StandardCopyOption.REPLACE_EXISTING)
         }
 
+        println("Downloaded $artifactId:$version to ${tempFile.toAbsolutePath()}")
+
         // Verify checksum after download
         if (!verifyChecksum(tempFile)) {
             tempFile.deleteIfExists()
@@ -74,7 +77,7 @@ data class Dependency(
      * @return true if the file's SHA-1 checksum matches the expected checksum, false otherwise
      */
     private fun verifyChecksum(filePath: Path): Boolean =
-        filePath.toFile().sha1().equals(checksum, ignoreCase = true)
+        filePath.toFile().sha1().equals(checksum, ignoreCase = true) ||  filePath.toFile().sha256().equals(checksum, ignoreCase = true)
 
     /**
      * Returns the default filename for the dependency JAR.

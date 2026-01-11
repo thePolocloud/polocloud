@@ -1,6 +1,8 @@
 [versions]
+jline = "3.30.6"
 
 [libraries]
+jline = { module = "org.jline:jline", version.ref = "jline" }
 
 [plugins]
 

@@ -11,19 +11,17 @@ class OwnBlobScanner(private val file: File) : DependencyScanner<String> {
 
     override fun scanDependencies(): List<String> {
         if (!file.exists()) {
-            error("JAR existiert nicht: ${file.absolutePath}")
+            error("Jar not exists: ${file.absolutePath}")
         }
 
         JarFile(file).use { jar ->
             val entry = jar.getJarEntry(BLOB_FILE)
-                ?: error("dependencies.blob nicht in JAR gefunden")
+                ?: error("dependencies.blob not found in JAR: ${file.absolutePath}")
 
             jar.getInputStream(entry).use { stream ->
                 val content = stream
                     .bufferedReader(StandardCharsets.UTF_8)
                     .readText()
-
-                println(content)
 
                 return content
                     .lines()

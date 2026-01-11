@@ -8,21 +8,31 @@ import java.security.MessageDigest
  */
 object FileChecksum {
 
+    private const val BUFFER_SIZE = 1024
+
     /**
      * Computes the SHA-1 checksum of this file.
      *
-     * This function reads the file in blocks of 1024 bytes to avoid loading
-     * the entire file into memory at once, making it suitable for large files.
-     *
      * @receiver the file to compute the checksum for
      * @return the SHA-1 checksum as a lowercase hexadecimal string
-     * @throws java.security.NoSuchAlgorithmException if SHA-1 is not available
-     * @throws java.io.IOException if an I/O error occurs while reading the file
      */
-    fun File.sha1(): String {
-        val digest = MessageDigest.getInstance("SHA-1")
-        this.inputStream().use { fis ->
-            val buffer = ByteArray(1024)
+    fun File.sha1(): String = checksum("SHA-1")
+
+    /**
+     * Computes the SHA-256 checksum of this file.
+     *
+     * @receiver the file to compute the checksum for
+     * @return the SHA-256 checksum as a lowercase hexadecimal string
+     */
+    fun File.sha256(): String = checksum("SHA-256")
+
+    /**
+     * Computes a checksum for this file using the given algorithm.
+     */
+    private fun File.checksum(algorithm: String): String {
+        val digest = MessageDigest.getInstance(algorithm)
+        inputStream().use { fis ->
+            val buffer = ByteArray(BUFFER_SIZE)
             var bytesRead: Int
             while (fis.read(buffer).also { bytesRead = it } != -1) {
                 digest.update(buffer, 0, bytesRead)

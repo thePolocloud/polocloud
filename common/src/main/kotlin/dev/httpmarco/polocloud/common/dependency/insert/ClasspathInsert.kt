@@ -39,7 +39,6 @@ class ClasspathInsert : DependencyInsert<URL>() {
 
         if (classloader is URLClassLoader) {
             classloader.url(element)
-            println("Added URL to classpath: $element")
         } else {
             throw IllegalStateException("Current ClassLoader is not a URLClassLoader and cannot be modified")
         }
