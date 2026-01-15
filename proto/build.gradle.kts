@@ -1,7 +1,7 @@
 import com.google.protobuf.gradle.*
 
 plugins {
-    kotlin("jvm") version "1.9.25"
+    kotlin("jvm") version "2.3.0"
     id("com.google.protobuf") version "0.9.6"
     id("java-library")
 }
@@ -15,18 +15,14 @@ repositories {
 }
 
 dependencies {
-    // Protobuf (Kotlin)
     api("com.google.protobuf:protobuf-kotlin:$protobufVersion")
 
-    // gRPC
     api("io.grpc:grpc-kotlin-stub:$grpcKotlinVersion")
     api("io.grpc:grpc-protobuf:$grpcVersion")
     api("io.grpc:grpc-netty-shaded:$grpcVersion")
 
-    // Coroutines
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
-    // Annotation API (für Generated Code)
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 }
 
