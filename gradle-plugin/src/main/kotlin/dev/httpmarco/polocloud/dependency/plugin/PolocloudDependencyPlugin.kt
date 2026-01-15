@@ -25,6 +25,7 @@ class PolocloudDependencyPlugin : Plugin<Project> {
             PolocloudDependencyExtension::class.java
         )
 
+
         project.afterEvaluate {
             project.tasks.withType(Jar::class.java).configureEach {
 
