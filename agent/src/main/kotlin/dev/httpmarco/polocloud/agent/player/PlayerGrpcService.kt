@@ -12,6 +12,7 @@ import dev.httpmarco.polocloud.v1.player.PlayerCountResponse
 import dev.httpmarco.polocloud.v1.player.PlayerFindByNameRequest
 import dev.httpmarco.polocloud.v1.player.PlayerFindByServiceRequest
 import dev.httpmarco.polocloud.v1.player.PlayerFindResponse
+import dev.httpmarco.polocloud.v1.player.PlayerKickActorRequest
 import dev.httpmarco.polocloud.v1.player.PlayerMessageActorRequest
 import dev.httpmarco.polocloud.v1.player.StreamingAlert
 import io.grpc.stub.ServerCallStreamObserver
@@ -89,7 +90,7 @@ class PlayerGrpcService : PlayerControllerGrpc.PlayerControllerImplBase() {
     }
 
     override fun kickPlayer(
-        request: PlayerMessageActorRequest,
+        request: PlayerKickActorRequest,
         responseObserver: StreamObserver<PlayerActorResponse>
     ) {
         this.redirectActorToProxy(request, request.uniqueId, responseObserver)
