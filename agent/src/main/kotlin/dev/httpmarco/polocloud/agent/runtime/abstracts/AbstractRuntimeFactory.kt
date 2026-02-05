@@ -2,6 +2,7 @@ package dev.httpmarco.polocloud.agent.runtime.abstracts
 
 import dev.httpmarco.polocloud.agent.Agent
 import dev.httpmarco.polocloud.agent.i18n
+import dev.httpmarco.polocloud.agent.logger
 import dev.httpmarco.polocloud.agent.runtime.RuntimeFactory
 import dev.httpmarco.polocloud.agent.services.AbstractService
 import dev.httpmarco.polocloud.agent.utils.JavaUtils
@@ -12,24 +13,22 @@ import dev.httpmarco.polocloud.common.version.polocloudVersion
 import dev.httpmarco.polocloud.platforms.Platform
 import dev.httpmarco.polocloud.platforms.PlatformParameters
 import dev.httpmarco.polocloud.platforms.PlatformPool
-import dev.httpmarco.polocloud.platforms.ServerPlatformForwarding
 import dev.httpmarco.polocloud.shared.events.definitions.service.ServiceChangeStateEvent
-import dev.httpmarco.polocloud.shared.properties.JAVA_PATH
 import dev.httpmarco.polocloud.v1.groups.GroupType
 import dev.httpmarco.polocloud.v1.services.ServiceSnapshot
 import dev.httpmarco.polocloud.v1.services.ServiceState
 import org.yaml.snakeyaml.util.Tuple
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.ArrayList
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.collections.addAll
 import kotlin.io.path.createDirectories
 import kotlin.io.path.name
 
-abstract class AbstractRuntimeFactory<T : AbstractService>(val factoryPath: Path) : RuntimeFactory<T> {
+abstract class AbstractRuntimeFactory<T : AbstractService>(val factoryPath: Path) :
+    RuntimeFactory<T> {
 
     val cacheThreadPool: ExecutorService by lazy { Executors.newFixedThreadPool(Agent.config.maxCachingProcesses) }
     val runningCacheProcesses: MutableList<Tuple<String, String>> by lazy {
@@ -60,7 +59,8 @@ abstract class AbstractRuntimeFactory<T : AbstractService>(val factoryPath: Path
         path.createDirectories()
 
         //loading cache before starting service
-        val cacheIsRunning = runningCacheProcesses.any { platform.name == it._1() && version == it._2() }
+        val cacheIsRunning =
+            runningCacheProcesses.any { platform.name == it._1() && version == it._2() }
         if (!platform.cacheExists(version) || cacheIsRunning) {
             waitingServices.add(service)
 
@@ -137,7 +137,7 @@ abstract class AbstractRuntimeFactory<T : AbstractService>(val factoryPath: Path
      * @return A [PlatformParameters] object containing all necessary parameters.
      * @see PlatformParameters
      */
-    protected fun environment(service: T) : PlatformParameters {
+    protected fun environment(service: T): PlatformParameters {
         val version = service.group().platform.version
         val platform = service.group().platform()
         val versionObject = platform.version(version)
@@ -166,25 +166,31 @@ abstract class AbstractRuntimeFactory<T : AbstractService>(val factoryPath: Path
         environment.addParameter("use_modern_forwarding", securityProvider.isModernForwarding())
         environment.addParameter("use_legacy_forwarding", securityProvider.isLegacyForwarding())
 
-        // platforms usage detection for all setup scripts
         PlatformPool.platforms().forEach {
-            environment.addParameter(it.name + "_use", cachedGroups.stream().anyMatch { s -> it.name.contains(s.platform.name) })
+            environment.addParameter(
+                it.name + "_use",
+                cachedGroups.stream().anyMatch { s -> it.name.contains(s.platform.name) })
         }
 
         // overwrite for special platforms
-        environment.addParameter("velocity_use", cachedGroups.stream().anyMatch { velocityPlatforms.contains(it.platform().name) })
+        environment.addParameter(
+            "velocity_use",
+            cachedGroups.stream().anyMatch { velocityPlatforms.contains(it.platform().name) })
 
-        // for proxy detection in platforms
-        // if users want to have a custom proxy platform name, they can use the generic parameter above
-        // also the transfer proxy platforms will be detected here
-        environment.addParameter("proxy_use", cachedGroups.stream().anyMatch { it.platform().type == GroupType.PROXY })
+        environment.addParameter(
+            "proxy_use",
+            cachedGroups.stream().anyMatch { it.platform().type == GroupType.PROXY })
 
         // general parameters
         environment.addParameter("version", polocloudVersion())
         return environment
     }
 
-    protected fun handleMissingCache(platform: Platform, version: String, environment: PlatformParameters) {
+    protected fun handleMissingCache(
+        platform: Platform,
+        version: String,
+        environment: PlatformParameters
+    ) {
         val platformName = platform.name
 
         val processEntry = Tuple(platformName, version)
@@ -234,16 +240,45 @@ abstract class AbstractRuntimeFactory<T : AbstractService>(val factoryPath: Path
             }
 
             Language.GO, Language.RUST -> {
-                commands.addAll(currentOS.executableCurrentDirectoryCommand(service.group().applicationPlatformFile().name))
+                commands.addAll(
+                    currentOS.executableCurrentDirectoryCommand(
+                        service.group().applicationPlatformFile().name
+                    )
+                )
             }
         }
         return commands
     }
 
-    protected open fun javaLanguagePath(service: T) : List<String> {
-        val javaPath = service.group().properties.get(JAVA_PATH)?.takeIf {
+    protected open fun javaLanguagePath(service: T): List<String> {
+        val group = service.group()
+
+        group.properties.all().forEach {
+            logger.info("${it.key}: ${it.value}")
+        }
+
+        val javaPathProperty = group.properties.all()["java_path"]?.asString
+
+        val javaHome = javaPathProperty?.takeIf {
             JavaUtils().isValidJavaPath(it)
         } ?: System.getProperty("java.home")
-        return listOf("${javaPath}/bin/java")
+
+        val javaExecutable = if (System.getProperty("os.name").contains("win", ignoreCase = true)) {
+            File(javaHome, "bin/java.exe").absolutePath
+        } else {
+            File(javaHome, "bin/java").absolutePath
+        }
+
+        try {
+            val process = ProcessBuilder(javaExecutable, "-version")
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().readText()
+            logger.debug("Java version check: $output")
+        } catch (e: Exception) {
+            logger.warn("Could not verify Java version at $javaExecutable: ${e.message}")
+        }
+
+        return listOf(javaExecutable)
     }
 }
