@@ -26,7 +26,7 @@ k8s = "7.5.2"
 # rest
 javalin = "6.7.0"
 
-jwt = "4.5.0"
+jwt = "4.5.1"
 javalin-jwt = "0.7.0"
 
 argon2 = "2.12"
