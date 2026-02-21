@@ -8,7 +8,7 @@ plugins {
 
 val grpcVersion = "1.79.0"
 val grpcKotlinVersion = "1.5.0"
-val protobufVersion = "3.25.8"
+val protobufVersion = "4.33.5"
 
 repositories {
     mavenCentral()
