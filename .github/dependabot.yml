@@ -7,6 +7,6 @@ version: 2
 updates:
   - package-ecosystem: "gradle" # See documentation for possible values
     directory: "/" # Location of package manifests
-    target-branch: "pre-10"
+    target-branch: "3.0.0"
     schedule:
       interval: "daily"
