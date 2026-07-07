@@ -10,7 +10,7 @@ kotlin-reflect          = "2.4.0"
 # ── gRPC / Protobuf ───────────────────────────────────────────────────────────
 grpc                    = "1.82.1"
 grpcKotlinVersion       = "1.5.0"
-protobuf-java           = "3.25.9"
+protobuf-java           = "4.35.1"
 protobuf-kotlin         = "3.25.9"
 protobuf-plugin         = "0.10.0"
 javax-annotation-api    = "1.3.2"
