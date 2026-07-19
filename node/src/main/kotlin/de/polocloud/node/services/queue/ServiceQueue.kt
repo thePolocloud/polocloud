@@ -67,14 +67,25 @@ class ServiceQueue(
 
     /**
      * Drops every still-queued service of [groupName] (e.g. when the group is deleted),
-     * so no new services of a removed group get started.
+     * so no new services of a removed group get started — and deletes the DB row
+     * [enqueueRequired] already persisted for each one (a queued service is written to
+     * the database as soon as it's queued, not only once it starts), so a group delete
+     * right after enqueuing doesn't leave rows behind that would trip the groups table's
+     * foreign-key constraint.
      *
      * Synchronised on the queue because it is invoked from the terminal/gRPC thread while
      * the queue thread also mutates the list.
      */
     fun removeGroup(groupName: String) {
-        synchronized(queue) {
+        val removed = synchronized(queue) {
+            val matching = queue.filter { it.second.name.equals(groupName, ignoreCase = true) }
             queue.removeIf { it.second.name.equals(groupName, ignoreCase = true) }
+            matching
+        }
+        removed.forEach { (service, _) ->
+            runCatching { serviceProvider.remove(service) }.onFailure {
+                logger.warn("Failed to delete queued service {} (id={}) from the database: {}", service.name(), service.id, it.message)
+            }
         }
     }
 

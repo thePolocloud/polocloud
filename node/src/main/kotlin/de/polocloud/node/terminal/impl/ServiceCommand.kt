@@ -14,6 +14,7 @@ import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.terminal.CliTerminal
 import de.polocloud.node.terminal.types.ServiceArgument
 import de.polocloud.node.terminal.types.TemplateArgument
+import de.polocloud.proto.ExecuteServiceCommandRequest
 import de.polocloud.proto.ServiceManagerGrpcKt
 import de.polocloud.proto.StopServiceRequest
 import de.polocloud.proto.StreamServiceLogsRequest
@@ -166,15 +167,36 @@ class ServiceCommand(
 
     private fun execute(service: Service, command: String) {
         val local = serviceProvider.findLocal(service.name())
-        if (local == null) {
-            logger.info("Service ${service.name()} is not running on this node.")
+        if (local != null) {
+            if (local.executeCommand(command)) {
+                logger.info("Executed '$command' in ${service.name()}.")
+            } else {
+                logger.info("Could not send the command to ${service.name()} (process not running).")
+            }
             return
         }
-        if (local.executeCommand(command)) {
-            logger.info("Executed '$command' in ${service.name()}.")
-        } else {
-            logger.info("Could not send the command to ${service.name()} (process not running).")
+
+        val node = resolveOwningNode(service)
+        if (node == null) {
+            logger.info("Service ${service.name()} is not running on this node and its owning node is unknown.")
+            return
         }
+
+        val client = NodeGrpcClient()
+        runCatching {
+            client.connect(Address(node.hostname, node.port))
+            val stub = ServiceManagerGrpcKt.ServiceManagerCoroutineStub(client.channel())
+            val request = ExecuteServiceCommandRequest.newBuilder().setServiceName(service.name()).setCommand(command).build()
+            val response = runBlocking { stub.executeServiceCommand(request) }
+            if (response.executed) {
+                logger.info("Executed '$command' in ${service.name()} on ${node.name()}.")
+            } else {
+                logger.info("Could not send the command to ${service.name()} on ${node.name()}: ${response.message}")
+            }
+        }.onFailure { ex ->
+            logger.info("Could not reach ${node.name()} to execute the command on ${service.name()}: ${ex.message}")
+        }
+        client.disconnect()
     }
 
     private fun copy(service: Service, templateName: String) {

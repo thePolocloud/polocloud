@@ -80,11 +80,13 @@ open class GroupService(private val platformService: PlatformService = PlatformS
 
     fun list() = GroupRepository.findAll()
 
+    /**
+     * Deletes [group]. Callers must stop its running/queued services across the cluster
+     * first (see [de.polocloud.node.services.cluster.ClusterGroupShutdown]) — the group
+     * table's foreign-key constraint otherwise rejects the delete while any Service row
+     * still references it.
+     */
     open fun delete(group: Group) {
-
-        // TODO shutdown all services on ervery node
-        // TODO CLEAN QUEUE
-
         GroupRepository.delete(group)
     }
 }

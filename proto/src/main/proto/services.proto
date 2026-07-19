@@ -16,6 +16,15 @@ service ServiceManager {
   // Streams a service's buffered recent log lines followed by its live output, so the
   // CLI's `service <name> logs` can tail a service that is running on another node.
   rpc StreamServiceLogs (StreamServiceLogsRequest) returns (stream ServiceLogLine);
+  // Lets a node ask a peer to run a console command in a service that is actually
+  // running there, so the CLI's `service <name> execute` works regardless of which
+  // node's terminal session issued it.
+  rpc ExecuteServiceCommand (ExecuteServiceCommandRequest) returns (ExecuteServiceCommandResponse);
+  // Lets a node ask a peer to stop every locally-running/queued service of a group, so
+  // deleting a group (see GroupApiService.DeleteGroup) never leaves orphaned processes —
+  // or Service rows that would otherwise trip the groups table's foreign-key constraint —
+  // on other nodes.
+  rpc StopGroupServices (StopGroupServicesRequest) returns (StopGroupServicesResponse);
 }
 
 message StopServiceRequest {
@@ -35,6 +44,26 @@ message StreamServiceLogsRequest {
 
 message ServiceLogLine {
   string line = 1;
+}
+
+message ExecuteServiceCommandRequest {
+  string service_name = 1;
+  string command = 2;
+}
+
+message ExecuteServiceCommandResponse {
+  bool executed = 1;
+  // Set when executed is false (e.g. the service is not running on the node that
+  // received the request, or its process already exited).
+  string message = 2;
+}
+
+message StopGroupServicesRequest {
+  string group_name = 1;
+}
+
+message StopGroupServicesResponse {
+  int32 stopped_count = 1;
 }
 
 // API-facing service surface used by the standalone Polocloud API (plugins/services).

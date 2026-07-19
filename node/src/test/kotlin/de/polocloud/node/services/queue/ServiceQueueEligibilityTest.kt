@@ -211,6 +211,57 @@ class ServiceQueueEligibilityTest {
     }
 
     @Test
+    fun `a group backing off from repeated crashes is not placed even though it needs replicas`() {
+        val self = node(selfId, "node-a")
+        val g = group(minOnline = 1)
+        val provider = ServiceProvider(nodeId = selfId.toString())
+
+        // Three consecutive fast failures trip CrashLoopGuard's backoff window.
+        provider.crashLoopGuard.recordExit(g.name, ranForMillis = 100)
+        provider.crashLoopGuard.recordExit(g.name, ranForMillis = 100)
+        provider.crashLoopGuard.recordExit(g.name, ranForMillis = 100)
+
+        val q = queue(provider = provider, online = listOf(self), groups = listOf(g))
+        q.enqueueRequiredForTest()
+
+        assertTrue(q.queuedIndexes("lobby").isEmpty())
+    }
+
+    @Test
+    fun `removeGroup drops a queued service from both the in-memory queue and the database`() {
+        val self = node(selfId, "node-a")
+        val g = group(minOnline = 1)
+        val provider = ServiceProvider(nodeId = selfId.toString())
+
+        val q = queue(provider = provider, online = listOf(self), groups = listOf(g))
+        q.enqueueRequiredForTest()
+        assertEquals(listOf(1), q.queuedIndexes("lobby"))
+
+        q.removeGroup("lobby")
+
+        assertTrue(q.queuedIndexes("lobby").isEmpty())
+        assertTrue(provider.findAll().none { it.groupName.equals("lobby", ignoreCase = true) })
+    }
+
+    @Test
+    fun `removeGroup is case-insensitive and leaves other groups' queued services untouched`() {
+        val self = node(selfId, "node-a")
+        val lobby = group(name = "lobby", minOnline = 1)
+        val survival = group(name = "survival", minOnline = 1)
+        val provider = ServiceProvider(nodeId = selfId.toString())
+
+        val q = queue(provider = provider, online = listOf(self), groups = listOf(lobby, survival))
+        q.enqueueRequiredForTest()
+        assertEquals(listOf(1), q.queuedIndexes("lobby"))
+        assertEquals(listOf(1), q.queuedIndexes("survival"))
+
+        q.removeGroup("LOBBY")
+
+        assertTrue(q.queuedIndexes("lobby").isEmpty())
+        assertEquals(listOf(1), q.queuedIndexes("survival"))
+    }
+
+    @Test
     fun `next index avoids an index already used by a peer`() {
         // peerAId sorts before selfId here so self ends up at position 1, owning k=0.
         val lowId = UUID.fromString("00000000-0000-0000-0000-000000000000")
