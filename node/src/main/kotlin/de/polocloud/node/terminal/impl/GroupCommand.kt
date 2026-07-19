@@ -15,6 +15,7 @@ import de.polocloud.node.group.TemplateCodec
 import de.polocloud.node.group.template.GroupTemplateService
 import de.polocloud.node.cluster.node.NodeRepository
 import de.polocloud.node.services.ServiceProvider
+import de.polocloud.node.services.cluster.ClusterGroupShutdown
 import de.polocloud.node.services.factory.PlatformService
 import de.polocloud.node.services.queue.GroupNodeEligibility
 import de.polocloud.node.terminal.WizardPrompt
@@ -23,6 +24,7 @@ import de.polocloud.node.terminal.types.NodeArgument
 import de.polocloud.node.terminal.types.PlatformArgument
 import de.polocloud.node.terminal.types.PlatformVersionArgument
 import de.polocloud.proto.NodeState
+import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 
 class GroupCommand(
@@ -36,7 +38,6 @@ class GroupCommand(
 
     init {
         val groupArgument = GroupArgument("name", groupService)
-        val nameArgument = TextArgument("name")
         val memoryArgument = IntArgument("memory")
         val startThresholdArgument = DoubleArgument("startThreshold")
         val maxOnlineArgument = LongArgument("maxOnline")
@@ -45,33 +46,17 @@ class GroupCommand(
         val versionArgument = PlatformVersionArgument("version", platformService, platformArgument)
 
         syntax({
-            val name = it.arg(nameArgument)
-            val memory = it.arg(memoryArgument)
-            val startThreshold = it.arg(startThresholdArgument)
-            val maxOnline = it.arg(maxOnlineArgument)
-            val minOnline = it.arg(minOnlineArgument)
-            val platform = it.arg(platformArgument)
-            val version = it.arg(versionArgument)
-
-            if (groupService.exists(name)) {
-                logger.trInfo("node", "node.command.group.alreadyExists", Pair("name", name));
-                return@syntax
-            }
-
-            groupService.create(name, memory, startThreshold, minOnline, maxOnline, platform.name, version.version)
-            logger.trInfo("node", "node.command.group.created", Pair("name", name))
-        }, "Create a new group", KeywordArgument("create"), nameArgument, memoryArgument, startThresholdArgument, maxOnlineArgument, minOnlineArgument, platformArgument, versionArgument)
-
-        syntax({
             val group = GroupSetupWizard(groupService, platformService, wizardPrompt).run() ?: return@syntax
             logger.trInfo("node", "node.command.group.created", Pair("name", group.name))
         }, "Interactively create a new group", KeywordArgument("setup"))
 
         syntax({
             val group = it.arg(groupArgument)
-            // Stop the group's running services and clear its queue before removing it,
-            // so deleting a group never leaves orphaned processes behind.
-            serviceProvider.shutdownGroup(group.name)
+            // Stop the group's running/queued services across every node — not just this
+            // one — before removing it, so deleting a group never leaves orphaned
+            // processes on peers, nor a stale Service row that would trip the groups
+            // table's foreign-key constraint. See ClusterGroupShutdown.
+            runBlocking { ClusterGroupShutdown.shutdownAcrossCluster(group.name, serviceProvider) }
             groupService.delete(group)
             logger.trInfo("node", "node.command.group.deleted", Pair("name", group.name))
         }, "Delete a group", KeywordArgument("delete"), groupArgument)
@@ -168,7 +153,6 @@ class GroupCommand(
             update(group.copy(templatesJson = TemplateCodec.encode(templates)), "template", "-$name")
         }, "Remove a template from a group", KeywordArgument("edit"), groupArgument, KeywordArgument("template"), KeywordArgument("remove"), templateNameArgument)
 
-        // --- edit: node whitelist -------------------------------------------------------
         val nodeArgument = NodeArgument("node")
 
         syntax({

@@ -19,6 +19,12 @@ import de.polocloud.common.commands.TerminalArgument
  * [label] and [format] are only used to render this step's answer in the "already
  * answered" checklist [Wizard] shows above later questions — [label] defaults to the
  * underlying argument's key, [format] to its plain `toString()`.
+ *
+ * [skip] lets a step opt out based on earlier answers (e.g. a question that only makes
+ * sense for one platform type) — evaluated against the already-answered [InputContext]
+ * right before the step would be asked, so it can only depend on steps that come before it.
+ * A skipped step is never asked and contributes nothing to the built result, so its
+ * argument must be optional in [Wizard.build].
  */
 class WizardStep<T>(
     val question: (InputContext) -> String,
@@ -27,4 +33,5 @@ class WizardStep<T>(
     val label: String = argument.key,
     val format: (T) -> String = { it.toString() },
     val extraValidation: (T, InputContext) -> String? = { _, _ -> null },
+    val skip: (InputContext) -> Boolean = { false },
 )

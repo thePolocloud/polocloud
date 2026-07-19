@@ -101,6 +101,8 @@ class GroupSetupWizard(
             argument = fallbackArgument,
             label = "Fallback",
             format = { if (it) "yes" else "no" },
+            // Fallback is a landing spot proxies send players to, so it doesn't apply to proxy groups themselves.
+            skip = { it.arg(platformArgument).type.equals("PROXY", ignoreCase = true) },
         ),
     )
 
@@ -116,7 +118,7 @@ class GroupSetupWizard(
         )
 
         val static = context.arg(staticArgument)
-        val fallback = context.arg(fallbackArgument)
+        val fallback = context.contains(fallbackArgument) && context.arg(fallbackArgument)
         if (!static && !fallback) {
             return group
         }

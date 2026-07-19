@@ -34,6 +34,10 @@ abstract class Wizard<T>(private val prompt: WizardPrompt, private val title: St
         try {
             while (index < steps.size) {
                 val step = steps[index]
+                if (step.skip(context)) {
+                    index++
+                    continue
+                }
                 val raw = ask(steps, index, answeredIndexes, error)
                 error = null
 
