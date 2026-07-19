@@ -12,6 +12,7 @@ import de.polocloud.node.core.NodeRuntime
 import de.polocloud.node.core.configuration.NodeConfigurations
 import de.polocloud.node.core.context.NodeRuntimeContext
 import de.polocloud.node.event.ClusterEventRelay
+import de.polocloud.updater.UpdateChecker
 import org.apache.logging.log4j.LogManager
 import org.slf4j.LoggerFactory
 
@@ -76,6 +77,9 @@ class NodeLifecycle(
             "version" to PolocloudVersion.CURRENT.toDisplayString(),
             "time" to StartupTimer.formatted
         )
+
+        // Best-effort, never blocks boot — see UpdateChecker.
+        UpdateChecker.checkOnBootAsync()
 
         context.cli.readingThread.start()
     }

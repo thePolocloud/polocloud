@@ -22,7 +22,8 @@ public final class NodeRuntimeProcess extends AbstractRuntimeProcess {
                 "common",
                 "proto",
                 "shared",
-                "service-sdk"
+                "service-sdk",
+                "updater"
         );
     }
 }

@@ -50,6 +50,7 @@ dependencies {
     compileOnly(projects.common)
     implementation(projects.proto)
     implementation(projects.shared)
+    implementation(projects.updater)
 
     // testing
     testImplementation(projects.common)

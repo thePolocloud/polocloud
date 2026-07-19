@@ -27,6 +27,66 @@ allprojects {
             url = uri("https://central.sonatype.com/repository/maven-snapshots")
         }
     }
+
+    // The polocloud-gradle-plugin's GenerateDependencyIndexTask resolves each
+    // polocloudRuntime dependency's transitive tree independently and appends every
+    // result to dependencies.index without deduplicating — so a library pulled in
+    // transitively by two different polocloudRuntime entries (e.g. grpc-api via both
+    // the grpc and tls bundles) ends up listed twice, sometimes at two different
+    // resolved versions (e.g. kotlin-stdlib, log4j-core, guava). DependencyRegistry's
+    // download step only dedupes by the full group:artifact:version key, so two
+    // different versions of the same library both get downloaded and registered onto
+    // the runtime classpath. Post-process the generated index here, keeping only the
+    // highest version per group:artifact — same "newest wins" resolution Gradle
+    // itself would apply to a normal dependency graph.
+    plugins.withId("de.polocloud.gradle.plugin") {
+        tasks.named("generateDependencyIndex").configure {
+            doLast {
+                dedupeDependencyIndex(outputs.files.singleFile)
+            }
+        }
+    }
+}
+
+/** Rewrites [file] (`group;artifact;version;url;checksum` lines) keeping the highest version per group:artifact. */
+fun dedupeDependencyIndex(file: java.io.File) {
+    if (!file.exists()) return
+
+    val bestByCoordinate = LinkedHashMap<String, List<String>>()
+    file.readLines()
+        .filter { it.isNotBlank() }
+        .forEach { line ->
+            val parts = line.split(";")
+            val coordinate = "${parts[0]};${parts[1]}"
+            val existing = bestByCoordinate[coordinate]
+            if (existing == null || compareVersions(parts[2], existing[2]) > 0) {
+                bestByCoordinate[coordinate] = parts
+            }
+        }
+
+    file.writeText(bestByCoordinate.values.joinToString("\n") { it.joinToString(";") } + "\n")
+}
+
+/** Compares dotted/hyphenated version strings numerically segment by segment, falling back to lexical comparison for non-numeric segments. */
+fun compareVersions(a: String, b: String): Int {
+    val partsA = a.split(Regex("[.\\-+]"))
+    val partsB = b.split(Regex("[.\\-+]"))
+    val length = maxOf(partsA.size, partsB.size)
+
+    for (i in 0 until length) {
+        val segmentA = partsA.getOrNull(i) ?: ""
+        val segmentB = partsB.getOrNull(i) ?: ""
+        val numericA = segmentA.toLongOrNull()
+        val numericB = segmentB.toLongOrNull()
+
+        val comparison = if (numericA != null && numericB != null) {
+            numericA.compareTo(numericB)
+        } else {
+            segmentA.compareTo(segmentB)
+        }
+        if (comparison != 0) return comparison
+    }
+    return 0
 }
 
 /**
