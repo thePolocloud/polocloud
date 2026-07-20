@@ -10,8 +10,8 @@ class UpdateCheckerTest {
     private fun version(major: Int, minor: Int, patch: Int) =
         PolocloudVersion(major, minor, patch, PolocloudReleaseChannel.RELEASE, "1")
 
-    private fun release(tag: String, draft: Boolean = false) =
-        GithubRelease(tagName = tag, htmlUrl = "https://example.com/$tag", draft = draft)
+    private fun release(tag: String, draft: Boolean = false, prerelease: Boolean = false) =
+        GithubRelease(tagName = tag, htmlUrl = "https://example.com/$tag", draft = draft, prerelease = prerelease)
 
     @Test
     fun `reports a newer version when the latest release tag is ahead`() {
@@ -40,6 +40,17 @@ class UpdateCheckerTest {
         val message = UpdateChecker.evaluate(
             version(3, 0, 1),
             listOf(release("v9.9.9", draft = true), release("v3.0.2")),
+        )
+
+        assertTrue(message.contains("3.0.2"))
+        assertTrue(!message.contains("9.9.9"))
+    }
+
+    @Test
+    fun `skips prerelease releases and falls through to the newest published one`() {
+        val message = UpdateChecker.evaluate(
+            version(3, 0, 1),
+            listOf(release("v9.9.9", prerelease = true), release("v3.0.2")),
         )
 
         assertTrue(message.contains("3.0.2"))

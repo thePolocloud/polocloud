@@ -37,22 +37,43 @@ object UpdateChecker {
      * GitHub's API returns them.
      */
     internal fun evaluate(currentVersion: PolocloudVersion, releases: List<GithubRelease>): String {
-        val latest = releases.firstOrNull { !it.draft }
+        val latestRelease = findLatestPublishedRelease(releases)
             ?: return "No GitHub releases found."
 
-        val latestVersion = runCatching {
-            PolocloudVersionParser.parse(latest.tagName.removePrefix("v").removePrefix("V"))
-        }.getOrNull() ?: return "Could not parse release tag '${latest.tagName}' as a PoloCloud version."
+        val latestVersion = parseVersion(latestRelease.tagName)
+            ?: return "Could not parse release tag '${latestRelease.tagName}' as a PoloCloud version."
 
-        // isSameRelease first: a running build differs from its own released tag in
-        // channel/build metadata (e.g. channel=RELEASE, build=<CI run number> vs. the
-        // locally-built default build="local"), which the full isNewerThan ordering does
-        // not ignore — only major/minor/patch actually matter for "is this up to date".
-        return if (!latestVersion.isSameRelease(currentVersion) && latestVersion.isNewerThan(currentVersion)) {
-            "A new PoloCloud version is available: ${latestVersion.toDisplayString()} " +
-                "(currently running ${currentVersion.toDisplayString()}). Download: ${latest.htmlUrl}"
+        return if (isUpdateAvailable(currentVersion, latestVersion)) {
+            formatUpdateAvailableMessage(currentVersion, latestVersion, latestRelease)
         } else {
-            "PoloCloud is up to date (${currentVersion.toDisplayString()})."
+            formatUpToDateMessage(currentVersion)
         }
     }
+
+    /** Newest non-draft, non-prerelease entry — [releases] is expected newest-first, as GitHub's API returns them. */
+    private fun findLatestPublishedRelease(releases: List<GithubRelease>): GithubRelease? =
+        releases.firstOrNull { !it.draft && !it.prerelease }
+
+    /** Parses a release tag (e.g. `v3.1.0`) into a [PolocloudVersion], or null if it isn't one. */
+    private fun parseVersion(tagName: String): PolocloudVersion? =
+        runCatching { PolocloudVersionParser.parse(tagName.removePrefix("v").removePrefix("V")) }.getOrNull()
+
+    /**
+     * isSameRelease first: a running build differs from its own released tag in
+     * channel/build metadata (e.g. channel=RELEASE, build=<CI run number> vs. the
+     * locally-built default build="local"), which the full isNewerThan ordering does
+     * not ignore — only major/minor/patch actually matter for "is this up to date".
+     */
+    private fun isUpdateAvailable(currentVersion: PolocloudVersion, latestVersion: PolocloudVersion): Boolean =
+        !latestVersion.isSameRelease(currentVersion) && latestVersion.isNewerThan(currentVersion)
+
+    private fun formatUpdateAvailableMessage(
+        currentVersion: PolocloudVersion,
+        latestVersion: PolocloudVersion,
+        latestRelease: GithubRelease,
+    ): String = "A new PoloCloud version is available: ${latestVersion.toDisplayString()} " +
+        "(currently running ${currentVersion.toDisplayString()}). Download: ${latestRelease.htmlUrl}"
+
+    private fun formatUpToDateMessage(currentVersion: PolocloudVersion): String =
+        "PoloCloud is up to date (${currentVersion.toDisplayString()})."
 }
