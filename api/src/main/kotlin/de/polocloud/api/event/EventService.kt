@@ -5,6 +5,7 @@ import de.polocloud.proto.EventProviderGrpcKt
 import de.polocloud.proto.EventSubscribeRequest
 import de.polocloud.shared.event.Event
 import de.polocloud.shared.event.EventCodec
+import de.polocloud.shared.event.EventRegistry
 import io.grpc.ManagedChannel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -48,8 +49,13 @@ class EventService internal constructor(
 
     /**
      * Registers [listener] for [type] and opens the cluster stream for it on first use.
+     *
+     * Also registers [type] in [EventRegistry] so events of this type can be decoded here
+     * even if this process never [call]s one itself — e.g. a plugin that only listens for a
+     * custom event another service publishes.
      */
     fun <T : Event> subscribe(type: Class<T>, listener: Consumer<T>) {
+        EventRegistry.register(type)
         listeners.computeIfAbsent(type) { CopyOnWriteArrayList() }.add(listener)
         openStream(EventCodec.nameOf(type))
     }
