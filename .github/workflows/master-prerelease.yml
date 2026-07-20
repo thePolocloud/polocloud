@@ -29,30 +29,33 @@ jobs:
       - name: Determine next version (3.0.x+1)
         id: version
         run: |
-          # Newest existing tag of the form v3.0.<patch>
-          LAST_TAG=$(git tag -l 'v3.0.*' --sort=-v:refname | head -n1)
+          # Newest existing tag of the form v3.0.<patch>-dev.<build>. Patch is what we
+          # increment; build is this workflow's own run number, so it plays no part in
+          # ordering tags here — only the patch does.
+          LAST_TAG=$(git tag -l 'v3.0.*-dev.*' --sort=-v:refname | head -n1)
 
           if [ -z "$LAST_TAG" ]; then
             NEXT_PATCH=1
-            echo "No previous v3.0.* tag found, starting at 3.0.1"
+            echo "No previous v3.0.*-dev.* tag found, starting at 3.0.1"
           else
-            LAST_PATCH=${LAST_TAG##*.}
+            LAST_PATCH=$(echo "$LAST_TAG" | sed -E 's/^v3\.0\.([0-9]+)-dev\.[0-9]+$/\1/')
             NEXT_PATCH=$((LAST_PATCH + 1))
             echo "Last tag: $LAST_TAG -> next patch: $NEXT_PATCH"
           fi
 
           VERSION="3.0.$NEXT_PATCH"
+          TAG="v$VERSION-dev.${{ github.run_number }}"
           echo "version=$VERSION"        >> $GITHUB_OUTPUT
           echo "patch=$NEXT_PATCH"       >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION"           >> $GITHUB_OUTPUT
+          echo "tag=$TAG"                >> $GITHUB_OUTPUT
           echo "last_tag=$LAST_TAG"      >> $GITHUB_OUTPUT
 
-      - name: Build (RELEASE)
+      - name: Build (DEV)
         run: ./gradlew build -x test
           -Ppolocloud.version.major=3
           -Ppolocloud.version.minor=0
           -Ppolocloud.version.patch=${{ steps.version.outputs.patch }}
-          -Ppolocloud.version.channel=RELEASE
+          -Ppolocloud.version.channel=DEV
           -Ppolocloud.version.build=${{ github.run_number }}
 
       - name: Generate changelog
@@ -87,7 +90,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: PoloCloud ${{ steps.version.outputs.version }}
+          name: PoloCloud ${{ steps.version.outputs.version }} (dev build ${{ github.run_number }})
           body_path: CHANGELOG.md
           prerelease: true
           draft: false

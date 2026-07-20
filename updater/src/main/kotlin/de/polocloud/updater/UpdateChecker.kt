@@ -10,6 +10,12 @@ import org.slf4j.LoggerFactory
  * logs the result. Intentionally self-contained: a consumer (e.g. the node) only calls
  * [checkOnBootAsync] once after boot — the HTTP call, JSON parsing, version comparison and
  * logging all live here, so nothing else needs to know how the check works.
+ *
+ * Stability comes exclusively from the tag itself (parsed into a [PolocloudVersion] and its
+ * [de.polocloud.common.version.PolocloudReleaseChannel]) — GitHub's own `draft`/`prerelease`
+ * flags are metadata about how a release was published, not about our channel model, and are
+ * not reliable stand-ins for it (e.g. every automated master build is published with GitHub's
+ * `prerelease` flag set, regardless of its actual channel).
  */
 object UpdateChecker {
 
@@ -17,7 +23,7 @@ object UpdateChecker {
 
     /**
      * Runs the check on a daemon background thread so it never delays boot. Never throws:
-     * any failure (offline, GitHub unreachable, rate-limited, unparsable tag, ...) is
+     * any failure (offline, GitHub unreachable, rate-limited, no usable release, ...) is
      * logged at DEBUG and otherwise swallowed — an update check is a nice-to-have, not
      * something that should ever affect node startup.
      */
@@ -33,28 +39,40 @@ object UpdateChecker {
 
     /**
      * Pure evaluation step, split out from [checkOnBootAsync] so the version-comparison
-     * logic is testable without a network call. [releases] is expected newest-first, as
-     * GitHub's API returns them.
+     * logic is testable without a network call.
      */
     internal fun evaluate(currentVersion: PolocloudVersion, releases: List<GithubRelease>): String {
-        val latestRelease = findLatestPublishedRelease(releases)
-            ?: return "No GitHub releases found."
+        if (releases.isEmpty()) return "No GitHub releases found."
 
-        val latestVersion = parseVersion(latestRelease.tagName)
-            ?: return "Could not parse release tag '${latestRelease.tagName}' as a PoloCloud version."
+        val latest = findLatestEligibleVersion(currentVersion, releases)
+            ?: return "No usable PoloCloud release found among ${releases.size} GitHub release(s)."
 
-        return if (isUpdateAvailable(currentVersion, latestVersion)) {
-            formatUpdateAvailableMessage(currentVersion, latestVersion, latestRelease)
+        return if (isUpdateAvailable(currentVersion, latest.version)) {
+            formatUpdateAvailableMessage(currentVersion, latest.version, latest.release)
         } else {
             formatUpToDateMessage(currentVersion)
         }
     }
 
-    /** Newest non-draft, non-prerelease entry — [releases] is expected newest-first, as GitHub's API returns them. */
-    private fun findLatestPublishedRelease(releases: List<GithubRelease>): GithubRelease? =
-        releases.firstOrNull { !it.draft && !it.prerelease }
+    private class EligibleRelease(val version: PolocloudVersion, val release: GithubRelease)
 
-    /** Parses a release tag (e.g. `v3.1.0`) into a [PolocloudVersion], or null if it isn't one. */
+    /**
+     * The highest parsed version among non-draft releases whose channel is at least as
+     * stable as [currentVersion]'s — e.g. a node running [RELEASE][de.polocloud.common.version.PolocloudReleaseChannel.RELEASE]
+     * is never offered a [DEV][de.polocloud.common.version.PolocloudReleaseChannel.DEV]
+     * rolling build, but a node already running a pre-release channel is offered updates
+     * within that channel or more stable ones. Unparsable tags and drafts are skipped
+     * rather than aborting the whole check. Doesn't assume any particular list order —
+     * every candidate is parsed and compared, not just the first one.
+     */
+    private fun findLatestEligibleVersion(currentVersion: PolocloudVersion, releases: List<GithubRelease>): EligibleRelease? =
+        releases.asSequence()
+            .filterNot { it.draft }
+            .mapNotNull { release -> parseVersion(release.tagName)?.let { EligibleRelease(it, release) } }
+            .filter { it.version.channel.priority >= currentVersion.channel.priority }
+            .maxByOrNull { it.version }
+
+    /** Parses a release tag (e.g. `v3.1.0` or `v3.0.5-dev.42`) into a [PolocloudVersion], or null if it isn't one. */
     private fun parseVersion(tagName: String): PolocloudVersion? =
         runCatching { PolocloudVersionParser.parse(tagName.removePrefix("v").removePrefix("V")) }.getOrNull()
 
