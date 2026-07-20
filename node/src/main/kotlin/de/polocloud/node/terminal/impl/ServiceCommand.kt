@@ -1,4 +1,4 @@
-package de.polocloud.node.terminal.impl
+﻿package de.polocloud.node.terminal.impl
 
 import de.polocloud.common.Address
 import de.polocloud.common.commands.Command
@@ -29,6 +29,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jline.reader.UserInterruptException
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
 
@@ -98,28 +102,60 @@ class ServiceCommand(
         val local = serviceProvider.findLocal(service.name())
         val usage = resourceUsage(service, local)
         logger.info("Service ${service.name()}:")
-        logger.info("  id: ${service.id}")
-        logger.info("  group: ${service.groupName}")
-        logger.info("  state: ${service.state}")
-        logger.info("  node: ${resolveNodeLabel(service.nodeId)}")
-        logger.info("  host: ${service.hostname}:${service.port}")
-        logger.info("  pid: ${local?.process?.pid() ?: usage?.pid?.takeIf { it >= 0 } ?: "-"}")
-        logger.info("  cpu: ${usage?.let { "${formatDouble(it.cpuUsage)}%" } ?: "-"}")
-        logger.info("  memory: ${usage?.let { "${formatDouble(it.usedMemory)}MB" } ?: "-"}")
+        logger.info("  id: ${white(service.id.toString())}")
+        logger.info("  group: ${white(service.groupName)}")
+        logger.info("  state: ${white(service.state.toString())}")
+        logger.info("  node: ${white(resolveNodeLabel(service.nodeId))}")
+        logger.info("  host: ${white("${service.hostname}:${service.port}")}")
+        logger.info("  pid: ${white((local?.process?.pid() ?: usage?.pid?.takeIf { it >= 0 } ?: "-").toString())}")
+        logger.info("  cpu: ${white(usage?.let { "${formatDouble(it.cpuUsage)}%" } ?: "-")}")
+        logger.info("  memory: ${white(usage?.let { "${formatDouble(it.usedMemory)}MB" } ?: "-")}")
         // Only a co-located LocalService carries a live ping result; a service known only
         // from the DB (e.g. running on another node) has no player count to report here.
-        logger.info("  players: ${local?.let { "${it.onlinePlayers}/${it.maxPlayers}" } ?: "-"}")
-        logger.info("  motd: ${local?.motd?.takeIf { it.isNotEmpty() } ?: "-"}")
+        logger.info("  players: ${white(local?.let { "${it.onlinePlayers}/${it.maxPlayers}" } ?: "-")}")
+        logger.info("  motd: ${white(local?.motd?.takeIf { it.isNotEmpty() } ?: "-")}")
+        logger.info("  static: ${white(local?.let { if (it.static) "yes" else "no" } ?: "-")}")
+        logger.info("  work dir: ${white(local?.workDir?.toString() ?: "-")}")
+        // startedAt/lastPlayerPollAt only live on a co-located LocalService, same as pid/players above.
+        logger.info("  running since: ${local?.startedAt?.takeIf { it > 0 }?.let { timestamp(it) { elapsed -> "running for $elapsed" } } ?: "-"}")
+        logger.info("  last communicate: ${local?.lastPlayerPollAt?.takeIf { it > 0 }?.let { timestamp(it) { elapsed -> "$elapsed ago" } } ?: "-"}")
         // Templates actually copied into this instance's work directory on start — not
         // re-read from the group, so it stays accurate even if the group's list changed
         // (or the service isn't running here at all) since this service started.
-        logger.info("  templates: ${local?.templates?.takeIf { it.isNotEmpty() }?.joinToString() ?: "-"}")
+        logger.info("  templates: ${white(local?.templates?.takeIf { it.isNotEmpty() }?.joinToString() ?: "-")}")
         val properties = local?.properties.orEmpty()
         if (properties.isEmpty()) {
             logger.info("  properties: (none)")
         } else {
             logger.info("  properties:")
-            properties.forEach { (key, value) -> logger.info("    - $key=$value") }
+            properties.forEach { (key, value) -> logger.info("    - $key=${white(value)}") }
+        }
+    }
+
+    /** Wraps [text] in white (`&f`) so command-output values stand out from their labels. */
+    private fun white(text: String): String = "&f$text&r"
+
+    /**
+     * Wraps [text] in a dim italic style (raw ANSI italic + `&8` dark gray) used for
+     * timestamps, so they read as secondary/meta information rather than a normal value.
+     */
+    private fun dim(text: String): String = "[3m&8$text&r"
+
+    private val timestampFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
+
+    /** Formats [epochMillis] as an absolute timestamp plus a human-readable elapsed duration, dimmed. */
+    private fun timestamp(epochMillis: Long, elapsedText: (String) -> String): String {
+        val formatted = timestampFormatter.format(Instant.ofEpochMilli(epochMillis))
+        val elapsed = formatElapsed(System.currentTimeMillis() - epochMillis)
+        return dim("$formatted (${elapsedText(elapsed)})")
+    }
+
+    private fun formatElapsed(millis: Long): String {
+        val duration = Duration.ofMillis(millis.coerceAtLeast(0))
+        return when {
+            duration.toHours() > 0 -> "${duration.toHours()}h ${duration.toMinutesPart()}m"
+            duration.toMinutes() > 0 -> "${duration.toMinutes()}m ${duration.toSecondsPart()}s"
+            else -> "${duration.toSeconds()}s"
         }
     }
 
