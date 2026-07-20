@@ -27,6 +27,13 @@ data class Service(
     val host: String,
     val pid: Long,
     /**
+     * CPU usage percent (0-100) and resident memory (MB) of this service's process, as
+     * last sampled by the owning node. Both `0.0` until the first sample. Read-only: only
+     * the node's resource sampler updates these.
+     */
+    val cpuUsage: Double = 0.0,
+    val usedMemory: Double = 0.0,
+    /**
      * Players currently connected / configured player slots, as last reported by the
      * node's Minecraft Server List Ping. `0` until the first successful ping. Read-only:
      * only the node's ping loop updates these, there is no way to set them from the API.

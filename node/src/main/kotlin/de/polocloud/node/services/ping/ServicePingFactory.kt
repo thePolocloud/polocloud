@@ -4,6 +4,7 @@ import de.polocloud.node.event.ClusterEventService
 import de.polocloud.node.services.LocalService
 import de.polocloud.node.services.ServiceEventMapper
 import de.polocloud.node.services.ServiceProvider
+import de.polocloud.node.services.ServiceResourceSampler
 import de.polocloud.shared.service.ServiceState
 import de.polocloud.shared.event.server.PlayerCountChangedEvent
 import de.polocloud.shared.event.server.ServerStartedEvent
@@ -17,6 +18,7 @@ class ServicePingFactory(private val serviceProvider: ServiceProvider) {
 
     private val logger = LoggerFactory.getLogger(ServicePingFactory::class.java)
     private lateinit var thread: Thread
+    private val resourceSampler = ServiceResourceSampler()
 
     fun run() {
         thread = Thread({
@@ -44,6 +46,9 @@ class ServicePingFactory(private val serviceProvider: ServiceProvider) {
     private fun tick() {
         val now = System.currentTimeMillis()
         val services = serviceProvider.localServices.filter { it.process?.isAlive == true }
+        // Drop retained CPU-sampling snapshots for anything that isn't alive anymore, so a
+        // stopped service's PID doesn't linger in the sampler for the rest of the node's uptime.
+        resourceSampler.retainOnly(services.mapNotNull { it.process?.pid() }.toSet())
         if (services.isEmpty()) return
 
         runBlocking {
@@ -58,12 +63,20 @@ class ServicePingFactory(private val serviceProvider: ServiceProvider) {
         // only be enumerated while it's still alive — if we waited until it crashed
         // to look, it would already be too late. See LocalService.lastKnownDescendants.
         service.sampleDescendants()
+        sampleResourceUsage(service)
         if (service.port <= 0) return
 
         when {
             isAwaitingOnline(service) -> pingStarting(service)
             service.state == ServiceState.RUNNING -> pingPlayerCount(service, now)
         }
+    }
+
+    private fun sampleResourceUsage(service: LocalService) {
+        val pid = service.process?.pid() ?: return
+        val usage = resourceSampler.sample(pid) ?: return
+        service.cpuUsage = usage.cpuUsage
+        service.usedMemory = usage.usedMemory
     }
 
     // Pinged over service.hostname (== general.serviceHostname), not a hardcoded loopback:

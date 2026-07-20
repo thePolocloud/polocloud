@@ -88,6 +88,16 @@ class LocalService(private val service: Service) : Service(
     var lastPlayerPollAt: Long = 0
 
     /**
+     * CPU usage percent (0-100) and resident memory (MB) of this service's OS process, as
+     * last sampled by [de.polocloud.node.services.ping.ServicePingFactory] via
+     * [ServiceResourceSampler]. Both `0.0` until the first sample. Only ever written by
+     * that sampling loop — nothing else in the node should assign these, same as
+     * [onlinePlayers]/[motd].
+     */
+    var cpuUsage: Double = 0.0
+    var usedMemory: Double = 0.0
+
+    /**
      * Names of the templates applied to this service's work directory on start, in the
      * order they were copied (see [de.polocloud.node.group.template.GroupTemplateService]).
      * Snapshotted from the owning group at start time — not re-read from the group

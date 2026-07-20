@@ -15,6 +15,7 @@ import de.polocloud.node.terminal.CliTerminal
 import de.polocloud.node.terminal.types.ServiceArgument
 import de.polocloud.node.terminal.types.TemplateArgument
 import de.polocloud.proto.ExecuteServiceCommandRequest
+import de.polocloud.proto.GetServiceResourceUsageRequest
 import de.polocloud.proto.ServiceManagerGrpcKt
 import de.polocloud.proto.StopServiceRequest
 import de.polocloud.proto.StreamServiceLogsRequest
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jline.reader.UserInterruptException
 import org.slf4j.LoggerFactory
+import java.util.Locale
 import java.util.UUID
 
 /**
@@ -36,9 +38,10 @@ import java.util.UUID
  * Runs in-process, so it talks to the [ServiceProvider] directly (no gRPC) for a service
  * running here: `list`, `<name>` (info), `<name> shutdown`, `<name> logs` (live tail),
  * `<name> execute <command>` and `<name> copy <templateName>` (re-apply a template onto
- * the running work directory). `shutdown` and `logs` fall back to a [NodeGrpcClient] call
- * to the service's owning node (see [Service.nodeId]) when it isn't running here, so both
- * work cluster-wide regardless of which node's terminal the command is typed in.
+ * the running work directory). `shutdown`, `logs` and the CPU/memory usage shown by `<name>`
+ * fall back to a [NodeGrpcClient] call to the service's owning node (see [Service.nodeId])
+ * when it isn't running here, so all three work cluster-wide regardless of which node's
+ * terminal the command is typed in.
  */
 class ServiceCommand(
     private val serviceProvider: ServiceProvider,
@@ -93,13 +96,16 @@ class ServiceCommand(
 
     private fun info(service: Service) {
         val local = serviceProvider.findLocal(service.name())
+        val usage = resourceUsage(service, local)
         logger.info("Service ${service.name()}:")
         logger.info("  id: ${service.id}")
         logger.info("  group: ${service.groupName}")
         logger.info("  state: ${service.state}")
         logger.info("  node: ${resolveNodeLabel(service.nodeId)}")
         logger.info("  host: ${service.hostname}:${service.port}")
-        logger.info("  pid: ${local?.process?.pid() ?: "-"}")
+        logger.info("  pid: ${local?.process?.pid() ?: usage?.pid?.takeIf { it >= 0 } ?: "-"}")
+        logger.info("  cpu: ${usage?.let { "${formatDouble(it.cpuUsage)}%" } ?: "-"}")
+        logger.info("  memory: ${usage?.let { "${formatDouble(it.usedMemory)}MB" } ?: "-"}")
         // Only a co-located LocalService carries a live ping result; a service known only
         // from the DB (e.g. running on another node) has no player count to report here.
         logger.info("  players: ${local?.let { "${it.onlinePlayers}/${it.maxPlayers}" } ?: "-"}")
@@ -116,6 +122,36 @@ class ServiceCommand(
             properties.forEach { (key, value) -> logger.info("    - $key=$value") }
         }
     }
+
+    private data class ResourceUsageView(val cpuUsage: Double, val usedMemory: Double, val pid: Long)
+
+    /**
+     * CPU/memory usage for [service], regardless of which node it's running on: sampled
+     * directly from [local] if it's co-located, otherwise fetched from the service's owning
+     * node over gRPC (mirrors [shutdown]/[execute]). Null if it isn't running anywhere this
+     * node can determine, or the owning node couldn't be reached.
+     */
+    private fun resourceUsage(service: Service, local: LocalService?): ResourceUsageView? {
+        if (local != null) {
+            return ResourceUsageView(local.cpuUsage, local.usedMemory, local.process?.pid() ?: -1L)
+        }
+
+        val node = resolveOwningNode(service) ?: return null
+        val client = NodeGrpcClient()
+        val result = runCatching {
+            client.connect(Address(node.hostname, node.port))
+            val stub = ServiceManagerGrpcKt.ServiceManagerCoroutineStub(client.channel())
+            val request = GetServiceResourceUsageRequest.newBuilder().setServiceName(service.name()).build()
+            val response = runBlocking { stub.getServiceResourceUsage(request) }
+            response.takeIf { it.found }?.let { ResourceUsageView(it.cpuUsage, it.usedMemory, it.pid) }
+        }.getOrNull()
+        client.disconnect()
+        return result
+    }
+
+    // Locale.ROOT: a German (or other comma-decimal) system locale would otherwise turn
+    // "12.3" into "12,3", which reads as a typo/thousands-separator in the CLI output.
+    private fun formatDouble(value: Double): String = String.format(Locale.ROOT, "%.1f", value)
 
     /** Resolves a service's owning `nodeId` to that node's human-readable name (e.g. `node-0`),
      *  falling back to the raw id if the node is unknown (e.g. it left the cluster) or the id

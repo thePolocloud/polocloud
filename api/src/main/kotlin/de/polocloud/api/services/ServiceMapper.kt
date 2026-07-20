@@ -18,6 +18,8 @@ object ServiceMapper {
         port = data.port,
         host = data.host,
         pid = data.pid,
+        cpuUsage = data.cpuUsage,
+        usedMemory = data.usedMemory,
         onlinePlayers = data.onlinePlayers,
         maxPlayers = data.maxPlayers,
         motd = data.motd,

@@ -4,9 +4,12 @@ import de.polocloud.runner.PolocloudParameters;
 import de.polocloud.runner.classloader.PolocloudClassLoader;
 import de.polocloud.runner.expender.ExpenderRuntimeCache;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,12 +42,12 @@ public abstract class AbstractRuntimeProcess implements RuntimeProcess {
         return Collections.emptyList();
     }
 
-    private void prepareRuntimeEnvironment() throws Exception {
+    private void prepareRuntimeEnvironment() throws IOException, URISyntaxException {
         ExpenderRuntimeCache.migrateCacheFiles();
         ensureBootstrapLibrariesPresent();
     }
 
-    private PolocloudClassLoader createClassLoader() throws Exception {
+    private PolocloudClassLoader createClassLoader() throws MalformedURLException {
         List<URL> urls = new ArrayList<>();
 
         for (Path path : getClasspath()) {
@@ -73,7 +76,7 @@ public abstract class AbstractRuntimeProcess implements RuntimeProcess {
         return elements;
     }
 
-    private void invokeMain(ClassLoader classLoader) throws Exception {
+    private void invokeMain(ClassLoader classLoader) throws ReflectiveOperationException, InterruptedException {
         String mainClassName = resolveMainClassName();
 
         // attach right boot file name
@@ -106,7 +109,7 @@ public abstract class AbstractRuntimeProcess implements RuntimeProcess {
         ).mainClass();
     }
 
-    private void ensureBootstrapLibrariesPresent() throws Exception {
+    private void ensureBootstrapLibrariesPresent() throws IOException, URISyntaxException {
         ensureJar(PolocloudParameters.bootKotlin(),        PolocloudParameters.kotlinDownloadUrl());
         ensureJar(PolocloudParameters.bootLog4jApi(),      PolocloudParameters.log4jApiDownloadUrl());
         ensureJar(PolocloudParameters.bootLog4jCore(),     PolocloudParameters.log4jCoreDownloadUrl());
@@ -114,7 +117,7 @@ public abstract class AbstractRuntimeProcess implements RuntimeProcess {
         ensureJar(PolocloudParameters.bootSlf4jApi(),      PolocloudParameters.slf4jApiDownloadUrl());
     }
 
-    private void ensureJar(Path target, String downloadUrl) throws Exception {
+    private void ensureJar(Path target, String downloadUrl) throws IOException, URISyntaxException {
         if (Files.exists(target)) {
             return;
         }

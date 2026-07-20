@@ -20,5 +20,7 @@ object ServiceProtoMapper {
         .setOnlinePlayers(service.onlinePlayers)
         .setMaxPlayers(service.maxPlayers)
         .setMotd(service.motd)
+        .setCpuUsage(service.cpuUsage)
+        .setUsedMemory(service.usedMemory)
         .build()
 }

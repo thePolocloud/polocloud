@@ -25,6 +25,10 @@ service ServiceManager {
   // or Service rows that would otherwise trip the groups table's foreign-key constraint —
   // on other nodes.
   rpc StopGroupServices (StopGroupServicesRequest) returns (StopGroupServicesResponse);
+  // Lets a node ask a peer for a service's live CPU/memory usage, so the CLI's
+  // `service <name>` info view works regardless of which node's terminal session
+  // issued it — mirrors StopService.
+  rpc GetServiceResourceUsage (GetServiceResourceUsageRequest) returns (GetServiceResourceUsageResponse);
 }
 
 message StopServiceRequest {
@@ -64,6 +68,22 @@ message StopGroupServicesRequest {
 
 message StopGroupServicesResponse {
   int32 stopped_count = 1;
+}
+
+message GetServiceResourceUsageRequest {
+  string service_name = 1;
+}
+
+message GetServiceResourceUsageResponse {
+  bool found = 1;
+  // Set when found is false (e.g. the service is not actually running on the node
+  // that received the request).
+  string message = 2;
+  // Percent, 0-100, as last sampled by the node's resource sampler.
+  double cpu_usage = 3;
+  // Resident memory in MB, as last sampled by the node's resource sampler.
+  double used_memory = 4;
+  int64 pid = 5;
 }
 
 // API-facing service surface used by the standalone Polocloud API (plugins/services).
@@ -112,6 +132,12 @@ message ServiceData {
   // MOTD text from the last successful SLP ping. Empty until the first successful
   // ping. Read-only: only the node's ping loop updates this.
   string motd = 11;
+  // CPU usage percent (0-100), as last sampled by the node's resource sampler. 0
+  // until the first sample. Read-only: only the sampler updates this.
+  double cpu_usage = 12;
+  // Resident memory in MB, as last sampled by the node's resource sampler. 0 until
+  // the first sample. Read-only: only the sampler updates this.
+  double used_memory = 13;
 }
 
 message ListServicesRequest {

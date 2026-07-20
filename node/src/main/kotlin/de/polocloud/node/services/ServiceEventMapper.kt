@@ -21,6 +21,8 @@ object ServiceEventMapper {
         port = service.port,
         host = service.hostname,
         pid = service.process?.pid() ?: -1L,
+        cpuUsage = service.cpuUsage,
+        usedMemory = service.usedMemory,
         onlinePlayers = service.onlinePlayers,
         maxPlayers = service.maxPlayers,
         motd = service.motd,

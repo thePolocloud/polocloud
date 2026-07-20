@@ -44,6 +44,27 @@ class ServiceMappersTest {
     }
 
     @Test
+    fun `resource usage defaults to zero until a sample has landed`() {
+        val service = local()
+        assertEquals(0.0, ServiceProtoMapper.toProto(service).cpuUsage)
+        assertEquals(0.0, ServiceProtoMapper.toProto(service).usedMemory)
+    }
+
+    @Test
+    fun `mappers carry resource usage sampled by the ping loop`() {
+        val service = local()
+        service.cpuUsage = 42.5
+        service.usedMemory = 512.0
+
+        assertEquals(42.5, ServiceProtoMapper.toProto(service).cpuUsage)
+        assertEquals(512.0, ServiceProtoMapper.toProto(service).usedMemory)
+
+        val shared = ServiceEventMapper.toShared(service)
+        assertEquals(42.5, shared.cpuUsage)
+        assertEquals(512.0, shared.usedMemory)
+    }
+
+    @Test
     fun `mappers carry the motd set by the ping loop`() {
         val service = local()
         service.motd = "A Minecraft Server"
