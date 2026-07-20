@@ -5,6 +5,7 @@ import de.polocloud.common.commands.type.KeywordArgument
 import de.polocloud.common.commands.type.TextArgument
 import de.polocloud.node.group.GroupService
 import de.polocloud.node.group.template.GroupTemplateService
+import de.polocloud.node.terminal.CommandOutput.white
 import de.polocloud.node.terminal.types.TemplateArgument
 import org.slf4j.LoggerFactory
 
@@ -60,7 +61,7 @@ class TemplateCommand(
         logger.info("Templates (${templates.size}):")
         templates.forEach { name ->
             val usedBy = groupsUsing(name)
-            logger.info("  $name | groups: ${if (usedBy.isEmpty()) "(none)" else usedBy.joinToString()}")
+            logger.info("  $name &8|&r groups: ${white(if (usedBy.isEmpty()) "(none)" else usedBy.joinToString())}")
         }
     }
 

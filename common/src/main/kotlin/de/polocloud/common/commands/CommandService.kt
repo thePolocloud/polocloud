@@ -7,10 +7,6 @@ class CommandService {
     val commands = ArrayList<Command>()
     val parser = CommandParser(this)
 
-    init {
-        // todo register
-    }
-
     fun commandsByName(name: String): MutableList<Command> {
         return commands.stream().filter {
             it!!.name.equals(name, ignoreCase = true) || Arrays.stream(it.aliases).anyMatch({ s -> s.equals(name, ignoreCase = true) })

@@ -12,6 +12,9 @@ import de.polocloud.node.services.LocalService
 import de.polocloud.node.services.Service
 import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.terminal.CliTerminal
+import de.polocloud.node.terminal.CommandOutput.decimal
+import de.polocloud.node.terminal.CommandOutput.timestamp
+import de.polocloud.node.terminal.CommandOutput.white
 import de.polocloud.node.terminal.types.ServiceArgument
 import de.polocloud.node.terminal.types.TemplateArgument
 import de.polocloud.proto.ExecuteServiceCommandRequest
@@ -29,11 +32,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jline.reader.UserInterruptException
 import org.slf4j.LoggerFactory
-import java.time.Duration
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import java.util.UUID
 
 /**
@@ -108,8 +106,8 @@ class ServiceCommand(
         logger.info("  node: ${white(resolveNodeLabel(service.nodeId))}")
         logger.info("  host: ${white("${service.hostname}:${service.port}")}")
         logger.info("  pid: ${white((local?.process?.pid() ?: usage?.pid?.takeIf { it >= 0 } ?: "-").toString())}")
-        logger.info("  cpu: ${white(usage?.let { "${formatDouble(it.cpuUsage)}%" } ?: "-")}")
-        logger.info("  memory: ${white(usage?.let { "${formatDouble(it.usedMemory)}MB" } ?: "-")}")
+        logger.info("  cpu: ${white(usage?.let { "${decimal(it.cpuUsage)}%" } ?: "-")}")
+        logger.info("  memory: ${white(usage?.let { "${decimal(it.usedMemory)}MB" } ?: "-")}")
         // Only a co-located LocalService carries a live ping result; a service known only
         // from the DB (e.g. running on another node) has no player count to report here.
         logger.info("  players: ${white(local?.let { "${it.onlinePlayers}/${it.maxPlayers}" } ?: "-")}")
@@ -129,33 +127,6 @@ class ServiceCommand(
         } else {
             logger.info("  properties:")
             properties.forEach { (key, value) -> logger.info("    - $key=${white(value)}") }
-        }
-    }
-
-    /** Wraps [text] in white (`&f`) so command-output values stand out from their labels. */
-    private fun white(text: String): String = "&f$text&r"
-
-    /**
-     * Wraps [text] in a dim italic style (raw ANSI italic + `&8` dark gray) used for
-     * timestamps, so they read as secondary/meta information rather than a normal value.
-     */
-    private fun dim(text: String): String = "[3m&8$text&r"
-
-    private val timestampFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
-
-    /** Formats [epochMillis] as an absolute timestamp plus a human-readable elapsed duration, dimmed. */
-    private fun timestamp(epochMillis: Long, elapsedText: (String) -> String): String {
-        val formatted = timestampFormatter.format(Instant.ofEpochMilli(epochMillis))
-        val elapsed = formatElapsed(System.currentTimeMillis() - epochMillis)
-        return dim("$formatted (${elapsedText(elapsed)})")
-    }
-
-    private fun formatElapsed(millis: Long): String {
-        val duration = Duration.ofMillis(millis.coerceAtLeast(0))
-        return when {
-            duration.toHours() > 0 -> "${duration.toHours()}h ${duration.toMinutesPart()}m"
-            duration.toMinutes() > 0 -> "${duration.toMinutes()}m ${duration.toSecondsPart()}s"
-            else -> "${duration.toSeconds()}s"
         }
     }
 
@@ -184,10 +155,6 @@ class ServiceCommand(
         client.disconnect()
         return result
     }
-
-    // Locale.ROOT: a German (or other comma-decimal) system locale would otherwise turn
-    // "12.3" into "12,3", which reads as a typo/thousands-separator in the CLI output.
-    private fun formatDouble(value: Double): String = String.format(Locale.ROOT, "%.1f", value)
 
     /** Resolves a service's owning `nodeId` to that node's human-readable name (e.g. `node-0`),
      *  falling back to the raw id if the node is unknown (e.g. it left the cluster) or the id

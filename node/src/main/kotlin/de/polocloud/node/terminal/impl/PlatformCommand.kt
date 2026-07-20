@@ -7,6 +7,7 @@ import de.polocloud.node.services.factory.PlatformService
 import de.polocloud.node.services.factory.platform.Platform
 import de.polocloud.node.services.factory.platform.PlatformVersionSource
 import de.polocloud.node.services.factory.platform.custom.CustomPlatformService
+import de.polocloud.node.terminal.CommandOutput.white
 import de.polocloud.node.terminal.WizardPrompt
 import de.polocloud.node.terminal.types.CustomPlatformArgument
 import de.polocloud.node.terminal.types.PlatformArgument
@@ -74,21 +75,21 @@ class PlatformCommand(
         if (builtIn.isEmpty()) {
             logger.info("  (none)")
         } else {
-            builtIn.forEach { logger.info("  ${it.name} | ${it.type}/${it.language} | versions: ${it.versions.size}") }
+            builtIn.forEach { logger.info("  ${it.name} &8|&r ${it.type}/${it.language} &8|&r versions: ${white(it.versions.size.toString())}") }
         }
 
         logger.info("Custom platforms (${custom.size}):")
         if (custom.isEmpty()) {
             logger.info("  (none)")
         } else {
-            custom.forEach { logger.info("  ${it.name} | ${it.type}/${it.language} | versions: ${it.versions.size}") }
+            custom.forEach { logger.info("  ${it.name} &8|&r ${it.type}/${it.language} &8|&r versions: ${white(it.versions.size.toString())}") }
         }
     }
 
     private fun info(platform: Platform) {
         logger.info("Platform ${platform.name} (${if (platform.custom) "custom" else "built-in"}):")
-        logger.info("  type: ${platform.type}")
-        logger.info("  language: ${platform.language}")
+        logger.info("  type: ${white(platform.type.toString())}")
+        logger.info("  language: ${white(platform.language.toString())}")
         if (platform.versions.isEmpty()) {
             logger.info("  versions: (none)")
         } else {
@@ -98,7 +99,7 @@ class PlatformCommand(
                     PlatformVersionSource.URL -> "url: ${version.downloadUrl}"
                     PlatformVersionSource.LOCAL_FILE -> "local-file: ${version.localFilePath}"
                 }
-                logger.info("    - ${version.version} ($origin)")
+                logger.info("    - ${white(version.version)} ($origin)")
             }
         }
     }

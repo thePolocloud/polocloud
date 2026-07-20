@@ -18,6 +18,7 @@ import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.services.cluster.ClusterGroupShutdown
 import de.polocloud.node.services.factory.PlatformService
 import de.polocloud.node.services.queue.GroupNodeEligibility
+import de.polocloud.node.terminal.CommandOutput.white
 import de.polocloud.node.terminal.WizardPrompt
 import de.polocloud.node.terminal.types.GroupArgument
 import de.polocloud.node.terminal.types.NodeArgument
@@ -69,10 +70,10 @@ class GroupCommand(
             }
             logger.info("Groups (${groups.size}):")
             groups.forEach { group ->
-                val fallback = if (group.properties.containsKey("fallback")) " | fallback: ${group.properties["fallback"]}" else ""
+                val fallback = if (group.properties.containsKey("fallback")) " &8|&r fallback: ${white(group.properties["fallback"]!!)}" else ""
                 logger.info(
-                    "  ${group.name} | platform: ${group.platform}/${group.version} " +
-                        "| memory: ${group.memory}MB | online: ${group.minOnline}-${group.maxOnline}$fallback"
+                    "  ${group.name} &8|&r platform: ${group.platform}/${group.version} " +
+                        "&8|&r memory: ${group.memory}MB &8|&r online: ${group.minOnline}-${group.maxOnline}$fallback"
                 )
             }
         }, "List all groups", KeywordArgument("list"))
@@ -184,22 +185,22 @@ class GroupCommand(
         // persisted table also holds queued/starting rows the DB alone can't distinguish.
         val running = serviceProvider.localServices.count { it.groupName.equals(group.name, ignoreCase = true) }
         logger.info("Group ${group.name}:")
-        logger.info("  platform: ${group.platform}/${group.version}")
-        logger.info("  memory: ${group.memory}MB")
-        logger.info("  online: ${group.minOnline}-${group.maxOnline} (start threshold: ${group.startThreshold})")
-        logger.info("  static: ${group.static}")
-        logger.info("  services: $running running")
-        logger.info("  nodes: ${if (group.nodes.isEmpty()) "all nodes" else group.nodes.joinToString()}")
+        logger.info("  platform: ${white("${group.platform}/${group.version}")}")
+        logger.info("  memory: ${white("${group.memory}MB")}")
+        logger.info("  online: ${white("${group.minOnline}-${group.maxOnline}")} (start threshold: ${white(group.startThreshold.toString())})")
+        logger.info("  static: ${white(group.static.toString())}")
+        logger.info("  services: ${white("$running running")}")
+        logger.info("  nodes: ${white(if (group.nodes.isEmpty()) "all nodes" else group.nodes.joinToString())}")
         // Same NodeRepository-not-ready guard as ServiceQueue's onlineNodes default.
         val onlineNodes = runCatching { NodeRepository.find(NodeState.ONLINE) }.getOrDefault(emptyList())
         val runtimeNodes = GroupNodeEligibility.eligibleOnlineNodes(group, onlineNodes).map { it.name() }
-        logger.info("  runtime nodes: ${if (runtimeNodes.isEmpty()) "(none online)" else runtimeNodes.joinToString()}")
-        logger.info("  templates: ${if (group.templates.isEmpty()) "(none)" else group.templates.joinToString()}")
+        logger.info("  runtime nodes: ${white(if (runtimeNodes.isEmpty()) "(none online)" else runtimeNodes.joinToString())}")
+        logger.info("  templates: ${white(if (group.templates.isEmpty()) "(none)" else group.templates.joinToString())}")
         if (group.properties.isEmpty()) {
             logger.info("  properties: (none)")
         } else {
             logger.info("  properties:")
-            group.properties.forEach { (key, value) -> logger.info("    - $key=$value") }
+            group.properties.forEach { (key, value) -> logger.info("    - $key=${white(value)}") }
         }
     }
 
