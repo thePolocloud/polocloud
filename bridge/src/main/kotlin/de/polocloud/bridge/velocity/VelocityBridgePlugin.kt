@@ -4,16 +4,18 @@ import com.google.inject.Inject
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.player.KickedFromServerEvent
 import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent
-import com.velocitypowered.api.event.player.ServerPreConnectEvent
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.proxy.ProxyServer
-import com.velocitypowered.api.proxy.server.RegisteredServer
 import com.velocitypowered.api.proxy.server.ServerInfo
 import de.polocloud.shared.service.Service
+import de.polocloud.api.Polocloud
+import de.polocloud.api.event.subscribe
 import de.polocloud.bridge.BridgeBootstrap
 import de.polocloud.bridge.BridgeInstance
+import de.polocloud.shared.event.terminal.TabCompleteRequestEvent
+import de.polocloud.shared.event.terminal.TabCompleteResponseEvent
 import org.slf4j.Logger
 import java.net.InetSocketAddress
 
@@ -45,6 +47,34 @@ class VelocityBridgePlugin @Inject constructor(
         }
 
         bootstrap.start("Velocity") { logger.info(it) }
+
+        // Answers the node's `service <name> screen` tab-completion requests (see
+        // TabCompleteBridge on the node side) with this proxy's own registered command
+        // aliases — the same completion Velocity's own console would offer.
+        Polocloud.eventService.subscribe<TabCompleteRequestEvent> { request ->
+            if (request.serviceName != Polocloud.eventService.serviceName) return@subscribe
+            val suggestions = suggestAliases(request.buffer)
+            Polocloud.eventService.call(TabCompleteResponseEvent(request.requestId, suggestions))
+        }
+    }
+
+    /**
+     * Suggests matching command aliases for [buffer]'s first word.
+     *
+     * Only the command alias itself is supported: Velocity's public [CommandManager] exposes
+     * no generic per-argument suggestion API, only per-command `suggest()`/`suggestAsync()`,
+     * which needs the actual registered [com.velocitypowered.api.command.Command] instance
+     * that [CommandManager.getCommandMeta] doesn't hand back. A second (or later) word
+     * therefore gets no suggestions at all rather than an attempt at one.
+     */
+    private fun suggestAliases(buffer: String): List<String> {
+        val prefix = buffer.trimStart()
+        if (prefix.any { it.isWhitespace() }) return emptyList()
+
+        val source = server.consoleCommandSource
+        return server.commandManager.aliases
+            .filter { it.startsWith(prefix, ignoreCase = true) && server.commandManager.hasCommand(it, source) }
+            .sorted()
     }
 
     @Subscribe

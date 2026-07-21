@@ -83,6 +83,9 @@ class FactoryService(
                 // host it is advertised under.
                 "POLOCLOUD_NODE_HOST" to NODE_BACK_CONNECT_HOST,
                 "POLOCLOUD_NODE_PORT" to nodePort.toString(),
+                // Lets the api/bridge running inside this process identify itself, e.g. so
+                // a bridge plugin can tell which TabCompleteRequestEvent is addressed to it.
+                "POLOCLOUD_SERVICE_NAME" to service.name(),
             ),
         )
 

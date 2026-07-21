@@ -38,7 +38,9 @@ import java.util.function.Consumer
  */
 class EventService internal constructor(
     private val channelProvider: () -> ManagedChannel,
-    private val serviceName: String = resolveServiceName(),
+    /** This process's own service name, e.g. so a bridge plugin can tell whether an
+     *  incoming request event is addressed to it. */
+    val serviceName: String = resolveServiceName(),
 ) {
 
     private val listeners = ConcurrentHashMap<Class<out Event>, CopyOnWriteArrayList<Consumer<out Event>>>()

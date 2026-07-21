@@ -278,25 +278,23 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
     }
 
     /**
-     * Redraws a scrollback viewport in place: erases [rowsToErase] rows directly above the
-     * cursor (the previously drawn viewport, plus the prompt below it, since both get
-     * repainted here) and rewrites [lines], using the same raw-ANSI cursor-up/erase-line
-     * technique as [clearCurrentLine], just repeated. Unlike [display]/[displayApproved],
-     * which only ever append, this repaints the same region — used by `service <name>
-     * screen` when the user scrolls with the arrow keys. [updateLocked] then has the line
-     * reader redraw its own prompt fresh at the cursor position this leaves behind.
+     * Replaces the *currently active* read's prompt text with [prompt] and redraws — unlike
+     * [updatePrompt], this never touches the persisted [prompt] field the top-level REPL loop
+     * reuses for its next read, so it's safe to call repeatedly for the lifetime of a single
+     * [awaitInput]/[awaitScreenInput] call (e.g. `service <name> screen` repainting its whole
+     * viewport as new log lines arrive or the user scrolls) without leaking into the normal
+     * prompt once that read ends.
      *
-     * @return the number of rows just drawn, to pass back in as [rowsToErase] next call.
+     * Routing every repaint through JLine's own [LineReader.setPrompt] + redisplay — rather
+     * than raw ANSI cursor/erase writes — keeps JLine's internal `Display` the sole writer to
+     * the terminal, which is what makes its line-diffing (erasing old content, handling
+     * terminal-width wrapping of long lines, etc.) actually reliable; `Display` assumes it's
+     * the only thing moving the cursor and never re-queries the terminal, so any raw write in
+     * between desyncs it in a way `reset()` alone can't repair.
      */
-    fun redrawViewport(lines: List<String>, rowsToErase: Int): Int = synchronized(writeLock) {
-        val writer = this.terminal.writer()
-        repeat(rowsToErase) {
-            writer.print(Ansi.ansi().cursorUpLine().eraseLine().toString())
-        }
-        lines.forEach { line -> writer.println(AnsiColors.translate(line)) }
-        writer.flush()
-        updateLocked()
-        lines.size
+    fun updateActivePrompt(prompt: String) = synchronized(writeLock) {
+        this.lineReader.setPrompt(AnsiColors.translate(prompt))
+        this.updateLocked()
     }
 
     /**

@@ -341,7 +341,7 @@ class ServiceCommand(
 
     private fun screenLocal(service: Service, local: LocalService) {
         val initial = local.recentLogs()
-        val session = ScreenSession(terminal, service.name()) { command -> local.executeCommand(command) }
+        val session = ScreenSession(terminal, service.name(), service.name()) { command -> local.executeCommand(command) }
 
         val listener: (String) -> Unit = { line -> session.append(line) }
         local.addLogListener(listener)
@@ -364,7 +364,7 @@ class ServiceCommand(
             client.connect(Address(node.hostname, node.port))
             val stub = ServiceManagerGrpcKt.ServiceManagerCoroutineStub(client.channel())
 
-            val session = ScreenSession(terminal, "${service.name()} @ ${node.name()}") { command ->
+            val session = ScreenSession(terminal, "${service.name()} @ ${node.name()}", service.name()) { command ->
                 val request = ExecuteServiceCommandRequest.newBuilder()
                     .setServiceName(service.name())
                     .setCommand(command)
