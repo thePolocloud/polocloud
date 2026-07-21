@@ -15,6 +15,7 @@ import org.jline.jansi.Ansi
 import org.jline.reader.Completer
 import org.jline.reader.LineReader
 import org.jline.reader.LineReaderBuilder
+import org.jline.reader.Widget
 import org.jline.reader.impl.LineReaderImpl
 import org.jline.terminal.TerminalBuilder
 import org.jline.utils.InfoCmp
@@ -231,7 +232,7 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
     /**
      * Reads a single line of input using the given [prompt].
      *
-     * Used by interactive sub-modes (e.g. `service <name> logs` tailing) that need to
+     * Used by interactive sub-modes (e.g. `service <name> screen`) that need to
      * block for user input while log output is printed above via [displayApproved].
      * Not lock-guarded on purpose: the call blocks until the user submits a line, and
      * holding [writeLock] would stall concurrent output the whole time.
@@ -240,6 +241,63 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
      *         to leave the sub-mode without terminating the node.
      */
     override fun awaitInput(prompt: String): String = this.lineReader.readLine(AnsiColors.translate(prompt))
+
+    /**
+     * Like [awaitInput], but binds the Up/Down arrow keys to [onScrollUp]/[onScrollDown]
+     * for the duration of this single read instead of the default history navigation.
+     * Used by `service <name> screen` to scroll its log viewport while still reusing the
+     * normal line-editing/input machinery for typing commands. Bindings are restored
+     * (whatever they were before, or unbound) once the read returns, however it ends.
+     */
+    fun awaitScreenInput(prompt: String, onScrollUp: () -> Unit, onScrollDown: () -> Unit): String {
+        val keyMap = this.lineReader.keyMaps[LineReader.MAIN] ?: return awaitInput(prompt)
+
+        val upKeys = listOf("[A", "OA")
+        val downKeys = listOf("[B", "OB")
+        val previous = (upKeys + downKeys).associateWith { keyMap.getBound(it) }
+
+        upKeys.forEach { keyMap.bind(Widget { onScrollUp(); true }, it) }
+        downKeys.forEach { keyMap.bind(Widget { onScrollDown(); true }, it) }
+        try {
+            return awaitInput(prompt)
+        } finally {
+            previous.forEach { (sequence, binding) ->
+                if (binding != null) keyMap.bind(binding, sequence) else keyMap.unbind(sequence)
+            }
+        }
+    }
+
+    /**
+     * How many terminal rows a live scrollback view like `service <name> screen` should
+     * use for its log pane, reserving a few rows below for the spacer/help/prompt lines.
+     * Falls back to a sane default if the terminal can't report its size.
+     */
+    fun viewportHeight(): Int {
+        val rows = this.terminal.size.rows
+        return if (rows <= 0) 20 else (rows - 4).coerceIn(5, 200)
+    }
+
+    /**
+     * Redraws a scrollback viewport in place: erases [rowsToErase] rows directly above the
+     * cursor (the previously drawn viewport, plus the prompt below it, since both get
+     * repainted here) and rewrites [lines], using the same raw-ANSI cursor-up/erase-line
+     * technique as [clearCurrentLine], just repeated. Unlike [display]/[displayApproved],
+     * which only ever append, this repaints the same region — used by `service <name>
+     * screen` when the user scrolls with the arrow keys. [updateLocked] then has the line
+     * reader redraw its own prompt fresh at the cursor position this leaves behind.
+     *
+     * @return the number of rows just drawn, to pass back in as [rowsToErase] next call.
+     */
+    fun redrawViewport(lines: List<String>, rowsToErase: Int): Int = synchronized(writeLock) {
+        val writer = this.terminal.writer()
+        repeat(rowsToErase) {
+            writer.print(Ansi.ansi().cursorUpLine().eraseLine().toString())
+        }
+        lines.forEach { line -> writer.println(AnsiColors.translate(line)) }
+        writer.flush()
+        updateLocked()
+        lines.size
+    }
 
     /**
      * Closes the terminal and interrupts the [readingThread] thread.

@@ -13,8 +13,10 @@ import de.polocloud.node.services.Service
 import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.terminal.CliTerminal
 import de.polocloud.node.terminal.CommandOutput.decimal
+import de.polocloud.node.terminal.CommandOutput.dim
 import de.polocloud.node.terminal.CommandOutput.timestamp
 import de.polocloud.node.terminal.CommandOutput.white
+import de.polocloud.node.terminal.ScreenSession
 import de.polocloud.node.terminal.types.ServiceArgument
 import de.polocloud.node.terminal.types.TemplateArgument
 import de.polocloud.proto.ExecuteServiceCommandRequest
@@ -25,12 +27,12 @@ import de.polocloud.proto.StreamServiceLogsRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.jline.reader.UserInterruptException
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -38,12 +40,13 @@ import java.util.UUID
  * Terminal command for inspecting and controlling the services running on this node.
  *
  * Runs in-process, so it talks to the [ServiceProvider] directly (no gRPC) for a service
- * running here: `list`, `<name>` (info), `<name> shutdown`, `<name> logs` (live tail),
+ * running here: `list`, `<name>` (info), `<name> shutdown`, `<name> logs` (one-shot log
+ * snapshot), `<name> screen` (live, interactive console — see [ScreenSession]),
  * `<name> execute <command>` and `<name> copy <templateName>` (re-apply a template onto
- * the running work directory). `shutdown`, `logs` and the CPU/memory usage shown by `<name>`
- * fall back to a [NodeGrpcClient] call to the service's owning node (see [Service.nodeId])
- * when it isn't running here, so all three work cluster-wide regardless of which node's
- * terminal the command is typed in.
+ * the running work directory). `shutdown`, `logs`, `screen` and the CPU/memory usage shown
+ * by `<name>` fall back to a [NodeGrpcClient] call to the service's owning node (see
+ * [Service.nodeId]) when it isn't running here, so all of them work cluster-wide regardless
+ * of which node's terminal the command is typed in.
  */
 class ServiceCommand(
     private val serviceProvider: ServiceProvider,
@@ -84,8 +87,12 @@ class ServiceCommand(
         }, "Shutdown a service", serviceArgument, KeywordArgument("shutdown"))
 
         syntax({ context ->
-            tailLogs(context.arg(serviceArgument))
-        }, "Live-tail the console of a service", serviceArgument, KeywordArgument("logs"))
+            showLogs(context.arg(serviceArgument))
+        }, "Print a service's recent log output", serviceArgument, KeywordArgument("logs"))
+
+        syntax({ context ->
+            openScreen(context.arg(serviceArgument))
+        }, "Attach a live, interactive console to a service", serviceArgument, KeywordArgument("screen"))
 
         syntax({ context ->
             execute(context.arg(serviceArgument), context.arg(commandArgument))
@@ -254,10 +261,73 @@ class ServiceCommand(
         logger.info("Copied template '$templateName' into ${service.name()}.")
     }
 
-    private fun tailLogs(service: Service) {
+    /**
+     * Clears the screen and prints a one-shot snapshot of [service]'s recent log output —
+     * not a live tail; for that, see [openScreen]. Works cluster-wide: falls back to a
+     * [NodeGrpcClient] call to the service's owning node when it isn't running here.
+     */
+    private fun showLogs(service: Service) {
+        val local = serviceProvider.findLocal(service.name())
+        val lines = if (local != null) {
+            local.recentLogs()
+        } else {
+            val node = resolveOwningNode(service)
+            if (node == null) {
+                logger.info("Service ${service.name()} is not running on this node and its owning node is unknown.")
+                return
+            }
+            fetchRemoteLogSnapshot(service, node) ?: return
+        }
+
+        terminal.clearScreen()
+        lines.forEach { terminal.display(it) }
+        terminal.emptyLine()
+        val nodeLabel = resolveNodeLabel(service.nodeId)
+        val lineCount = "${lines.size} line${if (lines.size == 1) "" else "s"}"
+        terminal.display(dim("Log of '${service.name()}' on $nodeLabel — $lineCount"))
+    }
+
+    /**
+     * The service's owning node has no one-shot "get recent logs" RPC, only the live
+     * [ServiceManagerGrpcKt.ServiceManagerCoroutineStub.streamServiceLogs] tail (which sends
+     * buffered history first, then live lines). Subscribes briefly and cancels once the
+     * history burst has had time to arrive, so [showLogs] can still show a snapshot for a
+     * service running on another node. Returns `null` (after logging why) if the node
+     * couldn't be reached.
+     */
+    private fun fetchRemoteLogSnapshot(service: Service, node: NodeData): List<String>? {
+        val client = NodeGrpcClient()
+        return try {
+            client.connect(Address(node.hostname, node.port))
+            val stub = ServiceManagerGrpcKt.ServiceManagerCoroutineStub(client.channel())
+            val request = StreamServiceLogsRequest.newBuilder().setServiceName(service.name()).build()
+            val lines = mutableListOf<String>()
+            runBlocking {
+                val job = launch(Dispatchers.IO) {
+                    stub.streamServiceLogs(request).onEach { lines.add(it.line) }.catch { }.collect()
+                }
+                delay(300)
+                job.cancelAndJoin()
+            }
+            lines
+        } catch (ex: Exception) {
+            logger.info("Could not reach ${node.name()} to fetch logs for ${service.name()}: ${ex.message}")
+            null
+        } finally {
+            client.disconnect()
+        }
+    }
+
+    /**
+     * Opens an interactive [ScreenSession] attached to [service]'s console: a live-appending
+     * log view with scrollback, where anything typed is executed directly in the service's
+     * process. Works cluster-wide: falls back to a [NodeGrpcClient] call to the service's
+     * owning node when it isn't running here.
+     */
+    private fun openScreen(service: Service) {
         val local = serviceProvider.findLocal(service.name())
         if (local != null) {
-            tailLocalLogs(service, local)
+            screenLocal(service, local)
             return
         }
 
@@ -266,69 +336,60 @@ class ServiceCommand(
             logger.info("Service ${service.name()} is not running on this node and its owning node is unknown.")
             return
         }
-
-        tailRemoteLogs(service, node)
+        screenRemote(service, node)
     }
 
-    private fun tailLocalLogs(service: Service, local: LocalService) {
-        logger.info("Tailing logs of ${service.name()} — press Ctrl+C or type 'exit' to stop.")
-        // Print the buffered history first, then follow live lines above the input prompt.
-        local.recentLogs().forEach { terminal.display(it) }
+    private fun screenLocal(service: Service, local: LocalService) {
+        val initial = local.recentLogs()
+        val session = ScreenSession(terminal, service.name()) { command -> local.executeCommand(command) }
 
-        val listener: (String) -> Unit = { line -> terminal.display(line) }
+        val listener: (String) -> Unit = { line -> session.append(line) }
         local.addLogListener(listener)
         try {
-            awaitExit(service)
+            session.run(initial)
         } finally {
             local.removeLogListener(listener)
-            logger.info("Stopped tailing ${service.name()}.")
         }
     }
 
     /**
-     * Same as [tailLocalLogs], but the buffered history + live lines come from
+     * Same as [screenLocal], but the log lines come from
      * [ServiceManagerGrpcKt.ServiceManagerCoroutineStub.streamServiceLogs] on the service's
-     * owning node instead of a co-located [de.polocloud.node.services.LocalService].
+     * owning node, and typed input is forwarded there via [ExecuteServiceCommandRequest]
+     * instead of a co-located [de.polocloud.node.services.LocalService].
      */
-    private fun tailRemoteLogs(service: Service, node: NodeData) {
-        logger.info("Tailing logs of ${service.name()} on ${node.name()} — press Ctrl+C or type 'exit' to stop.")
-
+    private fun screenRemote(service: Service, node: NodeData) {
         val client = NodeGrpcClient()
         try {
             client.connect(Address(node.hostname, node.port))
             val stub = ServiceManagerGrpcKt.ServiceManagerCoroutineStub(client.channel())
-            val request = StreamServiceLogsRequest.newBuilder().setServiceName(service.name()).build()
 
+            val session = ScreenSession(terminal, "${service.name()} @ ${node.name()}") { command ->
+                val request = ExecuteServiceCommandRequest.newBuilder()
+                    .setServiceName(service.name())
+                    .setCommand(command)
+                    .build()
+                runCatching { runBlocking { stub.executeServiceCommand(request) }.executed }.getOrDefault(false)
+            }
+
+            val request = StreamServiceLogsRequest.newBuilder().setServiceName(service.name()).build()
             val job = CoroutineScope(Dispatchers.IO).launch {
                 stub.streamServiceLogs(request)
-                    .onEach { terminal.display(it.line) }
-                    .catch { ex -> terminal.display("&cLost log stream from ${node.name()}: ${ex.message}") }
+                    .onEach { session.append(it.line) }
+                    .catch { ex -> session.append("&cLost log stream from ${node.name()}: ${ex.message}") }
                     .collect()
             }
 
             try {
-                awaitExit(service)
+                session.run(emptyList())
             } finally {
                 // Join, not just cancel: waits for the streaming call to actually unwind
                 // before the channel below is torn down, avoiding a benign "channel
                 // shutting down" error racing the cancellation.
                 runBlocking { job.cancelAndJoin() }
-                logger.info("Stopped tailing ${service.name()}.")
             }
         } finally {
             client.disconnect()
-        }
-    }
-
-    /** Blocks on terminal input until the user types `exit`; returns early (without throwing) on Ctrl+C. */
-    private fun awaitExit(service: Service) {
-        try {
-            while (true) {
-                val input = terminal.awaitInput("&8[logs:${service.name()}]&r ").trim()
-                if (input.equals("exit", ignoreCase = true)) break
-            }
-        } catch (_: UserInterruptException) {
-            // Ctrl+C leaves the tail without terminating the node.
         }
     }
 }
