@@ -26,7 +26,7 @@ oshi                    = "7.3.2"
 # ── Proxy bridge ──────────────────────────────────────────────────────────────
 velocity-api            = "3.3.0-SNAPSHOT"
 waterfall-api           = "1.20-R0.1-SNAPSHOT"
-shadow                  = "9.5.1"
+shadow                  = "9.6.1"
 
 # ── Minecraft server  -------──────────────────────────────────────────────────
 spigot-api              = "26.1.2-R0.1-SNAPSHOT"
