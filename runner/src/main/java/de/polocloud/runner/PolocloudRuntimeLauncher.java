@@ -5,6 +5,7 @@ import de.polocloud.runner.runtime.RuntimeProcess;
 import de.polocloud.runner.runtime.RuntimeResolver;
 import de.polocloud.runner.runtime.impl.CliRuntimeProcess;
 import de.polocloud.runner.runtime.impl.NodeRuntimeProcess;
+import de.polocloud.runner.update.UpdateStaging;
 import de.polocloud.runner.utils.Manifests;
 
 final class PolocloudRuntimeLauncher {
@@ -26,6 +27,11 @@ final class PolocloudRuntimeLauncher {
 
         System.setProperty(PolocloudParameters.VERSION_ENV, version);
         System.setProperty(PolocloudParameters.STARTUP_TIME, String.valueOf(startupTime));
+        System.setProperty(PolocloudParameters.LAUNCH_ARGS, String.join(PolocloudParameters.LAUNCH_ARGS_SEPARATOR, args));
+
+        // May override VERSION_ENV to a newer version staged by a previous run's
+        // self-update — must run before any module classpath path is resolved.
+        UpdateStaging.applyIfPresent();
 
         parseAndApplyProperties(args);
 

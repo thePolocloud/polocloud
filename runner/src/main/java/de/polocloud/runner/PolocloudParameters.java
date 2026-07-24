@@ -57,6 +57,16 @@ public final class PolocloudParameters {
 
 
     /**
+     * System property the launcher stores its original process arguments under, joined
+     * with {@link #LAUNCH_ARGS_SEPARATOR}. Lets a self-update ({@code de.polocloud.updater.Updater})
+     * relaunch this same jar with the same arguments after replacing it on disk.
+     */
+    public static final String LAUNCH_ARGS = "polocloud.launch.args";
+
+    /** Separator {@link #LAUNCH_ARGS} is joined with — arbitrary args never contain this control character. */
+    public static final String LAUNCH_ARGS_SEPARATOR = "";
+
+    /**
      * System property that defines the join token, to join in a cluster.
      */
     public static final String JOIN_TOKEN = "polocloud.join.token";

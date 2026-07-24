@@ -13,6 +13,7 @@ import de.polocloud.node.core.configuration.NodeConfigurations
 import de.polocloud.node.core.context.NodeRuntimeContext
 import de.polocloud.node.event.ClusterEventRelay
 import de.polocloud.updater.UpdateChecker
+import de.polocloud.updater.Updater
 import org.apache.logging.log4j.LogManager
 import org.slf4j.LoggerFactory
 
@@ -30,6 +31,13 @@ class NodeLifecycle(
     private var eventRelay: ClusterEventRelay? = null
 
     fun initialize() {
+        // Blocking and first thing on boot when enabled: applying (and relaunching for) an
+        // update before anything else starts means a restart never drops live workload.
+        // Never throws — see Updater.downloadAndRestartIfAvailable.
+        if (holder.value.general.autoUpdate) {
+            Updater.downloadAndRestartIfAvailable()
+        }
+
         val props = runtime.launchProperties
 
         TranslationService.init()
@@ -78,8 +86,11 @@ class NodeLifecycle(
             "time" to StartupTimer.formatted
         )
 
-        // Best-effort, never blocks boot — see UpdateChecker.
-        UpdateChecker.checkOnBootAsync()
+        // Best-effort, never blocks boot — see UpdateChecker. Skipped when autoUpdate already
+        // ran: it either just applied the latest release or confirmed we're on it.
+        if (!holder.value.general.autoUpdate) {
+            UpdateChecker.checkOnBootAsync()
+        }
 
         context.cli.readingThread.start()
     }

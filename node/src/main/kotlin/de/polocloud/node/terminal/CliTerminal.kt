@@ -10,6 +10,7 @@ import de.polocloud.node.terminal.impl.PlatformCommand
 import de.polocloud.node.terminal.impl.ServiceCommand
 import de.polocloud.node.terminal.impl.ShutdownCommand
 import de.polocloud.node.terminal.impl.TemplateCommand
+import de.polocloud.node.terminal.impl.UpdateCommand
 import de.polocloud.node.services.factory.platform.custom.CustomPlatformService
 import org.jline.jansi.Ansi
 import org.jline.reader.Completer
@@ -106,6 +107,7 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
         )
         this.commandService.registerCommand(ShutdownCommand())
         this.commandService.registerCommand(ClearCommand(this))
+        this.commandService.registerCommand(UpdateCommand())
         this.commandService.registerCommand(TemplateCommand(this.context.groupService))
         this.commandService.registerCommand(
             PlatformCommand(
@@ -278,23 +280,60 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
     }
 
     /**
-     * Replaces the *currently active* read's prompt text with [prompt] and redraws — unlike
-     * [updatePrompt], this never touches the persisted [prompt] field the top-level REPL loop
-     * reuses for its next read, so it's safe to call repeatedly for the lifetime of a single
-     * [awaitInput]/[awaitScreenInput] call (e.g. `service <name> screen` repainting its whole
-     * viewport as new log lines arrive or the user scrolls) without leaking into the normal
-     * prompt once that read ends.
-     *
-     * Routing every repaint through JLine's own [LineReader.setPrompt] + redisplay — rather
-     * than raw ANSI cursor/erase writes — keeps JLine's internal `Display` the sole writer to
-     * the terminal, which is what makes its line-diffing (erasing old content, handling
-     * terminal-width wrapping of long lines, etc.) actually reliable; `Display` assumes it's
-     * the only thing moving the cursor and never re-queries the terminal, so any raw write in
-     * between desyncs it in a way `reset()` alone can't repair.
+     * Terminal width in columns, used by `service <name> screen` to figure out how many
+     * physical rows a long log line wraps into. Falls back to a sane default if the
+     * terminal can't report its size.
      */
-    fun updateActivePrompt(prompt: String) = synchronized(writeLock) {
-        this.lineReader.setPrompt(AnsiColors.translate(prompt))
-        this.updateLocked()
+    fun viewportWidth(): Int {
+        val columns = this.terminal.size.columns
+        return if (columns <= 0) 80 else columns
+    }
+
+    /**
+     * Prints [lines] as a brand new block — never erasing anything — leaving the cursor right
+     * after them. Used by `service <name> screen` to lay down a fresh log window before
+     * starting a new read for its footer/prompt; whatever was printed for the *previous* read
+     * (its own now-stale log window plus the command the user submitted) is simply left behind
+     * as scrollback, like any other terminal transcript.
+     */
+    fun printLogWindow(lines: List<String>) = synchronized(writeLock) {
+        val writer = this.terminal.writer()
+        lines.forEach { line -> writer.println(AnsiColors.translate(line)) }
+        writer.flush()
+    }
+
+    /**
+     * Repaints an already-on-screen [previousRows]-row log window in place — e.g. `service
+     * <name> screen` reacting to a new log line arriving, or the user scrolling — without
+     * disturbing whatever is directly below it (the input row JLine is actively reading, which
+     * may already have characters typed into it): saves the cursor (wherever it currently sits
+     * within that active input row), erases exactly [previousRows] rows above it, prints the
+     * new [lines] (always the same count, so nothing net shifts), then restores the cursor
+     * to precisely where it was.
+     *
+     * Deliberately raw ANSI, not JLine's [LineReader.callWidget]-driven redisplay: this
+     * terminal is built with `dumb(true)` (see the constructor), and JLine's dumb-terminal
+     * code path can't erase anything — it can only ever append — so routing repaints through
+     * it just piles up duplicate, overlapping content instead of replacing it. `dumb(true)`
+     * only limits what JLine's own higher-level APIs are willing to emit; it doesn't reflect
+     * what the real terminal underneath can actually interpret, so writing raw escape codes
+     * directly (as this does) works fine.
+     */
+    fun redrawLogWindow(lines: List<String>, previousRows: Int) = synchronized(writeLock) {
+        val writer = this.terminal.writer()
+        writer.print(Ansi.ansi().saveCursorPositionDEC().toString())
+        repeat(previousRows) {
+            // cursorUp (not cursorUpLine) plus an explicit full-line erase: some terminals
+            // don't reset the column on cursor-previous-line, which left stale trailing
+            // characters from a longer previous line behind a shorter new one.
+            writer.print(Ansi.ansi().cursorUp(1).eraseLine(Ansi.Erase.ALL).toString())
+        }
+        // cursorUp doesn't reset the column, so without this the first printed line would
+        // start wherever the cursor's column happened to be beforehand.
+        writer.print("\r")
+        lines.forEach { line -> writer.println(AnsiColors.translate(line)) }
+        writer.print(Ansi.ansi().restoreCursorPositionDEC().toString())
+        writer.flush()
     }
 
     /**

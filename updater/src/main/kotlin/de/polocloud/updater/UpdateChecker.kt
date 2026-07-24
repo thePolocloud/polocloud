@@ -38,6 +38,17 @@ object UpdateChecker {
     }
 
     /**
+     * Like [evaluate], but returns the eligible newer release itself (or null if there
+     * isn't one) instead of a log message — what [Updater] needs to actually act on a
+     * result rather than just report it.
+     */
+    fun findAvailableUpdate(currentVersion: PolocloudVersion, releases: List<GithubRelease>): AvailableUpdate? {
+        val latest = findLatestEligibleVersion(currentVersion, releases) ?: return null
+        return latest.takeIf { isUpdateAvailable(currentVersion, it.version) }
+            ?.let { AvailableUpdate(it.version, it.release) }
+    }
+
+    /**
      * Pure evaluation step, split out from [checkOnBootAsync] so the version-comparison
      * logic is testable without a network call.
      */
@@ -95,3 +106,6 @@ object UpdateChecker {
     private fun formatUpToDateMessage(currentVersion: PolocloudVersion): String =
         "PoloCloud is up to date (${currentVersion.toDisplayString()})."
 }
+
+/** A newer, channel-eligible release than the one currently running — see [UpdateChecker.findAvailableUpdate]. */
+data class AvailableUpdate(val version: PolocloudVersion, val release: GithubRelease)
