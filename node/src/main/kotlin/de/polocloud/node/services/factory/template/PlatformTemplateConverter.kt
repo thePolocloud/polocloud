@@ -49,42 +49,64 @@ fun convertTemplatesToPlatform(items: List<PlatformTemplate>): List<Platform> = 
 }
 
 /**
- * Fetches and resolves all available [PlatformVersion]s for the given [template].
- * Returns an empty list if the detection mode is not AUTOMATIC or if any request fails.
+ * Resolves all available [PlatformVersion]s for the given [template], according to its
+ * [VersionDetection.mode]:
+ * - `AUTOMATIC` fetches and parses versions/builds from the remote API described by
+ *   [VersionDetection.baseUrl]/[VersionDetection.parse]. Returns an empty list if any request fails.
+ * - `STATIC` returns a single fixed [PlatformVersion] built from [VersionDetection.version]/
+ *   [VersionDetection.downloadUrl], with no build number of its own.
+ *
+ * Any other mode yields an empty list.
  */
 private suspend fun scanVersions(template: PlatformTemplate): List<PlatformVersion> {
     val detection = template.versionDetection
-    if (detection.mode != "AUTOMATIC") return emptyList()
+    return when (detection.mode) {
+        "AUTOMATIC" -> scanAutomaticVersions(detection)
+        "STATIC" -> listOf(PlatformVersion(detection.version, STATIC_PLATFORM_BUILD, detection.downloadUrl))
+        else -> emptyList()
+    }
+}
+
+/**
+ * Build number attached to every `STATIC` platform version. Such a platform has no queryable
+ * build concept — its single version is a fixed download URL — so this is a shared placeholder,
+ * matching the convention used for custom platforms (see
+ * [de.polocloud.node.services.factory.platform.custom.CUSTOM_PLATFORM_BUILD]).
+ */
+private const val STATIC_PLATFORM_BUILD = 0
+
+private suspend fun scanAutomaticVersions(detection: VersionDetection): List<PlatformVersion> {
+    val parse = detection.parse ?: return emptyList()
     return runCatching {
         val rootJson = fetchJson(detection.baseUrl)
-        val versions = resolveAllVersions(rootJson, detection.parse.versionPath)
+        val versions = resolveAllVersions(rootJson, parse.versionPath)
         coroutineScope {
-            versions.map { version -> async { fetchVersionDetails(detection, version) } }.awaitAll()
+            versions.map { version -> async { fetchVersionDetails(detection, parse, version) } }.awaitAll()
         }.filterNotNull()
     }.getOrDefault(emptyList())
 }
 
 /**
- * Fetches the latest build details for a single [version] using the given [detection] config.
+ * Fetches the latest build details for a single [version] using the given [detection]/[parse] config.
  *
  * The download URL is resolved either via [VersionParse.downloadPath] (direct JSON path)
  * or by substituting placeholders in [VersionParse.downloadUrl].
  *
  * @return A [PlatformVersion] for the given version, or null if resolution fails.
  */
-private suspend fun fetchVersionDetails(detection: VersionDetection, version: String): PlatformVersion? {
+private suspend fun fetchVersionDetails(detection: VersionDetection, parse: VersionParse, version: String): PlatformVersion? {
     return runCatching {
-        val buildUrl = detection.parse.buildUrl
+        val buildUrl = parse.buildUrl
             .replace("{baseUrl}", detection.baseUrl)
             .replace("{version}", version)
         val buildJson = fetchJson(buildUrl)
-        val build = resolveElement(buildJson, detection.parse.buildPath)
+        val build = resolveElement(buildJson, parse.buildPath)
             ?.jsonPrimitive?.int ?: return null
-        val downloadUrl = if (detection.parse.downloadPath != null) {
-            resolveElement(buildJson, detection.parse.downloadPath)
+        val downloadUrl = if (parse.downloadPath != null) {
+            resolveElement(buildJson, parse.downloadPath)
                 ?.jsonPrimitive?.content ?: return null
         } else {
-            detection.parse.downloadUrl
+            parse.downloadUrl
                 .replace("{baseUrl}", detection.baseUrl)
                 .replace("{version}", version)
                 .replace("{build}", build.toString())

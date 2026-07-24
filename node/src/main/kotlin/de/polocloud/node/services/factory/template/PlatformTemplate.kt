@@ -61,15 +61,26 @@ data class ServiceTask(
 /**
  * Describes how versions are detected for a platform.
  *
- * @param mode    Detection strategy. Only AUTOMATIC is currently supported.
- * @param baseUrl Root API URL used as the starting point for all requests.
- * @param parse   Rules defining how to extract versions and build artifacts from the API.
+ * @param mode        Detection strategy: `AUTOMATIC` resolves versions/builds from a remote
+ *                     API via [parse]; `STATIC` skips detection entirely and exposes a single
+ *                     fixed [version] downloaded from [downloadUrl] — for platforms whose
+ *                     upstream only ever offers a "latest" link with no queryable version/build
+ *                     metadata (e.g. a redirect-only download page).
+ * @param baseUrl     Root API URL used as the starting point for all requests. Only used when
+ *                     [mode] is `AUTOMATIC`.
+ * @param parse       Rules defining how to extract versions and build artifacts from the API.
+ *                     Only used when [mode] is `AUTOMATIC`.
+ * @param version     Fixed version string exposed for this platform. Only used when [mode] is
+ *                     `STATIC`.
+ * @param downloadUrl Fixed direct download URL for [version]. Only used when [mode] is `STATIC`.
  */
 @Serializable
 data class VersionDetection(
     val mode: String,
-    val baseUrl: String,
-    val parse: VersionParse
+    val baseUrl: String = "",
+    val parse: VersionParse? = null,
+    val version: String = "",
+    val downloadUrl: String = ""
 )
 
 /**
