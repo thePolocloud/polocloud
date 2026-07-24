@@ -1,7 +1,7 @@
 [versions]
 
 # ── Kotlin ────────────────────────────────────────────────────────────────────
-kotlin-jvm                 = "2.4.0"
+kotlin-jvm                 = "2.4.10"
 kotlinSerializationPlugin = "2.4.10"
 kotlinxSerialization    = "1.11.0"
 kotlinxCoroutines       = "1.11.0"
