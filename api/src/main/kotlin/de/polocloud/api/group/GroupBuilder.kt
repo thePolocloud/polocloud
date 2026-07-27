@@ -5,23 +5,29 @@ import de.polocloud.shared.property.Properties
 /**
  * Fluent builder used to create or edit a [Group].
  *
- * Obtain an instance from [GroupService.create] (name pre-filled) or inside the
- * [GroupService.edit] editor. Configure the fields, then call [submit] to send
- * the change to the cluster — [submit] returns the persisted group.
+ * Obtain an instance from [GroupService.create] (name pre-filled) or
+ * [GroupService.edit] (every field pre-filled from the current group, so fields
+ * left untouched by the editor are resubmitted unchanged rather than reset to a
+ * default). Configure the fields, then call [submit] to send the change to the
+ * cluster — [submit] returns the persisted group.
  */
 class GroupBuilder internal constructor(
+    initial: Group? = null,
     private val submitter: (Group) -> Group,
 ) {
 
-    private var name: String = ""
-    private var memory: Int = 512
-    private var startThreshold: Double = 0.0
-    private var minOnline: Long = 0
-    private var maxOnline: Long = 1
-    private var platform: String = ""
-    private var version: String = ""
-    private val properties: Properties = Properties()
-    private val nodes: MutableList<String> = mutableListOf()
+    private var name: String = initial?.name ?: ""
+    private var memory: Int = initial?.memory ?: 512
+    private var startThreshold: Double = initial?.startThreshold ?: 0.0
+    private var minOnline: Long = initial?.minOnline ?: 0
+    private var maxOnline: Long = initial?.maxOnline ?: 1
+    private var platform: String = initial?.platform ?: ""
+    private var version: String = initial?.version ?: ""
+    private val properties: Properties = Properties().apply {
+        initial?.properties?.asMap()?.forEach { (key, value) -> set(key, value) }
+    }
+    private val templates: MutableList<String> = initial?.templates?.toMutableList() ?: mutableListOf()
+    private val nodes: MutableList<String> = initial?.nodes?.toMutableList() ?: mutableListOf()
 
     fun name(name: String): GroupBuilder = apply { this.name = name }
     fun memory(memory: Int): GroupBuilder = apply { this.memory = memory }
@@ -53,6 +59,19 @@ class GroupBuilder internal constructor(
             this.properties.set(Properties.FALLBACK_PRIORITY, priority.toString())
         }
 
+    /**
+     * Appends a template (by name) to the ordered list applied to a service of this group
+     * on start. Templates are copied in this order, so a later entry's files win over an
+     * earlier one's on conflict.
+     */
+    fun template(name: String): GroupBuilder = apply { this.templates.add(name) }
+
+    /**
+     * Appends the given templates (by name) to the ordered list applied to a service of
+     * this group on start.
+     */
+    fun templates(vararg names: String): GroupBuilder = apply { this.templates.addAll(names) }
+
     /** Restricts this group to a single node (by its cluster name, e.g. `node-1`). */
     fun node(name: String): GroupBuilder = apply { this.nodes.add(name) }
 
@@ -64,7 +83,10 @@ class GroupBuilder internal constructor(
 
     internal fun toGroup(): Group {
         require(name.isNotBlank()) { "Group name must be set" }
-        return Group(name, memory, startThreshold, minOnline, maxOnline, platform, version, properties, nodes.toList())
+        return Group(
+            name, memory, startThreshold, minOnline, maxOnline, platform, version,
+            properties, templates.toList(), nodes.toList(),
+        )
     }
 
     /**

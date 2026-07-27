@@ -33,8 +33,18 @@ class GroupService internal constructor(
 
     fun delete(group: Group) = delete(group.name)
 
-    fun edit(editor: Consumer<GroupBuilder>) {
-        val builder = GroupBuilder { group ->
+    /**
+     * Edits the group named [name].
+     *
+     * The [editor] receives a builder pre-filled with the group's current values, so
+     * any field left untouched is resubmitted unchanged instead of being reset to a
+     * builder default.
+     *
+     * @throws NoSuchElementException if no group named [name] exists.
+     */
+    fun edit(name: String, editor: Consumer<GroupBuilder>) {
+        val current = find(name) ?: throw NoSuchElementException("No group named '$name' exists")
+        val builder = GroupBuilder(current) { group ->
             GroupMapper.toApi(runBlocking { client.updateGroup(GroupMapper.toProto(group)) })
         }
         editor.accept(builder)

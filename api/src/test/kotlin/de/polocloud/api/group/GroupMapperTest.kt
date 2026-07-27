@@ -21,6 +21,8 @@ class GroupMapperTest {
             .setVersion("3.5.0")
             .putProperties(Properties.FALLBACK, "true")
             .putProperties("region", "eu")
+            .addTemplates("GLOBAL")
+            .addTemplates("Lobby")
             .build()
 
         val group = GroupMapper.toApi(data)
@@ -34,6 +36,7 @@ class GroupMapperTest {
         assertEquals("3.5.0", group.version)
         assertTrue(group.isFallback())
         assertEquals("eu", group.properties["region"])
+        assertEquals(listOf("GLOBAL", "Lobby"), group.templates)
     }
 
     @Test
@@ -42,6 +45,7 @@ class GroupMapperTest {
             name = "Lobby", memory = 512, startThreshold = 0.5, minOnline = 0, maxOnline = 2,
             platform = "paper", version = "1.21",
             properties = Properties().set("region", "us"),
+            templates = listOf("GLOBAL", "GLOBAL_SERVER"),
         )
 
         val data = GroupMapper.toProto(group)
@@ -50,6 +54,7 @@ class GroupMapperTest {
         assertEquals(512, data.memory)
         assertEquals("paper", data.platform)
         assertEquals("us", data.propertiesMap["region"])
+        assertEquals(listOf("GLOBAL", "GLOBAL_SERVER"), data.templatesList)
     }
 
     @Test
@@ -58,6 +63,8 @@ class GroupMapperTest {
             name = "Lobby", memory = 1024, startThreshold = 0.7, minOnline = 1, maxOnline = 3,
             platform = "velocity", version = "3.5.0",
             properties = Properties().set(Properties.FALLBACK, "true"),
+            templates = listOf("GLOBAL", "Lobby"),
+            nodes = listOf("node-1"),
         )
         assertEquals(group, GroupMapper.toApi(GroupMapper.toProto(group)))
     }

@@ -65,6 +65,18 @@ class GroupBuilderTest {
     }
 
     @Test
+    fun `template appends to the ordered template list`() {
+        val group = builder().name("Lobby").template("GLOBAL").template("Lobby").submit()
+        assertEquals(listOf("GLOBAL", "Lobby"), group.templates)
+    }
+
+    @Test
+    fun `templates appends multiple entries in order`() {
+        val group = builder().name("Lobby").templates("GLOBAL", "GLOBAL_SERVER").template("Lobby").submit()
+        assertEquals(listOf("GLOBAL", "GLOBAL_SERVER", "Lobby"), group.templates)
+    }
+
+    @Test
     fun `fallback toggles the fallback property`() {
         val on = builder().name("Lobby").fallback().submit()
         assertTrue(on.isFallback())

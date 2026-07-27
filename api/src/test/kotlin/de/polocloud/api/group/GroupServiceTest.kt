@@ -3,6 +3,7 @@ package de.polocloud.api.group
 import de.polocloud.proto.GroupData
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -39,6 +40,8 @@ class GroupServiceTest {
         .setMaxOnline(2)
         .setPlatform(platform)
         .setVersion("1.21")
+        .addTemplates("GLOBAL")
+        .addTemplates(name)
         .build()
 
     private fun service(vararg groups: GroupData) = GroupService(FakeGroupApiClient(groups.toList()))
@@ -101,12 +104,48 @@ class GroupServiceTest {
         val client = FakeGroupApiClient(listOf(data("Lobby", "velocity")))
         val service = GroupService(client)
 
-        service.edit { builder ->
-            builder.name("Lobby").platform("paper").memory(2048)
+        service.edit("Lobby") { builder ->
+            builder.platform("paper").memory(2048)
         }
 
         assertEquals("paper", client.storage["Lobby"]!!.platform)
         assertEquals(2048, client.storage["Lobby"]!!.memory)
+    }
+
+    @Test
+    fun `edit preserves fields the editor did not touch`() {
+        val client = FakeGroupApiClient(listOf(data("Lobby", "velocity")))
+        val service = GroupService(client)
+
+        service.edit("Lobby") { builder -> builder.memory(2048) }
+
+        val updated = client.storage["Lobby"]!!
+        assertEquals(2048, updated.memory)
+        assertEquals(0.5, updated.startThreshold)
+        assertEquals(1, updated.minOnline)
+        assertEquals(2, updated.maxOnline)
+        assertEquals("velocity", updated.platform)
+        assertEquals("1.21", updated.version)
+        assertEquals(listOf("GLOBAL", "Lobby"), updated.templatesList)
+    }
+
+    @Test
+    fun `edit can append templates without losing existing ones`() {
+        val client = FakeGroupApiClient(listOf(data("Lobby", "velocity")))
+        val service = GroupService(client)
+
+        service.edit("Lobby") { builder -> builder.template("GLOBAL_SERVER") }
+
+        assertEquals(listOf("GLOBAL", "Lobby", "GLOBAL_SERVER"), client.storage["Lobby"]!!.templatesList)
+    }
+
+    @Test
+    fun `edit throws when no group with that name exists`() {
+        val service = service(data("Lobby", "velocity"))
+
+        assertThrows(NoSuchElementException::class.java) {
+            service.edit("Unknown") { }
+        }
     }
 
     @Test

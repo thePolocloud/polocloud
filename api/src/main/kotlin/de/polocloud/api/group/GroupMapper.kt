@@ -17,6 +17,7 @@ object GroupMapper {
         platform = data.platform,
         version = data.version,
         properties = Properties.of(data.propertiesMap),
+        templates = data.templatesList,
         nodes = data.nodesList,
     )
 
@@ -29,6 +30,7 @@ object GroupMapper {
         .setPlatform(group.platform)
         .setVersion(group.version)
         .putAllProperties(group.properties.asMap())
+        .addAllTemplates(group.templates)
         .addAllNodes(group.nodes)
         .build()
 }
