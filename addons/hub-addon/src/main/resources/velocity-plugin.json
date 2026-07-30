@@ -1,0 +1,9 @@
+{
+  "id": "polocloud-hub-addon",
+  "name": "Polocloud Hub Addon",
+  "version": "${version}",
+  "description": "Handle /hub and aliases commands",
+  "authors": ["polocloud"],
+  "main": "de.polocloud.addons.hub.velocity.VelocityHubBootstrap",
+  "dependencies": []
+}

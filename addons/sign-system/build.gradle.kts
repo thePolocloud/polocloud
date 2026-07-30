@@ -17,3 +17,15 @@ tasks.shadowJar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     mergeServiceFiles()
 }
+
+tasks.processResources {
+    val tokens = mapOf("version" to project.version.toString())
+    inputs.properties(tokens)
+    filesMatching(listOf("velocity-plugin.json", "bungee.yml")) {
+        expand(tokens)
+    }
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
+}

@@ -94,4 +94,7 @@ jobs:
           body_path: CHANGELOG.md
           prerelease: true
           draft: false
-          files: runner/build/libs/*.jar
+          files: |
+            runner/build/libs/*.jar
+            addons/sign-system/build/libs/*-all.jar
+            addons/hub-addon/build/libs/*-all.jar

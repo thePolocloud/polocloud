@@ -24,7 +24,7 @@ jline                   = "4.3.1"
 oshi                    = "7.4.2"
 
 # ── Proxy bridge ──────────────────────────────────────────────────────────────
-velocity-api            = "3.3.0-SNAPSHOT"
+velocity-api            = "4.1.0-SNAPSHOT"
 waterfall-api           = "1.20-R0.1-SNAPSHOT"
 shadow                  = "9.6.1"
 
