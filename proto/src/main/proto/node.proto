@@ -57,6 +57,13 @@ service NodeService {
   // another agree on the same secret. Only served to callers whose peer certificate CN
   // resolves to a known node id — see NodeServiceImpl.fetchForwardingSecret.
   rpc FetchForwardingSecret (FetchForwardingSecretRequest) returns (FetchForwardingSecretResponse);
+  // Raft-style leader election: a candidate asks every known peer for its vote in a
+  // given term. See NodeElectionService / ElectionState.
+  rpc RequestVote (RequestVoteRequest) returns (RequestVoteResponse);
+  // Raft-style leader lease: the current head periodically asserts its authority to
+  // every known peer so followers reset their election timeout instead of starting a
+  // new election. Also used to inform peers of a newly elected head immediately.
+  rpc LeaderHeartbeat (LeaderHeartbeatRequest) returns (LeaderHeartbeatResponse);
 }
 
 message FetchClusterCaRequest {}
@@ -83,6 +90,26 @@ message RelayEventRequest {
 
 message RelayEventResponse {
   bool success = 1;
+}
+
+message RequestVoteRequest {
+  int64 term = 1;
+  string candidate_id = 2;
+}
+
+message RequestVoteResponse {
+  int64 term = 1;
+  bool vote_granted = 2;
+}
+
+message LeaderHeartbeatRequest {
+  int64 term = 1;
+  string leader_id = 2;
+}
+
+message LeaderHeartbeatResponse {
+  int64 term = 1;
+  bool success = 2;
 }
 
 message NodeInformationRequest {}

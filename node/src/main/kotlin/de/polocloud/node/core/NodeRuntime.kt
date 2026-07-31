@@ -14,6 +14,7 @@ import de.polocloud.node.core.lifecycle.NodeLifecycle
 import de.polocloud.node.identity.NodeIdentityService
 import de.polocloud.node.identity.provider.FileBasedNodeIdProvider
 import de.polocloud.node.identity.provider.NodeIdProvider
+import kotlin.time.Duration.Companion.milliseconds
 
 class NodeRuntime(
     val launchProperties: NodeProperties,
@@ -32,18 +33,24 @@ class NodeRuntime(
         cliRegistrationService,
     )
 
+    val electionService = NodeElectionService()
+
     val identityService = NodeIdentityService(
         nodeId,
         holder,
         nodeRegistrationManager,
         cliRegistrationService,
-        cliSessionManager
+        cliSessionManager,
+        electionService
     )
 
     val lifecycle = NodeLifecycle(holder, this)
     val heartBeatService = NodeHeartBeatService()
 
-    val electionService = NodeElectionService()
-    val heartBeatMonitor = NodeHeartBeatMonitor(electionService)
+    val heartBeatMonitor = NodeHeartBeatMonitor(
+        electionService,
+        timeout = holder.value.cluster.timing.heartbeatCrashTimeoutMillis.milliseconds,
+        tickInterval = holder.value.cluster.timing.heartbeatMonitorTickMillis.milliseconds,
+    )
     val nodePruneService = NodePruneService()
 }

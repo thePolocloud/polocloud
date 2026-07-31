@@ -18,6 +18,10 @@ data class NodeData(
     var state: NodeState,
     var head: Boolean = false,
     var electedAt: Instant? = null,
+    /** Highest election term this node has observed. Persisted so a restart can't cause it to vote twice in the same term. */
+    var term: Long = 0,
+    /** Candidate this node voted for in [term]. Reset whenever [term] advances. */
+    var votedFor: UUID? = null,
     val version: String,
     val gitCommitHash: String,
     val firstConnection: Instant = Clock.System.now(),

@@ -46,3 +46,4 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+/graphify-out/

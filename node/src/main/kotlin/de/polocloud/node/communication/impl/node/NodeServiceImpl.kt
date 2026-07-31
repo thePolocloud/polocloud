@@ -1,6 +1,7 @@
 package de.polocloud.node.communication.impl.node
 
 import de.polocloud.common.communication.server.executor.GrpcServerExecutor
+import de.polocloud.node.cluster.election.NodeElectionService
 import de.polocloud.node.cluster.node.NodeRepository
 import de.polocloud.node.communication.grpc.GrpcContextFactory
 import de.polocloud.node.communication.interceptor.CliSessionInterceptor
@@ -12,6 +13,8 @@ import de.polocloud.proto.FetchClusterCaRequest
 import de.polocloud.proto.FetchClusterCaResponse
 import de.polocloud.proto.FetchForwardingSecretRequest
 import de.polocloud.proto.FetchForwardingSecretResponse
+import de.polocloud.proto.LeaderHeartbeatRequest
+import de.polocloud.proto.LeaderHeartbeatResponse
 import de.polocloud.proto.NodeEvent
 import de.polocloud.proto.NodeEventRequest
 import de.polocloud.proto.NodeInformationRequest
@@ -19,6 +22,8 @@ import de.polocloud.proto.NodeInformationResponse
 import de.polocloud.proto.NodeServiceGrpcKt
 import de.polocloud.proto.RelayEventRequest
 import de.polocloud.proto.RelayEventResponse
+import de.polocloud.proto.RequestVoteRequest
+import de.polocloud.proto.RequestVoteResponse
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -28,6 +33,7 @@ import java.util.UUID
 class NodeServiceImpl(
     private val executor: GrpcServerExecutor,
     private val serviceProvider: ServiceProvider,
+    private val electionService: NodeElectionService,
 ) : NodeServiceGrpcKt.NodeServiceCoroutineImplBase() {
 
     private val listeners = mutableSetOf<SendChannel<NodeEvent>>()
@@ -103,6 +109,39 @@ class NodeServiceImpl(
         return FetchForwardingSecretResponse.newBuilder()
             .setAvailable(true)
             .setSecret(serviceProvider.forwardingHandler.secret)
+            .build()
+    }
+
+    /**
+     * Restricted the same way as [fetchClusterCa]/[fetchForwardingSecret]: only callers
+     * whose peer certificate CN resolves to a known node id may participate in an
+     * election — an unauthenticated/unknown caller casting a "vote" could otherwise
+     * skew majority counting.
+     */
+    override suspend fun requestVote(request: RequestVoteRequest): RequestVoteResponse {
+        val callerId = runCatching { UUID.fromString(CliSessionInterceptor.SUBJECT_CTX_KEY.get()) }.getOrNull()
+        if (callerId == null || NodeRepository.find(callerId) == null) {
+            return RequestVoteResponse.newBuilder().setTerm(request.term).setVoteGranted(false).build()
+        }
+
+        val result = electionService.handleRequestVote(request.term, UUID.fromString(request.candidateId))
+        return RequestVoteResponse.newBuilder()
+            .setTerm(result.term)
+            .setVoteGranted(result.voteGranted)
+            .build()
+    }
+
+    /** Restricted the same way as [requestVote]. */
+    override suspend fun leaderHeartbeat(request: LeaderHeartbeatRequest): LeaderHeartbeatResponse {
+        val callerId = runCatching { UUID.fromString(CliSessionInterceptor.SUBJECT_CTX_KEY.get()) }.getOrNull()
+        if (callerId == null || NodeRepository.find(callerId) == null) {
+            return LeaderHeartbeatResponse.newBuilder().setTerm(request.term).setSuccess(false).build()
+        }
+
+        val result = electionService.handleLeaderHeartbeat(request.term, UUID.fromString(request.leaderId))
+        return LeaderHeartbeatResponse.newBuilder()
+            .setTerm(result.term)
+            .setSuccess(result.success)
             .build()
     }
 

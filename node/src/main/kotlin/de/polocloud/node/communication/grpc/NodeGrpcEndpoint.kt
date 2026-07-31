@@ -5,6 +5,7 @@ import de.polocloud.common.Closeable
 import de.polocloud.common.ShutdownMode
 import de.polocloud.common.communication.GrpcEndpoint
 import de.polocloud.common.communication.tls.MtlsConfig
+import de.polocloud.node.cluster.election.NodeElectionService
 import de.polocloud.node.communication.cli.session.CliSessionCleanup
 import de.polocloud.node.communication.cli.session.ICliSessionManager
 import de.polocloud.node.communication.impl.cluster.ClusterServiceImpl
@@ -38,11 +39,12 @@ class NodeGrpcEndpoint(
     cliSessionManager: ICliSessionManager,
     groupService: GroupService,
     serviceProvider: ServiceProvider,
+    electionService: NodeElectionService,
 ) : Closeable {
 
     private val executor = GrpcModule.createExecutor(groupService, serviceProvider)
 
-    private val nodeService = NodeServiceImpl(executor, serviceProvider)
+    private val nodeService = NodeServiceImpl(executor, serviceProvider, electionService)
     private val clusterService = ClusterServiceImpl(executor)
     private val serviceManager = ServiceManagerImpl(executor, serviceProvider)
     // Also exposed here (not only on ServiceGrpcEndpoint) so a peer node can fetch this

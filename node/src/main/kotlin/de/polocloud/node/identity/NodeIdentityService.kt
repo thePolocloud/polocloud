@@ -4,6 +4,7 @@ import de.polocloud.common.Address
 import de.polocloud.common.configuration.ConfigurationHolder
 import de.polocloud.i18n.api.trInfo
 import de.polocloud.node.bootstrap.properties.NodeProperties
+import de.polocloud.node.cluster.election.NodeElectionService
 import de.polocloud.node.cluster.node.LocalNodeContainer
 import de.polocloud.node.cluster.node.NodeFactory
 import de.polocloud.node.cluster.node.NodeRepository
@@ -34,6 +35,7 @@ class NodeIdentityService(
     private val registrationManager: RegistrationManager,
     private val cliRegistrationService: CliRegistrationService,
     private val cliSessionManager: ICliSessionManager,
+    private val electionService: NodeElectionService,
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -66,7 +68,8 @@ class NodeIdentityService(
             cliRegistrationService,
             cliSessionManager,
             groupService,
-            serviceProvider
+            serviceProvider,
+            electionService
         )
 
         val serviceGrpc = ServiceGrpcEndpoint(

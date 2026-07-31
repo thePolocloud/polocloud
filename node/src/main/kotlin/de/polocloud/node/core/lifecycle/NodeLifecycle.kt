@@ -16,6 +16,7 @@ import de.polocloud.updater.UpdateChecker
 import de.polocloud.updater.Updater
 import org.apache.logging.log4j.LogManager
 import org.slf4j.LoggerFactory
+import kotlin.time.Duration.Companion.milliseconds
 
 class NodeLifecycle(
     val holder: ConfigurationHolder<NodeConfigurations>,
@@ -69,7 +70,14 @@ class NodeLifecycle(
 
         container.markOnline()
 
-        runtime.heartBeatService.startScheduler()
+        val timing = holder.value.cluster.timing
+        runtime.heartBeatService.startScheduler(timing.heartbeatIntervalMillis.milliseconds)
+        runtime.electionService.start(
+            container.data.id,
+            baseTimeout = timing.electionBaseTimeoutMillis.milliseconds,
+            jitterRangeMillis = timing.electionJitterRangeMillis,
+            heartbeatInterval = timing.leaderHeartbeatIntervalMillis.milliseconds,
+        )
         runtime.heartBeatMonitor.start()
         runtime.nodePruneService.start()
 
@@ -114,6 +122,11 @@ class NodeLifecycle(
             runtime.heartBeatMonitor.stop()
         }
 
+        safe("electionService") {
+            runtime.electionService.onHeadNodeLeft()
+            runtime.electionService.stop()
+        }
+
         safe("nodePruneService") {
             runtime.nodePruneService.stop()
         }
@@ -137,10 +150,6 @@ class NodeLifecycle(
 
         safe("localNodeContainer") {
             container.markStopped()
-        }
-
-        safe("electionService") {
-            runtime.electionService.onHeadNodeLeft(context.localNodeContainer.data)
         }
 
         safe("database") {

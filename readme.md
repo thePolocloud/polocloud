@@ -1,5 +1,9 @@
 # PoloCloud
 
+## Architecture
+
+- [Cluster architecture](node/CLUSTER.md) — node lifecycle, leader election, heartbeats/crash detection, cross-node operations.
+
 ## Versioning
 
 PoloCloud versions look like `3.1.0` (stable) or `3.0.7-dev.42` (pre-release) — `major.minor.patch[-channel.build]`.
