@@ -44,6 +44,38 @@ class PlatformService {
     }
 
     /**
+     * Force re-downloads the latest `polocloud-platforms` template bundle and rebuilds the
+     * built-in platforms/task definitions from it, regardless of whether [cacheDir] already
+     * has content — unlike [load], which only downloads when the cache is empty. Custom
+     * platforms are left untouched. Used by the `reload` command to resync platform versions
+     * without requiring a full node restart.
+     */
+    fun resync() {
+        val download = runCatching { PlatformDownloader.downloadInto(cacheDir) }
+        if (download.isFailure) {
+            logger.error("Failed to download platform templates", download.exceptionOrNull())
+            return
+        }
+
+        val templates = loadTemplatesFromCache(cacheDir)
+        if (templates.isEmpty()) {
+            logger.warn("No platform templates available in {}", cacheDir.path)
+            return
+        }
+
+        platforms.entries.removeAll { !it.value.custom }
+        convertTemplatesToPlatform(templates).forEach { platforms[it.name] = it }
+
+        taskDefinitions.clear()
+        taskDefinitions.putAll(loadTaskDefinitionsFromCache(cacheDir))
+
+        logger.info("Resynced {} platform(s): {}", platforms.size, platforms.keys.joinToString())
+        if (taskDefinitions.isNotEmpty()) {
+            logger.info("Loaded {} task definition(s): {}", taskDefinitions.size, taskDefinitions.keys.joinToString())
+        }
+    }
+
+    /**
      * Loads every persisted [de.polocloud.node.services.factory.platform.custom.CustomPlatform]
      * and merges it into [platforms]. Unlike built-in platforms, these survive a node restart
      * by being read back here rather than re-derived from the downloaded template bundle.
