@@ -5,6 +5,7 @@ import de.polocloud.node.bootstrap.properties.NodeProperties
 import de.polocloud.node.cluster.election.NodeElectionService
 import de.polocloud.node.cluster.heartbeat.NodeHeartBeatMonitor
 import de.polocloud.node.cluster.heartbeat.NodeHeartBeatService
+import de.polocloud.node.cluster.node.NodePruneService
 import de.polocloud.node.communication.cli.session.CliSessionManager
 import de.polocloud.node.communication.registration.cli.CliRegistrationService
 import de.polocloud.node.communication.registration.node.RegistrationManager
@@ -44,4 +45,5 @@ class NodeRuntime(
 
     val electionService = NodeElectionService()
     val heartBeatMonitor = NodeHeartBeatMonitor(electionService)
+    val nodePruneService = NodePruneService()
 }

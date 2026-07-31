@@ -16,6 +16,8 @@ object NodeRepository {
 
     fun save(node: NodeData) = DatabaseAccess.executor().save(nodeDatabaseKey, node)
 
+    fun delete(node: NodeData) = DatabaseAccess.executor().delete(nodeDatabaseKey, node)
+
     fun findAll() = DatabaseAccess.executor().findAll(nodeDatabaseKey)
 
     fun count() = DatabaseAccess.executor().count(nodeDatabaseKey)

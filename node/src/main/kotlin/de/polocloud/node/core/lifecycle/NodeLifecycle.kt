@@ -71,6 +71,7 @@ class NodeLifecycle(
 
         runtime.heartBeatService.startScheduler()
         runtime.heartBeatMonitor.start()
+        runtime.nodePruneService.start()
 
         context.groupService.run()
         context.serviceProvider.run()
@@ -111,6 +112,10 @@ class NodeLifecycle(
 
         safe("heartBeatMonitor") {
             runtime.heartBeatMonitor.stop()
+        }
+
+        safe("nodePruneService") {
+            runtime.nodePruneService.stop()
         }
 
         safe("heartBeatService") {
