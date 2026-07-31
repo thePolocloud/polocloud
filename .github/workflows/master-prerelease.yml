@@ -86,6 +86,22 @@ jobs:
           echo "Generated changelog:"
           cat CHANGELOG.md
 
+      - name: Stage release assets
+        run: |
+          # GitHub release assets are always a flat list (no real subfolders without
+          # zipping, which we don't want), so we just normalize every asset's file name
+          # to start with "polocloud-" here instead.
+          mkdir -p release-assets
+          for f in \
+            runner/build/libs/*.jar \
+            addons/sign-system/build/libs/*-all.jar \
+            addons/hub-addon/build/libs/*-all.jar \
+            addons/notifiy-addon/build/libs/*-all.jar \
+          ; do
+            cp "$f" "release-assets/polocloud-$(basename "$f")"
+          done
+          ls -la release-assets
+
       - name: Create GitHub Pre-Release
         uses: softprops/action-gh-release@v3
         with:
@@ -94,7 +110,4 @@ jobs:
           body_path: CHANGELOG.md
           prerelease: true
           draft: false
-          files: |
-            runner/build/libs/*.jar
-            addons/sign-system/build/libs/*-all.jar
-            addons/hub-addon/build/libs/*-all.jar
+          files: release-assets/*

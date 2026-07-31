@@ -4,6 +4,7 @@ import de.polocloud.shared.event.group.GroupUpdatedEvent
 import de.polocloud.shared.event.server.PlayerCountChangedEvent
 import de.polocloud.shared.event.server.ServerStartedEvent
 import de.polocloud.shared.event.server.ServerStoppedEvent
+import de.polocloud.shared.event.server.ServiceOnlineEvent
 import de.polocloud.shared.property.Properties
 import de.polocloud.shared.service.Service
 import de.polocloud.shared.service.ServiceState
@@ -29,6 +30,7 @@ class EventSerializationTest {
     fun `every shipped event is registered`() {
         assertNotNull(EventRegistry.classFor("ServerStartedEvent"))
         assertNotNull(EventRegistry.classFor("ServerStoppedEvent"))
+        assertNotNull(EventRegistry.classFor("ServiceOnlineEvent"))
         assertNotNull(EventRegistry.classFor("GroupUpdatedEvent"))
         assertNotNull(EventRegistry.classFor("PlayerCountChangedEvent"))
     }
@@ -60,6 +62,16 @@ class EventSerializationTest {
         val decoded = EventCodec.decode(encoded.name, encoded.data)
         val event = assertInstanceOf(ServerStoppedEvent::class.java, decoded)
         assertEquals(service.name(), event.service.name())
+    }
+
+    @Test
+    fun `ServiceOnlineEvent round-trips through the codec`() {
+        val encoded = EventCodec.encode(ServiceOnlineEvent(service))
+        assertEquals("ServiceOnlineEvent", encoded.name)
+
+        val decoded = EventCodec.decode(encoded.name, encoded.data)
+        val event = assertInstanceOf(ServiceOnlineEvent::class.java, decoded)
+        assertEquals(service, event.service)
     }
 
     @Test

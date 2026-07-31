@@ -1,0 +1,9 @@
+{
+  "id": "polocloud-notify-addon",
+  "name": "Polocloud Notify Addon",
+  "version": "${version}",
+  "description": "Notifies players with a permission when a service starts, comes online or stops",
+  "authors": ["polocloud"],
+  "main": "de.polocloud.addons.notify.velocity.VelocityNotifyBootstrap",
+  "dependencies": []
+}

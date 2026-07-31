@@ -18,12 +18,15 @@ class SignRegistry {
     }
 
     fun detach(position: SignPosition): SignEntry? {
-        val entry = entries.firstOrNull { it.position == position } ?: return null
+        val entry = at(position) ?: return null
         entries.remove(entry)
         return entry
     }
 
     fun all(): List<SignEntry> = entries
+
+    /** The entry attached at [position], if any. */
+    fun at(position: SignPosition): SignEntry? = entries.firstOrNull { it.position == position }
 
     /** A group's entry not yet bound to a service, if any — used to bind a newly started service. */
     fun findFree(group: String): SignEntry? =

@@ -2,6 +2,7 @@ package de.polocloud.addons.sign.system.spigot.renderer
 
 import de.polocloud.addons.sign.system.SignPosition
 import org.bukkit.Bukkit
+import org.bukkit.block.Block
 import org.bukkit.block.BlockState
 
 /**
@@ -16,3 +17,9 @@ inline fun <reified T : BlockState> SignPosition.blockStateAt(): T? {
     val bukkitWorld = Bukkit.getWorld(world) ?: return null
     return bukkitWorld.getBlockAt(x, y, z).state as? T
 }
+
+/** The [SignPosition] this block occupies. */
+fun Block.toSignPosition(): SignPosition = SignPosition(x, y, z, world.name)
+
+/** The [SignPosition] this block state occupies. */
+fun BlockState.toSignPosition(): SignPosition = SignPosition(x, y, z, world.name)
