@@ -1,5 +1,6 @@
 package de.polocloud.addons.sign.system.spigot.command
 
+import de.polocloud.addons.sign.system.SIGN_MANAGED_PERMISSION
 import de.polocloud.addons.sign.system.SignPosition
 import de.polocloud.addons.sign.system.SignSystem
 import de.polocloud.addons.sign.system.spigot.BukkitSignPlatform
@@ -17,6 +18,11 @@ class SignCommand(
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String?>): Boolean {
         val player = sender as? Player ?: run {
             sender.sendMessage("§cThis command can only be used by a player!")
+            return true
+        }
+
+        if(!player.hasPermission(SIGN_MANAGED_PERMISSION)) {
+            sender.sendMessage("§cYou dont have permission to use this command!")
             return true
         }
 
