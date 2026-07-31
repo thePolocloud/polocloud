@@ -9,7 +9,8 @@ import kotlinx.serialization.Serializable
  * cluster events.
  *
  * Lives in `shared` (not `api`) so both the node (which publishes it on
- * [de.polocloud.shared.event.server.ServerStartedEvent] /
+ * [de.polocloud.shared.event.server.ServerStartEvent] /
+ * [de.polocloud.shared.event.server.ServiceOnlineEvent] /
  * [de.polocloud.shared.event.server.ServerStoppedEvent]) and the api/bridge
  * (which consume it) can use the exact same type without depending on each other.
  *

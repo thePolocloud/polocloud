@@ -31,8 +31,8 @@ import java.util.function.Consumer
  * Obtain the shared instance via [de.polocloud.api.Polocloud.eventService].
  *
  * ```kotlin
- * Polocloud.eventService.subscribe(ServerStartedEvent::class.java) { event ->
- *     println("started: ${event.serviceName}")
+ * Polocloud.eventService.subscribe(ServiceOnlineEvent::class.java) { event ->
+ *     println("online: ${event.service.name()}")
  * }
  * ```
  */

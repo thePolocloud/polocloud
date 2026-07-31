@@ -1,10 +1,12 @@
 package de.polocloud.node.services.factory
 
 import de.polocloud.common.version.PolocloudVersion
+import de.polocloud.node.event.ClusterEventService
 import de.polocloud.node.forwarding.ForwardingHandler
 import de.polocloud.node.group.Group
 import de.polocloud.node.group.template.GroupTemplateService
 import de.polocloud.node.services.LocalService
+import de.polocloud.node.services.ServiceEventMapper
 import de.polocloud.node.services.ServiceProvider
 import de.polocloud.shared.service.ServiceState
 import de.polocloud.node.services.factory.platform.Platform
@@ -13,6 +15,7 @@ import de.polocloud.node.services.factory.process.PlatformProcess
 import de.polocloud.node.services.factory.task.TaskExecutor
 import de.polocloud.node.security.ServiceIdentityProvisioner
 import de.polocloud.node.utils.PortDetector
+import de.polocloud.shared.event.server.ServerStartEvent
 import de.polocloud.shared.service.Service
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -44,6 +47,13 @@ class FactoryService(
     }
 
     fun start(service: LocalService, group: Group) {
+        // Fired right here, before anything else — platform resolution, the port/host
+        // assignment, and the actual process launch all happen below and can still fail.
+        // This is a "start requested" signal, not a readiness one: subscribers that need
+        // a real address/RUNNING state should use ServiceOnlineEvent (fired later, from
+        // ServicePingFactory.markOnline, once the service actually answers a ping).
+        ClusterEventService.call(ServerStartEvent(ServiceEventMapper.toShared(service)))
+
         val platform = platformService.find(group.platform)
             ?: throw IllegalArgumentException("Platform '${group.platform}' is not loaded")
         val version = platform.versions.find { it.version == group.version }
@@ -97,7 +107,7 @@ class FactoryService(
         service.startLogCapture()
         // The process is alive but the server is still loading — it only counts as online
         // once ServicePingFactory can reach it, which then flips the state to RUNNING and
-        // fires ServerStartedEvent.
+        // fires ServiceOnlineEvent.
         service.state = ServiceState.STARTING
         serviceProvider.localServices.add(service)
         // Persist the now-assigned port/host/state so the database reflects the live

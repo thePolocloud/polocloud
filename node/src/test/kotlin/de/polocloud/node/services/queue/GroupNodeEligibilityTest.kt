@@ -17,7 +17,7 @@ import java.util.UUID
 class GroupNodeEligibilityTest {
 
     private fun node(name: String) =
-        NodeData(id = UUID.randomUUID(), index = 1, groupName = name, hostname = "10.0.0.1", port = 4240, state = NodeState.ONLINE, version = "3", gitCommitHash = "abc")
+        NodeData(id = UUID.randomUUID(), nodeIndex = 1, groupName = name, hostname = "10.0.0.1", port = 4240, state = NodeState.ONLINE, version = "3", gitCommitHash = "abc")
 
     private fun group(nodes: List<String> = emptyList()) =
         Group("lobby", 512, 0.0, 1, 10, "PAPER", "1.21", nodesJson = TemplateCodec.encode(nodes))

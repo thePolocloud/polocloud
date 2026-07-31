@@ -62,7 +62,7 @@ class ServiceQueueEligibilityTest {
     // maxMemory defaults to 0 ("unknown/unlimited" — see NodeData.maxMemory) so existing
     // tests aren't affected by the memory-capacity cap; the capacity tests below opt in.
     private fun node(id: UUID, name: String, maxMemory: Int = 0) =
-        NodeData(id = id, index = 1, groupName = name, hostname = "10.0.0.1", port = 4240, state = NodeState.ONLINE, version = "3", gitCommitHash = "abc", maxMemory = maxMemory)
+        NodeData(id = id, nodeIndex = 1, groupName = name, hostname = "10.0.0.1", port = 4240, state = NodeState.ONLINE, version = "3", gitCommitHash = "abc", maxMemory = maxMemory)
 
     private fun group(name: String = "lobby", minOnline: Long = 1, nodes: List<String> = emptyList()) =
         Group(name, 512, 0.0, minOnline, 10, "PAPER", "1.21", nodesJson = TemplateCodec.encode(nodes))

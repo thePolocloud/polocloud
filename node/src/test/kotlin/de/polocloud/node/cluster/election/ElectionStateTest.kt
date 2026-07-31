@@ -29,7 +29,7 @@ class ElectionStateTest {
 
     private fun node(id: UUID, index: Int) = NodeData(
         id = id,
-        index = index,
+        nodeIndex = index,
         hostname = "10.0.0.$index",
         port = 4240 + index,
         state = NodeState.ONLINE,
@@ -121,6 +121,19 @@ class ElectionStateTest {
         assertEquals(ElectionState.Role.FOLLOWER, state.role)
         assertEquals(peerAId, state.currentLeader)
         assertEquals(listOf(peerAId to 1L), leaderChanges)
+    }
+
+    @Test
+    fun `an established leader ignores a conflicting same-term leader claim from another node`() = runBlocking {
+        val state = newState(members = listOf(node(selfId, 1)))
+        state.startElection() // sole member -> becomes leader immediately, term 1
+
+        val result = state.handleLeaderHeartbeat(state.currentTerm, peerAId)
+
+        assertFalse(result.success)
+        assertEquals(ElectionState.Role.LEADER, state.role)
+        assertEquals(selfId, state.currentLeader)
+        assertEquals(listOf(selfId to 1L), leaderChanges) // no second/spurious leader change
     }
 
     @Test

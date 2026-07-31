@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Node-side half of the cluster's tab-completion protocol: asks whichever service/plugin is
  * registered under a given service name to suggest console completions, addressed and
  * correlated via [TabCompleteRequestEvent]/[TabCompleteResponseEvent] over the existing
- * [ClusterEventService] cluster event bus (the same one carrying e.g. `ServerStartedEvent`),
+ * [ClusterEventService] cluster event bus (the same one carrying e.g. `ServiceOnlineEvent`),
  * so it works whether the target service runs on this node or a peer one.
  *
  * Support is entirely opt-in on the answering side — currently only the Velocity bridge

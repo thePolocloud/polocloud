@@ -2,14 +2,13 @@ package de.polocloud.node.communication.impl.services
 
 import de.polocloud.common.communication.certificate.certToPem
 import de.polocloud.common.communication.certificate.parseCsr
-import de.polocloud.node.cluster.node.NodeRepository
+import de.polocloud.node.core.environment.NodeEnvironment
 import de.polocloud.node.security.NodeCertificateStorage
 import de.polocloud.node.security.SanBuilder
 import de.polocloud.proto.RegisterServiceRequest
 import de.polocloud.proto.RegisterServiceResponse
 import de.polocloud.proto.ServiceRegistrationServiceGrpcKt
 import org.slf4j.LoggerFactory
-import java.util.UUID
 
 /**
  * Signs the mTLS identity of a service launched on some *other* node in the cluster.
@@ -27,10 +26,10 @@ class ServiceRegistrationServiceImpl : ServiceRegistrationServiceGrpcKt.ServiceR
     private val logger = LoggerFactory.getLogger(ServiceRegistrationServiceImpl::class.java)
 
     override suspend fun registerService(request: RegisterServiceRequest): RegisterServiceResponse {
-        val localId = runCatching { UUID.fromString(NodeCertificateStorage.nodeId) }.getOrNull()
-        val isHead = localId?.let { NodeRepository.find(it) }?.head == true
-
-        if (!isHead) {
+        // Live in-memory Raft role, not the NodeRepository.head DB projection — see
+        // ServiceIdentityProvisioner.isHead for why that column alone isn't trustworthy
+        // enough to gate signing on.
+        if (!NodeEnvironment.runtime.electionService.isHead()) {
             return deny("This node is not the cluster head and cannot sign service certificates.")
         }
 

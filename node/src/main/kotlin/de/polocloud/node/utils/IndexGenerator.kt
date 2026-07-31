@@ -6,7 +6,7 @@ object IndexGenerator {
 
     fun generateNode(): Int {
         val usedIndexes = NodeRepository.findAll()
-            .map { it.index }
+            .map { it.nodeIndex }
             .toSet()
 
         return generate(usedIndexes)

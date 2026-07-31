@@ -48,12 +48,15 @@ class NodeHeartBeatMonitorTest {
     private val timeout = 15.seconds
     private val monitor = NodeHeartBeatMonitor(NodeElectionService(), timeout)
 
-    private fun onlineNode(lastConnection: kotlin.time.Instant, index: Int) = NodeData(
+    private fun onlineNode(lastConnection: kotlin.time.Instant, index: Int) =
+        node(lastConnection, index, NodeState.ONLINE)
+
+    private fun node(lastConnection: kotlin.time.Instant, index: Int, state: NodeState) = NodeData(
         id = UUID.randomUUID(),
-        index = index,
+        nodeIndex = index,
         hostname = "10.0.0.$index",
         port = 4240 + index,
-        state = NodeState.ONLINE,
+        state = state,
         version = "3",
         gitCommitHash = "abc",
         lastConnection = lastConnection,
@@ -140,5 +143,26 @@ class NodeHeartBeatMonitorTest {
         monitor.checkAll()
 
         assertEquals(NodeState.ONLINE, NodeRepository.find(node.id)?.state)
+    }
+
+    @Test
+    fun `a node stuck in STARTING with a stale lastConnection is marked crashed`() {
+        // Not just ONLINE nodes: one that died before finishing startup must also reach
+        // CRASHED eventually, otherwise it's never eligible for NodePruneService and
+        // permanently inflates the election quorum denominator.
+        val node = node(lastConnection = now() - timeout - 5.seconds, index = 6, state = NodeState.STARTING)
+
+        monitor.checkAll()
+
+        assertEquals(NodeState.CRASHED, NodeRepository.find(node.id)?.state)
+    }
+
+    @Test
+    fun `an already stopped node is left untouched`() {
+        val node = node(lastConnection = now() - timeout - 5.seconds, index = 7, state = NodeState.STOPPED)
+
+        monitor.checkAll()
+
+        assertEquals(NodeState.STOPPED, NodeRepository.find(node.id)?.state)
     }
 }

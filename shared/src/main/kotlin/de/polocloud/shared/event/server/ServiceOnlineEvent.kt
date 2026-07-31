@@ -10,9 +10,10 @@ import kotlinx.serialization.Serializable
  * as an OS process. See [de.polocloud.shared.service.ServiceState.RUNNING] and the node's
  * `ServicePingFactory.markOnline`, which is the sole place this is dispatched from.
  *
- * Distinct from [ServerStartedEvent], which existing consumers (bridge, sign-system) rely
- * on to mean the same "confirmed reachable" moment but under a more general lifecycle name;
- * this event exists for consumers that want a name that unambiguously means "online".
+ * Distinct from [de.polocloud.shared.event.server.ServerStartEvent], which fires much
+ * earlier — right at the beginning of the start process, before the service even has a
+ * port/host assigned. Consumers that need "actually reachable" semantics (bridge,
+ * sign-system) subscribe to this event, not that one.
  *
  * @param service the now-online service, including its address (host/port).
  */

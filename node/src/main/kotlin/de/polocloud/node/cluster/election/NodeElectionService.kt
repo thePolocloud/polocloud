@@ -65,8 +65,16 @@ class NodeElectionService {
         return election?.let { it.role == ElectionState.Role.LEADER && it.currentLeader == id } == true
     }
 
+    /**
+     * Marks [failed] as [NodeState.CRASHED] once its liveness reference (heartbeat or
+     * [NodeData.lastConnection]) goes stale — regardless of which non-terminal state it
+     * was in, not just [NodeState.ONLINE]: a node stuck in `STARTING`/`SYNCING` (died
+     * before finishing startup) or `STOPPING` (killed mid-shutdown) needs to reach
+     * `CRASHED` too, otherwise it never becomes eligible for [de.polocloud.node.cluster.node.NodePruneService]
+     * and permanently inflates the election quorum denominator. No-op if already terminal.
+     */
     fun onNodeCrashed(failed: NodeData) {
-        if (failed.state == NodeState.ONLINE) {
+        if (failed.state != NodeState.CRASHED && failed.state != NodeState.STOPPED) {
             failed.state = NodeState.CRASHED
             NodeRepository.save(failed)
             logger.warn("Node ${failed.name()} marked as CRASHED")

@@ -33,7 +33,13 @@ class RegistrationManager(
 
     fun allowRequests() = registrationServer.allowRequests()
 
-    fun tryJoinCluster(registrationInfo: RegistrationInfo, localId : UUID, group: String) {
+    /**
+     * @return `true` once the certificate is saved and this node is registered,
+     * `false` if the cluster denied the request (invalid/reused token, version
+     * mismatch, ...) — callers must check this before proceeding, since nothing about
+     * this node exists in [de.polocloud.node.cluster.node.NodeRepository] on `false`.
+     */
+    fun tryJoinCluster(registrationInfo: RegistrationInfo, localId : UUID, group: String): Boolean {
         val client = RegistrationClient()
         val csr = CertificateSigningRequestGenerator(NodeCertificateStorage.keyPair, localId).generate().toPem()
 
@@ -41,9 +47,10 @@ class RegistrationManager(
 
         if (!response.accepted) {
             logger.warn(TranslationService.tr("cluster", "cluster.registration.node.denied", "reason" to response.message))
-            return
+            return false
         }
         NodeCertificateStorage.saveCertificates(response.certificate,response.caCertificate)
+        return true
     }
 
     override fun close(mode: ShutdownMode) = registrationServer.close(mode)

@@ -6,8 +6,8 @@ import de.polocloud.addons.sign.system.layout.SignPlaceholders
 import de.polocloud.api.Polocloud
 import de.polocloud.api.event.subscribe
 import de.polocloud.shared.event.server.PlayerCountChangedEvent
-import de.polocloud.shared.event.server.ServerStartedEvent
 import de.polocloud.shared.event.server.ServerStoppedEvent
+import de.polocloud.shared.event.server.ServiceOnlineEvent
 import de.polocloud.shared.service.Service
 import de.polocloud.shared.service.ServiceState
 import java.util.concurrent.atomic.AtomicLong
@@ -40,7 +40,10 @@ class SignSystem(private val platform: SignPlatform) {
         Polocloud.serviceService.findAll().forEach(::bind)
         renderAll()
 
-        Polocloud.eventService.subscribe<ServerStartedEvent> { bind(it.service) }
+        // ServiceOnlineEvent, not ServerStartEvent: a sign must only bind to a service
+        // that's actually reachable/RUNNING, and ServerStartEvent now fires much earlier
+        // — before the service even has a port/host assigned.
+        Polocloud.eventService.subscribe<ServiceOnlineEvent> { bind(it.service) }
         Polocloud.eventService.subscribe<ServerStoppedEvent> { unbind(it.service) }
         Polocloud.eventService.subscribe<PlayerCountChangedEvent> { refresh(it.service) }
 

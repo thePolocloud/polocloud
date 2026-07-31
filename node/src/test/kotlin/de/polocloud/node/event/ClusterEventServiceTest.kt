@@ -34,10 +34,10 @@ class ClusterEventServiceTest {
         ClusterEventService.peerRelay = { relayed += it }
 
         ClusterEventService.publish(
-            EventContext.newBuilder().setEventName("ServerStartedEvent").setEventData("{}").build()
+            EventContext.newBuilder().setEventName("ServerStartEvent").setEventData("{}").build()
         )
 
-        assertEquals(listOf("ServerStartedEvent"), relayed.map { it.name })
+        assertEquals(listOf("ServerStartEvent"), relayed.map { it.name })
     }
 
     @Test

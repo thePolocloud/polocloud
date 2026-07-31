@@ -124,7 +124,15 @@ class NodeIdentityService(
         }
 
 
-        registrationManager.tryJoinCluster(launchProperties.clusterRegistration, localId, launchProperties.group)
+        // Confirmed by actually running this against a rejected join (reused token):
+        // without this check, the code fell through to grpc.start() and eventually
+        // `NodeRepository.find(localId)!!` below, crashing on an unrelated NPE instead
+        // of the clear, actionable error a denied join should produce.
+        if (!registrationManager.tryJoinCluster(launchProperties.clusterRegistration, localId, launchProperties.group)) {
+            throw IllegalStateException(
+                "This node '$localId' was denied registration by the cluster — check that the registration token is valid, unused, and this node's version matches the cluster's."
+            )
+        }
         adoptClusterCaKeyPair()
         adoptForwardingSecret(serviceProvider)
 

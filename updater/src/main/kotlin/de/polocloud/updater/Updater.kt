@@ -116,6 +116,22 @@ object Updater {
         }
     }
 
+    /**
+     * Restarts the current process (same jar, same original launch args) with
+     * [extraJvmArgs] inserted as additional `-D...` JVM arguments before `-jar` — e.g. so
+     * the node's `cluster join` wizard can hand a one-shot join token to the next boot via
+     * system properties, the same way [downloadAndRestartIfAvailable] restarts to apply a
+     * staged update, just parameterized instead of always relaunching with none.
+     *
+     * @return `false` if the running jar path couldn't be determined — nothing was
+     * restarted, and the caller should fall back to telling the operator to restart
+     * manually. Otherwise this function never returns (the process exits).
+     */
+    fun restart(extraJvmArgs: List<String> = emptyList()): Boolean {
+        val jar = runningJarPath() ?: return false
+        relaunch(jar, extraJvmArgs)
+    }
+
     private fun runningJarPath(): Path? =
         System.getProperty("java.class.path")
             ?.let { runCatching { Paths.get(it) }.getOrNull() }
@@ -173,15 +189,17 @@ object Updater {
             EmbeddedModule(groupId, artifactId, version)
         }
 
-    /** Spawns a fresh, detached `java -jar <jar> <original args>` process, then exits this one. */
-    private fun relaunch(jar: Path): Nothing {
+    /** Spawns a fresh, detached `java <extraJvmArgs> -jar <jar> <original args>` process, then exits this one. */
+    private fun relaunch(jar: Path, extraJvmArgs: List<String> = emptyList()): Nothing {
         val javaBin = Paths.get(System.getProperty("java.home"), "bin", "java").toString()
         val launchArgs = System.getProperty(LAUNCH_ARGS_PROPERTY)
             ?.takeIf { it.isNotEmpty() }
             ?.split(LAUNCH_ARGS_SEPARATOR)
             ?: emptyList()
 
-        val command = mutableListOf(javaBin, "-jar", jar.toAbsolutePath().toString())
+        val command = mutableListOf(javaBin)
+        command += extraJvmArgs
+        command += listOf("-jar", jar.toAbsolutePath().toString())
         command += launchArgs
 
         ProcessBuilder(command)

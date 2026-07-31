@@ -4,8 +4,8 @@ import de.polocloud.api.Polocloud
 import de.polocloud.api.event.subscribe
 import de.polocloud.api.group.GroupFilterType
 import de.polocloud.shared.event.group.GroupUpdatedEvent
-import de.polocloud.shared.event.server.ServerStartedEvent
 import de.polocloud.shared.event.server.ServerStoppedEvent
+import de.polocloud.shared.event.server.ServiceOnlineEvent
 import de.polocloud.shared.property.Properties
 import de.polocloud.shared.service.Service
 import de.polocloud.shared.service.ServiceState
@@ -56,8 +56,11 @@ class BridgeBootstrap<T>(private val instance: BridgeInstance<T>) {
         // Then keep the registry in sync: the node pushes a lifecycle event whenever a
         // server starts or stops, so services that come and go after boot are added and
         // removed on the proxy instead of only reflecting the boot-time snapshot.
-        Polocloud.eventService.subscribe<ServerStartedEvent> { event ->
-            log("Server started in cluster: ${event.service.name()} (group: ${event.service.group})")
+        // ServiceOnlineEvent (not ServerStartEvent, which fires much earlier — before the
+        // service even has a port/host) is what's needed here: registering a service on
+        // the proxy requires a real, reachable address.
+        Polocloud.eventService.subscribe<ServiceOnlineEvent> { event ->
+            log("Server online in cluster: ${event.service.name()} (group: ${event.service.group})")
             registerIfEligible(event.service)
         }
         Polocloud.eventService.subscribe<ServerStoppedEvent> { event ->

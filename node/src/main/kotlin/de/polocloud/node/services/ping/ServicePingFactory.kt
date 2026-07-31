@@ -7,7 +7,6 @@ import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.services.ServiceResourceSampler
 import de.polocloud.shared.service.ServiceState
 import de.polocloud.shared.event.server.PlayerCountChangedEvent
-import de.polocloud.shared.event.server.ServerStartedEvent
 import de.polocloud.shared.event.server.ServiceOnlineEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -127,12 +126,11 @@ class ServicePingFactory(private val serviceProvider: ServiceProvider) {
             result.onlinePlayers, result.maxPlayers, result.latencyMillis,
         )
 
-        // Re-broadcast the started event now that the service is reachable, so
-        // subscribers see it with its confirmed RUNNING state.
+        // ServerStartEvent already fired back when the start process began (see
+        // FactoryService.start) — this is the "confirmed reachable" signal, fired once
+        // the service has actually answered a ping, for consumers (bridge, sign-system,
+        // the notify addon) that need a real address/RUNNING state, not just "starting".
         val shared = ServiceEventMapper.toShared(service)
-        ClusterEventService.call(ServerStartedEvent(shared))
-        // Dedicated "confirmed online" event, distinct from ServerStartedEvent, for
-        // consumers (e.g. the notify addon) that want an unambiguous "online" signal.
         ClusterEventService.call(ServiceOnlineEvent(shared))
     }
 

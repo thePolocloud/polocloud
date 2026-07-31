@@ -2,7 +2,7 @@ package de.polocloud.shared.event
 
 import de.polocloud.shared.event.group.GroupUpdatedEvent
 import de.polocloud.shared.event.server.PlayerCountChangedEvent
-import de.polocloud.shared.event.server.ServerStartedEvent
+import de.polocloud.shared.event.server.ServerStartEvent
 import de.polocloud.shared.event.server.ServerStoppedEvent
 import de.polocloud.shared.event.server.ServiceOnlineEvent
 import de.polocloud.shared.property.Properties
@@ -28,7 +28,7 @@ class EventSerializationTest {
 
     @Test
     fun `every shipped event is registered`() {
-        assertNotNull(EventRegistry.classFor("ServerStartedEvent"))
+        assertNotNull(EventRegistry.classFor("ServerStartEvent"))
         assertNotNull(EventRegistry.classFor("ServerStoppedEvent"))
         assertNotNull(EventRegistry.classFor("ServiceOnlineEvent"))
         assertNotNull(EventRegistry.classFor("GroupUpdatedEvent"))
@@ -42,16 +42,16 @@ class EventSerializationTest {
 
     @Test
     fun `nameOf uses the simple class name`() {
-        assertEquals("ServerStartedEvent", EventCodec.nameOf(ServerStartedEvent::class.java))
+        assertEquals("ServerStartEvent", EventCodec.nameOf(ServerStartEvent::class.java))
     }
 
     @Test
-    fun `ServerStartedEvent round-trips through the codec`() {
-        val encoded = EventCodec.encode(ServerStartedEvent(service))
-        assertEquals("ServerStartedEvent", encoded.name)
+    fun `ServerStartEvent round-trips through the codec`() {
+        val encoded = EventCodec.encode(ServerStartEvent(service))
+        assertEquals("ServerStartEvent", encoded.name)
 
         val decoded = EventCodec.decode(encoded.name, encoded.data)
-        val event = assertInstanceOf(ServerStartedEvent::class.java, decoded)
+        val event = assertInstanceOf(ServerStartEvent::class.java, decoded)
         assertEquals(service, event.service)
         assertTrue(event.service.isFallback())
     }

@@ -68,6 +68,17 @@ Every node ends up holding the same CA key pair, specifically so leader election
 promote *any* node to head without breaking certificate issuance for the rest of the
 cluster.
 
+**`cluster join`** (node terminal, `ClusterCommand`) is a guided setup for the above,
+for a fresh/standalone node: it prompts for the target host/port/token, then restarts
+this node's process with them handed to the next boot as `-Dpolocloud.join.token=...`/
+`.host=...`/`.port=...` — the same system properties a manual restart would need — since
+`NodeIdentityService.resolve()` (the code that actually performs steps 2-4 above) only
+ever runs once, at boot, before the CLI exists, so there's no live "join now" path to
+call into instead. It refuses to run if this node is already part of a multi-node
+cluster, or if `localNode.database` is still the default embedded H2 — a real join also
+needs every node to already share the same external database (§1), which `cluster join`
+checks for but does not configure itself (edit `config.json` for that, then re-run).
+
 ## 4. Leader election
 
 One node is always (intended to be) the current **head** — the node responsible for
@@ -97,7 +108,19 @@ heartbeat, without a log to replicate.
   node has seen immediately demotes that node to follower and adopts the new term —
   including a current leader, so a partitioned-then-reconnected stale head steps down
   as soon as it hears about a newer term, instead of continuing to act on stale
-  authority.
+  authority. A *same*-term `LeaderHeartbeat` does **not** demote an established leader —
+  under correct majority voting at most one leader can exist per term, so a same-term
+  conflicting claim is rejected as stale/forged rather than obeyed. The gRPC layer
+  (`NodeServiceImpl.requestVote`/`.leaderHeartbeat`) additionally requires the
+  `candidateId`/`leaderId` in the request payload to equal the caller's own
+  mTLS-authenticated identity — being an admitted cluster member is not by itself
+  license to claim candidacy/leadership on behalf of a *different* node id.
+- Head-only call sites (`ServiceIdentityProvisioner`/`ServiceRegistrationServiceImpl`'s
+  CA-signing gate, `NodePruneService`) ask `NodeElectionService.isHead()` — this node's
+  own live Raft role — rather than reading `NodeRepository.head`. That DB column is only
+  a best-effort projection updated by whichever node's `ElectionState` last observed a
+  leader change; trusting it directly for a security- or correctness-relevant local
+  decision would depend on every writer of that projection being honest.
 - `NodeElectionService` (`cluster/election/NodeElectionService.kt`) is the per-node
   orchestrator wiring `ElectionState` to `NodeRepository` and the gRPC transport
   (`GrpcElectionRpcClient`). `NodeHeartBeatMonitor.onNodeCrashed` calls
@@ -119,11 +142,16 @@ table `nodes_heartbeats`). Old rows are pruned locally: recent history is kept i
 older than 24h is thinned to one sample per 10 minutes.
 
 `NodeHeartBeatMonitor` ticks periodically (`heartbeatMonitorTickMillis`) and, for every
-`ONLINE` node, compares the newer of "latest heartbeat" and "last time we heard from it
-for any reason" (`NodeData.lastConnection`) against `heartbeatCrashTimeoutMillis`. Using
-`lastConnection` as a fallback matters: a node whose heartbeat scheduler never starts or
-dies would otherwise never get a heartbeat row and stay `ONLINE` forever, silently able
-to block election (as a phantom quorum member) and service placement. A node found
+node not already in a terminal state (`CRASHED`/`STOPPED` are skipped — everything else,
+including `STARTING`/`SYNCING`/`STOPPING`, is checked), compares the newer of "latest
+heartbeat" and "last time we heard from it for any reason" (`NodeData.lastConnection`)
+against `heartbeatCrashTimeoutMillis`. Using `lastConnection` as a fallback matters: a
+node whose heartbeat scheduler never starts or dies would otherwise never get a
+heartbeat row and stay stuck forever, silently able to block election (as a phantom
+quorum member, see §4) and service placement. Checking every non-terminal state, not
+just `ONLINE`, matters the same way: a node that dies before finishing startup (stuck in
+`STARTING`/`SYNCING`) or gets killed mid-shutdown (`STOPPING`) needs to reach `CRASHED`
+too, otherwise it never becomes eligible for `NodePruneService` either. A node found
 stale is marked `CRASHED`, which — if it was head — triggers the fast-path re-election
 described in §4.
 
@@ -174,10 +202,38 @@ The `cluster` terminal command gives a live view of all of the above:
 Documented here rather than left implicit in the code, so they're easy to pick up
 later:
 
-- `CreateToken` (`CreateTokenServerHandler`) doesn't check that the caller is the head —
-  any node reachable on the cluster gRPC endpoint can mint a fresh registration token
-  for itself. Authorization of *who* may admit new nodes isn't centralized yet.
-- Election/heartbeat/pruning intervals are per-node config, not cluster-wide-enforced —
-  nothing currently stops different nodes in the same cluster from running with
-  inconsistent timing values, which is only really safe if every node's `config.json`
-  agrees.
+- Election/heartbeat/pruning intervals (`cluster.timing`) are per-node config, not
+  cluster-wide-enforced — nothing currently *stops* different nodes in the same cluster
+  from running with inconsistent timing values, which is only really safe if every
+  node's `config.json` agrees. No mechanism (analogous to `adoptClusterCaKeyPair`/
+  `adoptForwardingSecret` in §3) exists to have a joining node adopt the head's timing
+  instead of trusting its own local config — worth revisiting if inconsistent-timing
+  incidents actually show up in practice, since forcing adoption is also a real behavior
+  change an operator might not want (e.g. deliberately tighter timing on one node).
+- `Service` (`node/.../services/Service.kt`) has the same `index` column-name problem
+  `NodeData` used to have (its field is now `NodeData.nodeIndex`, renamed for exactly
+  this reason — see §10): `polocloud-database` emits unquoted column names, and `INDEX`
+  is reserved on MySQL/MariaDB, so the `services` table's `CREATE TABLE` fails there the
+  same way. Confirmed by running a real node against MariaDB. Not fixed here since it's
+  outside the cluster module, but it blocks `ServiceProvider` (and therefore normal node
+  startup) on MySQL/MariaDB just as badly as the `nodes` table issue did.
+
+## 10. Verified against a real multi-process cluster
+
+The Raft election, join flow, and heartbeat-driven crash detection above were validated
+by actually running multiple `node` processes (not just unit tests with fakes) against a
+throwaway MariaDB container:
+
+- Two independent processes joined the same cluster over the real mTLS/gRPC path and
+  agreed on exactly one head and a consistent term, purely by talking to each other and
+  the shared database — no shared in-process state.
+- Killing the head process was correctly detected by the survivor (`NodeHeartBeatMonitor`
+  marked it `CRASHED`), which then repeatedly attempted an election and **correctly
+  refused to self-promote**, since quorum is computed against all registered members
+  (§4) and a 2-node cluster down to 1 live node can never reach a majority — exactly the
+  expected, safe behavior for a quorum system (never split-brain, but no head until
+  quorum is restorable). A 3+-node cluster tolerates losing one node the same way a
+  normal Raft cluster does, since the survivors alone still form a majority.
+- This exercise is also what surfaced the `NodeData.nodeIndex` rename and the
+  `NodeIdentityService`/`RegistrationManager.tryJoinCluster` NPE-on-denied-join fix
+  above, plus the still-open `Service.index` issue.

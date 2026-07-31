@@ -11,7 +11,7 @@ import kotlin.time.Instant
 @RepositoryName("nodes")
 data class NodeData(
     @EntryIdentifier val id : UUID,
-    val index: Int,
+    val nodeIndex: Int,
     val groupName: String = "node",
     val hostname: String,
     val port: Int,
@@ -36,14 +36,14 @@ data class NodeData(
 ) {
 
     fun name(): String {
-        return "$groupName-$index"
+        return "$groupName-$nodeIndex"
     }
 }
 
 fun NodeData.toProto(): ProtoNodeData {
     return ProtoNodeData.newBuilder()
         .setId(this.id.toString())
-        .setIndex(this.index)
+        .setIndex(this.nodeIndex)
         .setGroupName(this.groupName)
         .setHostname(this.hostname)
         .setPort(this.port)

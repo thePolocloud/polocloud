@@ -2,7 +2,7 @@ package de.polocloud.shared.event
 
 import de.polocloud.shared.event.group.GroupUpdatedEvent
 import de.polocloud.shared.event.server.PlayerCountChangedEvent
-import de.polocloud.shared.event.server.ServerStartedEvent
+import de.polocloud.shared.event.server.ServerStartEvent
 import de.polocloud.shared.event.server.ServerStoppedEvent
 import de.polocloud.shared.event.server.ServiceOnlineEvent
 import java.util.concurrent.ConcurrentHashMap
@@ -23,7 +23,7 @@ object EventRegistry {
     private val classesByName = ConcurrentHashMap<String, Class<out Event>>()
 
     init {
-        register(ServerStartedEvent::class.java)
+        register(ServerStartEvent::class.java)
         register(ServerStoppedEvent::class.java)
         register(ServiceOnlineEvent::class.java)
         register(GroupUpdatedEvent::class.java)

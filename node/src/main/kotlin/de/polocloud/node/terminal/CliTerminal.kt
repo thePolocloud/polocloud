@@ -96,6 +96,8 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
                 this.context.localNodeContainer,
                 this.context.groupService,
                 this.context.serviceProvider,
+                this.context.holder,
+                this,
             )
         )
         this.commandService.registerCommand(

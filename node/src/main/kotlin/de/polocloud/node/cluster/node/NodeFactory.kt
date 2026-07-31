@@ -31,7 +31,7 @@ object NodeFactory {
     ): NodeData =
         NodeData(
             id = id,
-            index = index,
+            nodeIndex = index,
             groupName = groupName,
             hostname = address.hostname,
             port = address.port,

@@ -33,7 +33,7 @@ class FindServicesAggregationTest {
     }
 
     private fun node(id: UUID = UUID.randomUUID(), name: String = "node") =
-        NodeData(id = id, index = 1, groupName = name, hostname = "10.0.0.2", port = 4240, state = NodeState.ONLINE, version = "3", gitCommitHash = "abc")
+        NodeData(id = id, nodeIndex = 1, groupName = name, hostname = "10.0.0.2", port = 4240, state = NodeState.ONLINE, version = "3", gitCommitHash = "abc")
 
     private fun peerService(group: String, index: Int, host: String) = ServiceData.newBuilder()
         .setId(UUID.randomUUID().toString()).setGroup(group).setIndex(index)

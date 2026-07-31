@@ -125,7 +125,27 @@ class ElectionState(
         if (term < currentTerm) {
             return@withContext LeaderHeartbeatResult(currentTerm, false)
         }
-        if (term > currentTerm || role != Role.FOLLOWER) stepDown(term)
+
+        when {
+            // A genuinely higher term always wins, regardless of our current role —
+            // this is the only thing that may ever demote an established leader back
+            // to follower.
+            term > currentTerm -> stepDown(term)
+            // A candidate at the same term yields to whoever actually won it.
+            role == Role.CANDIDATE -> stepDown(term)
+            // Same term, we already believe *we're* the leader, and this heartbeat
+            // claims someone else is too: under correct majority voting at most one
+            // leader can exist per term, so a same-term conflicting claim is either
+            // stale or forged — reject it instead of blindly stepping down on an
+            // unverified RPC (the caller-identity check in NodeServiceImpl.
+            // leaderHeartbeat only proves the sender is *a* known node, not that its
+            // claim is legitimate).
+            role == Role.LEADER && leaderId != localId -> {
+                logger.warn("Ignoring conflicting same-term ({}) leader claim from {} while acting as leader", term, leaderId)
+                return@withContext LeaderHeartbeatResult(currentTerm, false)
+            }
+        }
+
         val leaderChanged = currentLeader != leaderId
         currentLeader = leaderId
         if (leaderChanged) onLeaderChanged(leaderId, currentTerm)

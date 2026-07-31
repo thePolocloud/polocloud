@@ -116,29 +116,40 @@ class NodeServiceImpl(
      * Restricted the same way as [fetchClusterCa]/[fetchForwardingSecret]: only callers
      * whose peer certificate CN resolves to a known node id may participate in an
      * election — an unauthenticated/unknown caller casting a "vote" could otherwise
-     * skew majority counting.
+     * skew majority counting. Additionally, [RequestVoteRequest.candidateId] must equal
+     * the authenticated caller's own id: nothing about the mTLS handshake otherwise stops
+     * an admitted-but-dishonest node from claiming candidacy on behalf of a *different*
+     * node id in the payload, which would let it manipulate that other node's `votedFor`
+     * without it actually running for election.
      */
     override suspend fun requestVote(request: RequestVoteRequest): RequestVoteResponse {
         val callerId = runCatching { UUID.fromString(CliSessionInterceptor.SUBJECT_CTX_KEY.get()) }.getOrNull()
-        if (callerId == null || NodeRepository.find(callerId) == null) {
+        val candidateId = runCatching { UUID.fromString(request.candidateId) }.getOrNull()
+        if (callerId == null || candidateId != callerId || NodeRepository.find(callerId) == null) {
             return RequestVoteResponse.newBuilder().setTerm(request.term).setVoteGranted(false).build()
         }
 
-        val result = electionService.handleRequestVote(request.term, UUID.fromString(request.candidateId))
+        val result = electionService.handleRequestVote(request.term, candidateId)
         return RequestVoteResponse.newBuilder()
             .setTerm(result.term)
             .setVoteGranted(result.voteGranted)
             .build()
     }
 
-    /** Restricted the same way as [requestVote]. */
+    /**
+     * Restricted the same way as [requestVote]: [LeaderHeartbeatRequest.leaderId] must
+     * equal the authenticated caller's own id, otherwise any admitted node could forge a
+     * heartbeat claiming an arbitrary (or even non-member) node as leader and have it
+     * projected onto [NodeRepository.head] by [electionService][NodeElectionService].
+     */
     override suspend fun leaderHeartbeat(request: LeaderHeartbeatRequest): LeaderHeartbeatResponse {
         val callerId = runCatching { UUID.fromString(CliSessionInterceptor.SUBJECT_CTX_KEY.get()) }.getOrNull()
-        if (callerId == null || NodeRepository.find(callerId) == null) {
+        val leaderId = runCatching { UUID.fromString(request.leaderId) }.getOrNull()
+        if (callerId == null || leaderId != callerId || NodeRepository.find(callerId) == null) {
             return LeaderHeartbeatResponse.newBuilder().setTerm(request.term).setSuccess(false).build()
         }
 
-        val result = electionService.handleLeaderHeartbeat(request.term, UUID.fromString(request.leaderId))
+        val result = electionService.handleLeaderHeartbeat(request.term, leaderId)
         return LeaderHeartbeatResponse.newBuilder()
             .setTerm(result.term)
             .setSuccess(result.success)

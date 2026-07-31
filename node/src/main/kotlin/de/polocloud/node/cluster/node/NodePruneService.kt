@@ -47,8 +47,10 @@ class NodePruneService(
     fun stop() = job?.cancel()
 
     private fun pruneStaleNodes() {
-        val localId = NodeEnvironment.runtime.nodeId.get()
-        if (NodeRepository.find(localId)?.head != true) return
+        // Live in-memory Raft role, not the NodeRepository.head DB projection — see
+        // ServiceIdentityProvisioner.isHead for why that column alone isn't trustworthy
+        // enough to gate a head-only action on.
+        if (!NodeEnvironment.runtime.electionService.isHead()) return
 
         val cutoff = Clock.System.now() - staleAfter
         val stale = NodeRepository.findAll().filter {

@@ -44,31 +44,42 @@ class NodeHeartBeatMonitor(
         val now = now()
         val threshold = now - timeout
 
-        NodeRepository.find(NodeState.ONLINE).forEach { node ->
-            val latest = NodeHeartBeatRepository
-                .find(node.id)
-                .maxByOrNull { it.heartBeatAt }
+        // Not just ONLINE: a node stuck in STARTING/SYNCING (crashed before finishing
+        // startup) or STOPPING (killed mid-shutdown) would otherwise never reach a
+        // terminal state on its own, so it never gets marked CRASHED, never gets
+        // NodePruneService'd, and permanently inflates the election quorum denominator
+        // (see ElectionState — quorum is computed against every registered node, not
+        // just reachable ones) and the terminal states (CRASHED/STOPPED) themselves are
+        // excluded since re-flagging an already-terminal row is a no-op at best.
+        NodeRepository.findAll()
+            .filter { it.state != NodeState.CRASHED && it.state != NodeState.STOPPED }
+            .forEach { node ->
+                val latest = NodeHeartBeatRepository
+                    .find(node.id)
+                    .maxByOrNull { it.heartBeatAt }
 
-            // A heartbeat older than our last contact with this node doesn't prove it's
-            // dead on its own — e.g. right after a restart, stale heartbeat rows from the
-            // previous run can still be lying around before the new scheduler writes a
-            // fresh one. Fall back to lastConnection as the liveness reference in that
-            // case (and when there's no heartbeat at all yet). That grace period must
-            // still be bounded by the same timeout, though: without this fallback, a node
-            // whose heartbeat scheduler never starts — or dies — never gets a heartbeat
-            // row at all, `latest` stays null forever, and the old code exempted it from
-            // crash detection permanently, leaving it stuck ONLINE and able to block
-            // election and service placement indefinitely.
-            val reference = if (latest != null && latest.heartBeatAt >= node.lastConnection) {
-                latest.heartBeatAt
-            } else {
-                node.lastConnection
-            }
+                // A heartbeat older than our last contact with this node doesn't prove
+                // it's dead on its own — e.g. right after a restart, stale heartbeat rows
+                // from the previous run can still be lying around before the new
+                // scheduler writes a fresh one. Fall back to lastConnection as the
+                // liveness reference in that case (and when there's no heartbeat at all
+                // yet — always true for a node that hasn't reached ONLINE, since the
+                // heartbeat scheduler only starts once markOnline() runs). That grace
+                // period must still be bounded by the same timeout, though: without this
+                // fallback, a node whose heartbeat scheduler never starts — or dies —
+                // never gets a heartbeat row at all, `latest` stays null forever, and the
+                // old code exempted it from crash detection permanently, leaving it stuck
+                // able to block election and service placement indefinitely.
+                val reference = if (latest != null && latest.heartBeatAt >= node.lastConnection) {
+                    latest.heartBeatAt
+                } else {
+                    node.lastConnection
+                }
 
-            if (reference < threshold) {
-                electionService.onNodeCrashed(node)
+                if (reference < threshold) {
+                    electionService.onNodeCrashed(node)
+                }
             }
-        }
         // No separate "no active head" fallback here anymore: with the Raft-style
         // election in NodeElectionService/ElectionState, the absence of a head is a
         // self-correcting transient state — every follower's own randomized election

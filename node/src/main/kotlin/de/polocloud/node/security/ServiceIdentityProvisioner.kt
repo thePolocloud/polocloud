@@ -5,6 +5,7 @@ import de.polocloud.common.communication.certificate.certToPem
 import de.polocloud.common.communication.security.toPem
 import de.polocloud.node.cluster.node.NodeRepository
 import de.polocloud.node.communication.grpc.NodeGrpcClient
+import de.polocloud.node.core.environment.NodeEnvironment
 import de.polocloud.proto.RegisterServiceRequest
 import de.polocloud.proto.ServiceRegistrationServiceGrpcKt
 import kotlinx.coroutines.runBlocking
@@ -17,7 +18,6 @@ import java.io.File
 import java.io.FileWriter
 import java.security.KeyPair
 import java.security.KeyPairGenerator
-import java.util.UUID
 
 /**
  * Provisions the mTLS identity a locally launched service needs to talk back to
@@ -79,11 +79,12 @@ object ServiceIdentityProvisioner {
         File(identityDir, "ca.pem").writeText(caCertificatePem)
     }
 
-    private fun isHead(): Boolean =
-        runCatching { UUID.fromString(NodeCertificateStorage.nodeId) }
-            .getOrNull()
-            ?.let { NodeRepository.find(it) }
-            ?.head == true
+    // Live in-memory Raft role, not the NodeRepository.head DB projection — that column
+    // is only a best-effort mirror of whoever last won an election and can lag or (absent
+    // the RPC payload/caller-identity check in NodeServiceImpl) be forged by another
+    // cluster member, whereas this node's own belief about its role is authoritative for
+    // deciding whether *it* should sign locally.
+    private fun isHead(): Boolean = NodeEnvironment.runtime.electionService.isHead()
 
     /** Forwards [csr] to whichever node is currently head and returns (certificate, CA) PEMs. */
     private fun signViaHead(csr: PKCS10CertificationRequest, serviceId: String, planName: String): Pair<String, String> {

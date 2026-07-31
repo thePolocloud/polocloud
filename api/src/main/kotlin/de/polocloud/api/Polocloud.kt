@@ -34,7 +34,7 @@ object Polocloud {
 
     /**
      * Cluster-wide event bus. Subscribe to cloud events such as
-     * [de.polocloud.shared.event.server.ServerStartedEvent].
+     * [de.polocloud.shared.event.server.ServiceOnlineEvent].
      */
     val eventService = EventService(channelProvider = { connection.channel() })
 

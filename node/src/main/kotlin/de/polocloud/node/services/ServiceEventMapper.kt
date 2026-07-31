@@ -5,7 +5,7 @@ import de.polocloud.shared.service.Service
 
 /**
  * Maps a running [LocalService] to the shared [Service] model carried on cluster
- * lifecycle events (e.g. [de.polocloud.shared.event.server.ServerStartedEvent]).
+ * lifecycle events (e.g. [de.polocloud.shared.event.server.ServiceOnlineEvent]).
  *
  * Mirrors [ServiceProtoMapper], which maps the same source to the protobuf wire
  * type used by the gRPC API.
