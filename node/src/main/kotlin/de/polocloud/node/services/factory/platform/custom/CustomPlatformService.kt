@@ -55,7 +55,7 @@ class CustomPlatformService(private val platformService: PlatformService) {
 
         val rejectionReason = when (source) {
             PlatformVersionSource.URL -> PlatformSourceValidator.verifyUrl(location)
-            PlatformVersionSource.LOCAL_FILE -> PlatformSourceValidator.verifyLocalFile(location)
+            PlatformVersionSource.LOCAL_FILE -> PlatformSourceValidator.verifyLocalFile(location, requireJar = platform.language == "JAVA")
         }
         require(rejectionReason == null) { rejectionReason!! }
 

@@ -50,7 +50,7 @@ class PlatformSetupWizard(
         ),
         WizardStep(
             question = { "Which runtime language does this platform use?" },
-            description = { "Determines how the jar is launched. Only 'JAVA' is supported out of the box." },
+            description = { "Determines how the artifact is launched. 'JAVA' and 'GO' are supported out of the box." },
             argument = languageArgument,
             label = "Language",
             format = { it.uppercase() },
@@ -66,8 +66,8 @@ class PlatformSetupWizard(
             label = "Version",
         ),
         WizardStep(
-            question = { "Should this version be downloaded from a URL, or copied from a local jar?" },
-            description = { "'url' downloads the jar on first service start; 'local' copies a jar already present on this node's filesystem right now." },
+            question = { "Should this version be downloaded from a URL, or copied from a local artifact?" },
+            description = { "'url' downloads the artifact on first service start; 'local' copies one already present on this node's filesystem right now." },
             argument = sourceArgument,
             label = "Source",
             format = { it.name.lowercase() },
@@ -75,17 +75,20 @@ class PlatformSetupWizard(
         WizardStep(
             question = {
                 if (it.arg(sourceArgument) == PlatformVersionSource.URL)
-                    "What URL should the jar be downloaded from?"
+                    "What URL should the artifact be downloaded from?"
                 else
-                    "What is the local path of the jar on this node?"
+                    "What is the local path of the artifact on this node?"
             },
-            description = { "Checked before it's accepted: the URL must resolve, or the file must exist and be a valid jar." },
+            description = { "Checked before it's accepted: the URL must resolve, or the file must exist (and be a valid jar, for JAVA platforms)." },
             argument = locationArgument,
             label = "Location",
             extraValidation = { location, context ->
                 when (context.arg(sourceArgument)) {
                     PlatformVersionSource.URL -> PlatformSourceValidator.verifyUrl(location)
-                    PlatformVersionSource.LOCAL_FILE -> PlatformSourceValidator.verifyLocalFile(location)
+                    PlatformVersionSource.LOCAL_FILE -> PlatformSourceValidator.verifyLocalFile(
+                        location,
+                        requireJar = context.arg(languageArgument).uppercase() == "JAVA",
+                    )
                 }
             },
         ),

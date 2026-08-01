@@ -49,15 +49,19 @@ object PlatformSourceValidator {
     }
 
     /**
-     * Confirms [path] points at a readable, well-formed jar on this node's filesystem.
-     * Opens it as a [ZipFile] rather than only checking the extension, so a corrupt or
-     * non-jar file is caught here instead of at service start.
+     * Confirms [path] points at a readable file on this node's filesystem.
+     *
+     * When [requireJar] is set (the default, used for JAVA-language platforms), [path] must
+     * additionally be a well-formed jar: opened as a [ZipFile] rather than only checking the
+     * extension, so a corrupt or non-jar file is caught here instead of at service start.
+     * Other languages (e.g. GO) ship a plain executable binary instead, so that check is skipped.
      */
-    fun verifyLocalFile(path: String): String? {
+    fun verifyLocalFile(path: String, requireJar: Boolean = true): String? {
         val file = File(path)
         if (!file.exists()) return "File does not exist: '$path'"
         if (!file.isFile) return "Not a file: '$path'"
         if (!file.canRead()) return "File is not readable: '$path'"
+        if (!requireJar) return null
         if (!file.name.endsWith(".jar", ignoreCase = true)) return "File must be a .jar file: '$path'"
 
         return runCatching {

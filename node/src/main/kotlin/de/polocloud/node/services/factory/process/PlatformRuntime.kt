@@ -1,5 +1,6 @@
 package de.polocloud.service.factory.process
 
+import de.polocloud.node.services.factory.process.GoRuntime
 import de.polocloud.node.services.factory.process.JavaRuntime
 import java.io.File
 
@@ -29,7 +30,8 @@ interface PlatformRuntime {
     companion object {
 
         private val registry: MutableMap<String, PlatformRuntime> = mutableMapOf(
-            JavaRuntime.language to JavaRuntime
+            JavaRuntime.language to JavaRuntime,
+            GoRuntime.language to GoRuntime
         )
 
         /**
