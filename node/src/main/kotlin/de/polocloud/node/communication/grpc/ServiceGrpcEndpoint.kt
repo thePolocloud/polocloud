@@ -8,6 +8,7 @@ import de.polocloud.common.communication.tls.MtlsConfig
 import de.polocloud.node.communication.impl.event.EventProviderServiceImpl
 import de.polocloud.node.communication.impl.group.GroupApiServiceImpl
 import de.polocloud.node.communication.impl.services.ServiceApiServiceImpl
+import de.polocloud.node.communication.interceptor.ServiceIdentityInterceptor
 import de.polocloud.node.group.GroupService
 import de.polocloud.node.security.NodeCertificateStorage
 import de.polocloud.node.services.ServiceProvider
@@ -19,7 +20,9 @@ import de.polocloud.node.services.ServiceProvider
  * Intentionally kept separate from [NodeGrpcEndpoint] — which serves CLI and
  * node-to-node traffic — so plugin API calls never share a port or the
  * CLI-specific interceptor chain (IP whitelist, CLI sessions) with the cluster
- * control plane.
+ * control plane. It does carry its own, much lighter [ServiceIdentityInterceptor]
+ * though, so the calling service's identity is still available for logging
+ * (see that class's doc for why this endpoint needs its own copy).
  *
  * Trust is anchored on the same node CA, so the per-service identity the node
  * provisions when it launches a service (certificate + CA via
@@ -44,9 +47,9 @@ class ServiceGrpcEndpoint(
                 caCert = NodeCertificateStorage.caCertificateFile(),
             )
         )
-        .service(groupApiService)
-        .service(serviceApiService)
-        .service(eventProviderService)
+        .interceptedService(groupApiService, ServiceIdentityInterceptor())
+        .interceptedService(serviceApiService, ServiceIdentityInterceptor())
+        .interceptedService(eventProviderService, ServiceIdentityInterceptor())
         .build()
 
     fun start() = server.start()

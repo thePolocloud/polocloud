@@ -30,7 +30,7 @@ data class HologramConfig(
     val enabled: Boolean = true,
     val lines: List<String> = listOf("§fSpieler §7● §e%players%", "§b%group%"),
     /** Blocks above the mob's feet the first line is drawn at. */
-    val heightOffset: Double = 2.8,
+    val heightOffset: Double = 1.9,
     /** Blocks between each subsequent line. */
     val lineSpacing: Double = 0.25,
 )

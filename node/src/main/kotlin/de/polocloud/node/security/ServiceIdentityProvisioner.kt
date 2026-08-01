@@ -65,18 +65,45 @@ object ServiceIdentityProvisioner {
 
         val keyPair = generateKeyPair()
         val csr = buildCsr(keyPair, serviceId)
-        val (certificatePem, caCertificatePem) = if (isHead()) {
-            val ca = NodeCertificateStorage.certificateAuthority()
-            val signed = ca.signCsr(csr, subjectAltNames = SanBuilder.forService(serviceId, planName))
-            certToPem(signed) to ca.getCaCertificatePem()
-        } else {
-            signViaHead(csr, serviceId, planName)
-        }
+        val (certificatePem, caCertificatePem) = signWithRetry(csr, serviceId, planName)
 
         writePem(File(identityDir, "private-key.pem"), keyPair.private)
         writePem(File(identityDir, "public-key.pem"), keyPair.public)
         File(identityDir, "certificate.pem").writeText(certificatePem)
         File(identityDir, "ca.pem").writeText(caCertificatePem)
+    }
+
+    /**
+     * Right after this node (re)starts, its own leader election can still be in progress
+     * for a few seconds — a node always boots as a follower (see [de.polocloud.node.cluster.election.ElectionState])
+     * and only becomes head once its own randomized election timeout elapses, up to
+     * `baseTimeout + jitter` (defaults: up to ~9s) — during which [isHead] reads `false` and
+     * [NodeRepository] may not yet have *any* row with `head = true` either. A group that
+     * needs to scale up immediately on boot can therefore hit [provision] before either is
+     * settled, previously failing outright with "no cluster head is currently known" or a
+     * connection error while [signViaHead] tried to reach a not-yet-elected head.
+     *
+     * Retrying tolerates exactly that narrow, self-resolving startup window — not a
+     * distributed protocol of its own, just patience for local state (this node's election)
+     * to catch up, the same way [de.polocloud.node.services.ping.ServicePingFactory] tolerates
+     * a service that hasn't finished booting yet instead of giving up on the first failed ping.
+     */
+    private fun signWithRetry(csr: PKCS10CertificationRequest, serviceId: String, planName: String): Pair<String, String> {
+        repeat(SIGN_RETRY_ATTEMPTS) { attempt ->
+            val result = runCatching {
+                if (isHead()) signLocally(csr, serviceId, planName) else signViaHead(csr, serviceId, planName)
+            }
+            result.onSuccess { return it }
+            if (attempt == SIGN_RETRY_ATTEMPTS - 1) result.getOrThrow()
+            Thread.sleep(SIGN_RETRY_DELAY_MILLIS)
+        }
+        error("unreachable")
+    }
+
+    private fun signLocally(csr: PKCS10CertificationRequest, serviceId: String, planName: String): Pair<String, String> {
+        val ca = NodeCertificateStorage.certificateAuthority()
+        val signed = ca.signCsr(csr, subjectAltNames = SanBuilder.forService(serviceId, planName))
+        return certToPem(signed) to ca.getCaCertificatePem()
     }
 
     // Live in-memory Raft role, not the NodeRepository.head DB projection — that column
@@ -127,4 +154,9 @@ object ServiceIdentityProvisioner {
     private fun writePem(file: File, obj: Any) {
         JcaPEMWriter(FileWriter(file)).use { it.writeObject(obj) }
     }
+
+    // 6 * 2s = 12s total, comfortably past the election's worst case (baseTimeout 5s default
+    // + up to 4s jitter = ~9s) plus margin for the sign RPC's own connect/timeout overhead.
+    private const val SIGN_RETRY_ATTEMPTS = 6
+    private const val SIGN_RETRY_DELAY_MILLIS = 2000L
 }

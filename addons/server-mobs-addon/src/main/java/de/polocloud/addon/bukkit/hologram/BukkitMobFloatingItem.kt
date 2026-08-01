@@ -4,20 +4,33 @@ import de.polocloud.addon.util.Position
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.entity.ArmorStand
+import org.bukkit.World
+import org.bukkit.entity.Display
+import org.bukkit.entity.ItemDisplay
 import org.bukkit.inventory.ItemStack
+import org.bukkit.util.Transformation
+import org.joml.Quaternionf
+import org.joml.Vector3f
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * The optional floating item shown spinning above a server mob's [BukkitMobHologram], set via
- * `/servermobs set <group> [item]`. One invisible, gravity-less marker [ArmorStand] per mob,
- * wearing the configured item as its helmet — the same "invisible armor stand as an item
- * display" trick [BukkitMobHologram] uses for text, just with an equipped item instead of a
- * custom name, and its yaw nudged forward every [spinAll] call instead of staying fixed.
+ * `/servermobs set <group> [item]`.
+ *
+ * Uses an [ItemDisplay], not an armor stand wearing the item as a helmet (the more common
+ * hack): a display entity renders exactly at the position it's placed at, with no hidden
+ * head-bone offset an armor stand's equipment slot has — that offset was making the
+ * configured hologram-to-item gap look about a block bigger than it actually was. It also
+ * lets [SCALE] shrink the item arbitrarily via [Transformation], which an armor stand's fixed
+ * small/normal size can't.
  */
 object BukkitMobFloatingItem {
 
-    private val stands = ConcurrentHashMap<Position, ArmorStand>()
+    /** Shrinks the floating item below its normal held/dropped size. */
+    private const val SCALE = 0.6f
+
+    private val displays = ConcurrentHashMap<Position, ItemDisplay>()
+    private val yaws = ConcurrentHashMap<Position, Float>()
 
     /** Shows/updates the floating item at [position], [height] blocks above its feet. `null`/invalid [material] hides it instead. */
     fun show(position: Position, material: String?, height: Double) {
@@ -28,49 +41,62 @@ object BukkitMobFloatingItem {
         }
 
         val world = Bukkit.getWorld(position.world) ?: return
-        val stand = stands[position] ?: spawn(world, position).also { stands[position] = it }
+        val display = displays[position] ?: spawn(world, position).also { displays[position] = it }
 
-        if (stand.location.y != position.y + height) {
-            val location = stand.location
-            location.y = position.y + height
-            stand.teleport(location)
+        val targetY = position.y + height
+        if (display.location.y != targetY) {
+            val location = display.location
+            location.y = targetY
+            display.teleport(location)
         }
 
-        stand.equipment?.helmet = ItemStack(itemMaterial)
+        display.setItemStack(ItemStack(itemMaterial))
     }
 
     /** Removes the floating item at [position], if any. */
     fun hide(position: Position) {
-        stands.remove(position)?.remove()
+        displays.remove(position)?.remove()
+        yaws.remove(position)
     }
 
     /** Removes every floating item this platform owns — called on plugin disable. */
     fun hideAll() {
-        stands.keys.toList().forEach(::hide)
+        displays.keys.toList().forEach(::hide)
     }
 
     /** Nudges every active floating item's yaw forward by [degrees] — called on a fast repeating task to animate the spin. */
     fun spinAll(degrees: Float) {
-        stands.values.forEach { stand ->
-            if (!stand.isValid) return@forEach
-            val location = stand.location
-            location.yaw = (location.yaw + degrees) % 360f
-            stand.teleport(location)
+        displays.forEach { (position, display) ->
+            if (!display.isValid) return@forEach
+
+            val yaw = (yaws.getOrDefault(position, 0f) + degrees) % 360f
+            yaws[position] = yaw
+
+            val current = display.transformation
+            display.transformation = Transformation(
+                current.translation,
+                Quaternionf().rotateY(Math.toRadians(yaw.toDouble()).toFloat()),
+                current.scale,
+                current.rightRotation,
+            )
         }
     }
 
-    private fun spawn(world: org.bukkit.World, position: Position): ArmorStand {
+    private fun spawn(world: World, position: Position): ItemDisplay {
         val location = Location(world, position.x, position.y, position.z)
-        return world.spawn(location, ArmorStand::class.java) { stand ->
-            stand.isVisible = false
-            stand.setGravity(false)
-            stand.isMarker = true
-            stand.isSmall = true
-            stand.isInvulnerable = true
-            stand.setBasePlate(false)
+        return world.spawn(location, ItemDisplay::class.java) { display ->
+            display.setGravity(false)
+            display.isInvulnerable = true
             // Not part of our own persisted state (ServerMobStorage), so it must not survive
             // into the world's chunk data either, same reasoning as BukkitMobHologram's stands.
-            stand.isPersistent = false
+            display.isPersistent = false
+            display.billboard = Display.Billboard.FIXED
+            display.transformation = Transformation(
+                Vector3f(),
+                Quaternionf(),
+                Vector3f(SCALE, SCALE, SCALE),
+                Quaternionf(),
+            )
         }
     }
 }

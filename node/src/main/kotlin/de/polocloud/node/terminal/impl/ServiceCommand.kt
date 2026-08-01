@@ -73,7 +73,9 @@ class ServiceCommand(
                 .forEach { (nodeLabel, nodeServices) ->
                     logger.info("[3m&8$nodeLabel:&r")
                     nodeServices.forEach { service ->
-                        logger.info("  ${service.name()} &8|&r state: ${service.state} &8|&r port: ${service.port}")
+                        // Same reasoning as info()'s state/host/port: prefer the live LocalService when co-located.
+                        val local = serviceProvider.findLocal(service.name())
+                        logger.info("  ${service.name()} &8|&r state: ${local?.state ?: service.state} &8|&r port: ${local?.port ?: service.port}")
                     }
                 }
         }, "List all services", KeywordArgument("list"))
@@ -109,9 +111,14 @@ class ServiceCommand(
         logger.info("Service ${service.name()}:")
         logger.info("  id: ${white(service.id.toString())}")
         logger.info("  group: ${white(service.groupName)}")
-        logger.info("  state: ${white(service.state.toString())}")
+        // Prefer the live LocalService's own state/hostname/port over the DB-backed `service`
+        // row when this service is co-located: a service only persists its post-QUEUED
+        // state/port on the STARTING->RUNNING transition (see ServicePingFactory.markOnline),
+        // not continuously, so the DB row can lag behind what's actually running here even
+        // though pid/cpu/memory/players (below) already correctly read from `local`.
+        logger.info("  state: ${white((local?.state ?: service.state).toString())}")
         logger.info("  node: ${white(resolveNodeLabel(service.nodeId))}")
-        logger.info("  host: ${white("${service.hostname}:${service.port}")}")
+        logger.info("  host: ${white("${local?.hostname ?: service.hostname}:${local?.port ?: service.port}")}")
         logger.info("  pid: ${white((local?.process?.pid() ?: usage?.pid?.takeIf { it >= 0 } ?: "-").toString())}")
         logger.info("  cpu: ${white(usage?.let { "${decimal(it.cpuUsage)}%" } ?: "-")}")
         logger.info("  memory: ${white(usage?.let { "${decimal(it.usedMemory)}MB" } ?: "-")}")
