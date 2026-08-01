@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
 object BukkitMobFloatingItem {
 
     /** Shrinks the floating item below its normal held/dropped size. */
-    private const val SCALE = 0.6f
+    private const val SCALE = 0.3f
 
     private val displays = ConcurrentHashMap<Position, ItemDisplay>()
     private val yaws = ConcurrentHashMap<Position, Float>()

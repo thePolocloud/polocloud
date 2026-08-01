@@ -168,7 +168,7 @@ class BukkitServerMobPlatform(
 
     private companion object {
         /** Blocks between the topmost hologram line and a mob's floating item, if it has one. */
-        const val FLOATING_ITEM_GAP = 0.3
+        const val FLOATING_ITEM_GAP = 0.8
         const val SPIN_INTERVAL_TICKS = 2L
         const val SPIN_DEGREES_PER_TICK = 6f
     }
