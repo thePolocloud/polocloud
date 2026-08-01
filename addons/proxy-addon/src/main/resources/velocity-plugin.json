@@ -1,0 +1,9 @@
+{
+  "id": "polocloud-proxy-addon",
+  "name": "Polocloud Proxy Addon",
+  "version": "${version}",
+  "description": "Animated tab list, MOTD, maintenance mode and network-wide player count",
+  "authors": ["polocloud"],
+  "main": "de.polocloud.addons.proxy.velocity.VelocityProxyBootstrap",
+  "dependencies": []
+}

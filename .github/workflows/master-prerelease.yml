@@ -97,6 +97,8 @@ jobs:
             addons/sign-system/build/libs/*-all.jar \
             addons/hub-addon/build/libs/*-all.jar \
             addons/notifiy-addon/build/libs/*-all.jar \
+            addons/proxy-addon/build/libs/*-all.jar \
+            addons/server-mobs-addon/build/libs/*-all.jar \
           ; do
             cp "$f" "release-assets/polocloud-$(basename "$f")"
           done
