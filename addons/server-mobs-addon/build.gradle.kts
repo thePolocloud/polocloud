@@ -1,20 +1,23 @@
 plugins {
-    id("java")
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    alias(libs.plugins.shadow)
 }
 
-group = "de.polocloud"
-version = "3.0.0-snapshot.local"
-
 repositories {
-    mavenCentral()
+    maven("https://hub.spigotmc.org/nexus/content/groups/public/")
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation(projects.api)
+    compileOnly(libs.spigot.api)
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.shadowJar {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    mergeServiceFiles()
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
 }

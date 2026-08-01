@@ -1,0 +1,8 @@
+name: Polocloud-ServerMobs
+version: 1.0.0
+api-version: 1.13
+main: de.polocloud.addon.bukkit.BukkitServerMobsBootstrap
+commands:
+  servermobs:
+    description: Server mobs command
+    usage: /<command>
