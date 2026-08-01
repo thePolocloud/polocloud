@@ -41,10 +41,10 @@ class ServerMobAddon(private val platform: ServerMobPlatform) {
     fun stop() = registry.all().forEach(platform::remove)
 
     /** Spawns (or replaces, if one already stands at [position]) a mob bound to [group]. */
-    fun set(group: String, position: Position, type: String = "VILLAGER"): ServerMob {
+    fun set(group: String, position: Position, type: String = "VILLAGER", item: String? = null): ServerMob {
         registry.detach(position)?.let(platform::remove)
 
-        val mob = ServerMob(group, position, type)
+        val mob = ServerMob(group, position, type, item)
         registry.attach(mob)
         storage.save(registry.all())
         render(mob)

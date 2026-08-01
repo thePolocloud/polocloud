@@ -3,6 +3,8 @@ package de.polocloud.addon.bukkit
 import de.polocloud.addon.ServerMobAddon
 import de.polocloud.addon.bukkit.gui.ServiceInventory
 import de.polocloud.addon.bukkit.gui.ServiceInventoryHolder
+import de.polocloud.addon.config.ReloadableConfig
+import de.polocloud.addon.display.MobDisplay
 import de.polocloud.api.Polocloud
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -14,6 +16,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 class BukkitListener(
     private val addon: ServerMobAddon,
     private val platform: BukkitServerMobPlatform,
+    private val display: ReloadableConfig<MobDisplay>,
 ) : Listener {
 
     @EventHandler
@@ -23,7 +26,7 @@ class BukkitListener(
         event.isCancelled = true
 
         val services = Polocloud.serviceService.findByGroup(mob.group)
-        event.player.openInventory(ServiceInventory.build(mob.group, services))
+        event.player.openInventory(ServiceInventory.build(mob.group, services, display.current().inventory))
     }
 
     /** A managed villager stands still by AI, but a player can still shove/hit it — block both. */
