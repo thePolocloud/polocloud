@@ -85,7 +85,12 @@ class ElectionState(
     private var heartbeatJob: Job? = null
 
     fun start() {
-        scope.launch { restartElectionTimer() }
+        scope.launch {
+            // No point waiting out a randomized election timeout when we're provably alone —
+            // startElection() would become leader uncontested anyway once the timer fires, so
+            // skip straight to it and shave the full baseTimeout+jitter off cold-start latency.
+            if (members().none { it.id != localId }) startElection() else restartElectionTimer()
+        }
     }
 
     fun stop() {
