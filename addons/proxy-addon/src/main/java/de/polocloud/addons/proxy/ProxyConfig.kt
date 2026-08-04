@@ -24,7 +24,7 @@ data class TablistConfig(
         listOf(
             "",
             "§b§lPOLOCLOUD",
-            "§7Willkommen, §f%player%§7!",
+            "§7Welcome, §f%player%§7!",
             "",
         ),
     ),
@@ -49,8 +49,8 @@ data class TablistConfig(
 @Serializable
 data class MotdConfig(
     val enabled: Boolean = true,
-    val firstLine: List<String> = listOf("§b§lPolocloud §8» §7Willkommen auf dem Netzwerk!"),
-    val secondLine: List<String> = listOf("§7Online: §a%online%§8/§a%max% §8| §7Viel Spaß!"),
+    val firstLine: List<String> = listOf("§b§lPolocloud §8» §7Welcome to the network!"),
+    val secondLine: List<String> = listOf("§7Online: §a%online%§8/§a%max% §8| §7Have fun!"),
     val tickIntervalMillis: Long = 1500L,
     val item: MotdItemConfig = MotdItemConfig(),
 )
@@ -62,7 +62,7 @@ data class MotdItemConfig(
     val material: String = "minecraft:nether_star",
     val count: Int = 1,
     val name: String = "§bPolocloud",
-    val lore: List<String> = listOf("§7Ein Cloud-System für Minecraft-Netzwerke."),
+    val lore: List<String> = listOf("§7A cloud system for Minecraft networks."),
 )
 
 @Serializable
@@ -101,11 +101,11 @@ data class MaintenanceConfig(
     val enabled: Boolean = false,
     val bypassPermission: String = "polocloud.addon.proxy.maintenance.bypass",
     val kickMessage: List<String> = listOf(
-        "§c§lWartungsmodus",
+        "§c§lMaintenance",
         "",
-        "§7Der Server befindet sich derzeit im Wartungsmodus.",
-        "§7Bitte versuche es später erneut.",
+        "§7The server is currently in maintenance mode.",
+        "§7Please try again later.",
     ),
-    val motdFirstLine: String = "§c§lWartungsmodus",
-    val motdSecondLine: String = "§7Der Server ist derzeit nicht erreichbar.",
+    val motdFirstLine: String = "§c§lMaintenance",
+    val motdSecondLine: String = "§7The server is currently unreachable.",
 )

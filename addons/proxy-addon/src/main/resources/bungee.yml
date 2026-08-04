@@ -1,0 +1,5 @@
+name: PolocloudProxyAddon
+main: de.polocloud.addons.proxy.waterfall.WaterfallProxyBootstrap
+version: ${version}
+author: polocloud
+description: Animated tab list, MOTD, maintenance mode and network-wide player count
