@@ -8,7 +8,7 @@ kotlinxCoroutines       = "1.11.0"
 kotlin-reflect          = "2.4.10"
 
 # ── gRPC / Protobuf ───────────────────────────────────────────────────────────
-grpc                    = "1.83.0"
+grpc                    = "1.83.1"
 grpcKotlinVersion       = "1.5.0"
 protobuf-java           = "3.25.9"
 protobuf-kotlin         = "3.25.9"
@@ -21,7 +21,7 @@ slf4j                   = "2.0.18"
 
 # ── CLI / System ──────────────────────────────────────────────────────────────
 jline                   = "4.3.1"
-oshi                    = "7.4.2"
+oshi                    = "7.4.3"
 
 # ── Proxy bridge ──────────────────────────────────────────────────────────────
 velocity-api            = "4.1.0-SNAPSHOT"
