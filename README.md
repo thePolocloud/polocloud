@@ -33,9 +33,9 @@ Modular by design: a cloud daemon, an admin CLI, a plugin SDK, and ready-made ad
 - **Cluster mode:** Raft-style leader election, heartbeat-based crash detection, automatic node pruning, cross-node event relay.
 - **Security:** mTLS across all nodes via a shared cluster CA - token-based node joining, per-service certificates.
 - **Shared database:** Pluggable - H2 by default; MySQL, MariaDB, PostgreSQL, MongoDB, or Redis for clusters (MySQL/MariaDB currently limited by a [known issue](node/CLUSTER.md#9-known-gaps)).
-- **Service management:** Auto-scaling to each group's `minOnline`, ordered templates, task-based config patching, live status detection.
+- **Service management:** Auto-scaling up to each group's `minOnline`, ordered templates, task-based config patching, live status detection.
 - **Group management:** Per-group memory, start threshold, static mode, fallback priority, node whitelist, ordered templates.
-- **Event system:** Typed events streamed across the cluster over gRPC.
+- **Event system:** Typed events relayed across the cluster over gRPC.
 - **Proxy bridge (Velocity):** Backend registration, fallback selection, tab-complete relay.
 - **Addons:** sign-system and server-mobs for Bukkit; hub, notify, and proxy for Velocity (proxy also supports Waterfall/BungeeCord).
 - **Updating:** Checks GitHub releases on boot and stages self-updates.
