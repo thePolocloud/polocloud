@@ -32,19 +32,19 @@ Modular by design: a cloud daemon, an admin CLI, a plugin SDK, and ready-made ad
 
 - **Cluster mode:** Raft-style leader election, heartbeat-based crash detection, automatic node pruning, cross-node event relay.
 - **Security:** mTLS across all nodes via a shared cluster CA - token-based node joining, per-service certificates.
-- **Shared database:** Pluggable - H2 by default; MySQL, MariaDB, PostgreSQL, MongoDB, or Redis for clusters (MySQL/MariaDB currently limited by a [known issue](node/CLUSTER.md#9-known-gaps)).
-- **Service management:** Auto-scaling up to each group's `minOnline`, ordered templates, task-based config patching, live status detection.
+- **Shared database:** Pluggable - H2 by default; MySQL, MariaDB, PostgreSQL, MongoDB, or Redis for clusters (MySQL/MariaDB currently blocked by a [known issue](node/CLUSTER.md#9-known-gaps)).
+- **Service management:** Auto-scaling up to each group's `minOnline`, ordered templates, task-based config patching, live status detection, JAVA and GO service runtimes.
 - **Group management:** Per-group memory, start threshold, static mode, fallback priority, node whitelist, ordered templates.
 - **Event system:** Typed events relayed across the cluster over gRPC.
 - **Proxy bridge (Velocity):** Backend registration, fallback selection, tab-complete relay.
 - **Addons:** sign-system and server-mobs for Bukkit; hub, notify, and proxy for Velocity (proxy also supports Waterfall/BungeeCord).
-- **Updating:** Checks GitHub releases on boot and stages self-updates.
+- **Updating:** Checks GitHub releases on boot; stages self-updates when `general.autoUpdate` is enabled or via the `update` command.
 
 ## Supported platforms
 
-- **Velocity:** Full support via the bridge plugin (backend registration, fallback selection, initial server, tab-complete relay) plus the hub, notify, and proxy addons.
+- **Velocity:** Full support via the bridge plugin plus the hub, notify, and proxy addons. The bridge covers backend registration, fallback selection, initial server, and tab-complete relay.
 - **Waterfall / BungeeCord:** Proxy addon only - animated tab list, MOTD, player count, maintenance mode. Bridge plugin not available yet.
-- **Bukkit / Spigot:** sign-system (animated server signs) and server-mobs (NPC mobs with live service status).
+- **Bukkit / Spigot:** sign-system and server-mobs. Sign-system shows animated server signs; server-mobs adds NPC mobs with live service status.
 
 ## User Guide
 
@@ -92,7 +92,23 @@ The token is in `config.json` under `cluster.cliAccess.registrationToken`. On a 
 
 ### Clustering
 
-Multiple nodes form a cluster with `cluster join` - every node needs a shared external database (H2 is single-node only). See the [cluster architecture](node/CLUSTER.md) for how joining and leader election work.
+Multiple nodes form a cluster with `cluster join`:
+
+```sh
+cluster join
+```
+
+Every node needs the same shared external database - H2 is single-node only. `cluster join` only checks for it, it does not set it up. Point `localNode.database` in `config.json` at the shared database first:
+
+```json
+{
+  "localNode": {
+    "database": "<shared external database settings>"
+  }
+}
+```
+
+Then restart the node and run `cluster join` again. See the [cluster architecture](node/CLUSTER.md) for how joining and leader election work.
 
 ## Versioning
 
