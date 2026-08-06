@@ -59,7 +59,7 @@ There is no stable release yet - use the latest DEV build from the [releases pag
 
 > [!WARNING]
 > Under active development, so expect breaking changes.
-> Please feel free to report any issues you encounter.
+> Please feel free to report any [issues](https://github.com/thePolocloud/polocloud/issues) you encounter.
 
 1. **Download** `polocloud-runner-<version>.jar` (one file, no installation).
 2. **Run the node:**
