@@ -27,9 +27,10 @@ object Polocloud {
     private val groupClient: GroupApiClient = GrpcGroupApiClient { connection.channel() }
     private val serviceClient: ServiceApiClient = GrpcServiceApiClient { connection.channel() }
 
+    /** Access to the cluster's groups (`findAll`, `find`, …) — see [GroupService] for the blocking/async split. */
     val groupService = GroupService(groupClient)
 
-    /** Blocking access to the cluster's services (`findAll`, `find`, …). */
+    /** Access to the cluster's services (`findAll`, `find`, …) — see [ServiceService] for the blocking/async split. */
     val serviceService = ServiceService(serviceClient)
 
     /**
@@ -44,6 +45,7 @@ object Polocloud {
     fun close() {
         eventService.close()
         serviceService.close()
+        groupService.close()
         connection.close()
     }
 }

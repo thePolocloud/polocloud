@@ -55,6 +55,9 @@ gradle-git-properties   = "4.0.1"
 # ── Kotlin ────────────────────────────────────────────────────────────────────
 kotlinx-serialization-json  = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json",  version.ref = "kotlinxSerialization" }
 kotlinx-coroutines-core     = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core",      version.ref = "kotlinxCoroutines" }
+# CompletableFuture interop (kotlinx.coroutines.future.future) for the api module's
+# additive async SDK methods — see ServiceService/GroupService's `*Async` methods.
+kotlinx-coroutines-jdk8     = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-jdk8",      version.ref = "kotlinxCoroutines" }
 kotlin-reflect              = { group = "org.jetbrains.kotlin",  name = "kotlin-reflect",               version.ref = "kotlin-reflect" }
 
 # ── gRPC / Protobuf ───────────────────────────────────────────────────────────

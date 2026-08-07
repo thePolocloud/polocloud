@@ -8,12 +8,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
 /**
- * Public, blocking entry point to the service API.
+ * Public entry point to the service API.
  *
  * Backed by a [ServiceApiClient] (gRPC in production). Obtain the shared instance
  * via [de.polocloud.api.Polocloud.serviceService].
@@ -23,39 +25,66 @@ import java.util.function.Consumer
  * plugin only ever needs to talk to one node to see the whole cluster (see
  * `FindServicesServerHandler` on the node side).
  *
- * Calls run on [Dispatchers.IO] rather than the caller's thread: callers such as
- * the proxy bridge invoke these from a platform lifecycle thread, and confining
- * the suspending gRPC call to that thread can deadlock when the same thread is
- * needed to resume the response continuation.
+ * Every method has two forms:
+ * - The plain one (`findAll()`) blocks the calling thread on [Dispatchers.IO] until the
+ *   gRPC round-trip completes. Simplest to use, but calling it from a platform's
+ *   main/event thread (e.g. a Bukkit/Velocity tick or command handler) blocks that thread
+ *   for the duration of the call.
+ * - The `*Async` form (`findAllAsync()`) returns immediately with a [CompletableFuture],
+ *   the work itself still running on [Dispatchers.IO] — use this from a thread that must
+ *   not block (like a platform's main thread) and handle the result via
+ *   [CompletableFuture.thenAccept] or similar.
  */
 class ServiceService internal constructor(
     private val client: ServiceApiClient,
 ) {
 
-    // Backs streamLogs' background subscriptions, mirroring EventService's own scope.
+    // Backs streamLogs' background subscriptions and every `*Async` method's future.
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /** All services currently known to the connected node. */
     fun findAll(): List<Service> =
         runBlocking(Dispatchers.IO) { client.findServices(null, null) }.map(ServiceMapper::toApi)
 
+    /** Non-blocking form of [findAll]. */
+    fun findAllAsync(): CompletableFuture<List<Service>> =
+        scope.future { client.findServices(null, null).map(ServiceMapper::toApi) }
+
     /** The service with the given `group-index` [name], or `null` if none matches. */
     fun find(name: String): Service? =
         findAll().firstOrNull { it.name().equals(name, ignoreCase = true) }
+
+    /** Non-blocking form of [find]. */
+    fun findAsync(name: String): CompletableFuture<Service?> =
+        scope.future { client.findServices(null, null).map(ServiceMapper::toApi).firstOrNull { it.name().equals(name, ignoreCase = true) } }
 
     /** All services belonging to [group]. */
     fun findByGroup(group: String): List<Service> =
         runBlocking(Dispatchers.IO) { client.findServices(group, null) }.map(ServiceMapper::toApi)
 
+    /** Non-blocking form of [findByGroup]. */
+    fun findByGroupAsync(group: String): CompletableFuture<List<Service>> =
+        scope.future { client.findServices(group, null).map(ServiceMapper::toApi) }
+
     /** All services currently in [state] (e.g. [ServiceState.RUNNING]). */
     fun findByState(state: ServiceState): List<Service> =
         runBlocking(Dispatchers.IO) { client.findServices(null, state.name) }.map(ServiceMapper::toApi)
 
+    /** Non-blocking form of [findByState]. */
+    fun findByStateAsync(state: ServiceState): CompletableFuture<List<Service>> =
+        scope.future { client.findServices(null, state.name).map(ServiceMapper::toApi) }
+
     /** Number of services currently known to the connected node. */
     fun count(): Int = runBlocking(Dispatchers.IO) { client.countServices(null, null) }
 
+    /** Non-blocking form of [count]. */
+    fun countAsync(): CompletableFuture<Int> = scope.future { client.countServices(null, null) }
+
     /** Number of services belonging to [group]. */
     fun count(group: String): Int = runBlocking(Dispatchers.IO) { client.countServices(group, null) }
+
+    /** Non-blocking form of [count]. */
+    fun countAsync(group: String): CompletableFuture<Int> = scope.future { client.countServices(group, null) }
 
     /**
      * Stops the running service named [name], regardless of which node it's running on.
@@ -65,6 +94,9 @@ class ServiceService internal constructor(
      * @return `false` if no service named [name] is currently running anywhere in the cluster.
      */
     fun stop(name: String): Boolean = runBlocking(Dispatchers.IO) { client.stopService(name) }.success
+
+    /** Non-blocking form of [stop]. */
+    fun stopAsync(name: String): CompletableFuture<Boolean> = scope.future { client.stopService(name).success }
 
     /**
      * Runs [command] in the console of the running service named [name], regardless of
@@ -77,6 +109,10 @@ class ServiceService internal constructor(
     fun executeCommand(name: String, command: String): Boolean =
         runBlocking(Dispatchers.IO) { client.executeServiceCommand(name, command) }.success
 
+    /** Non-blocking form of [executeCommand]. */
+    fun executeCommandAsync(name: String, command: String): CompletableFuture<Boolean> =
+        scope.future { client.executeServiceCommand(name, command).success }
+
     /**
      * Re-applies template [templateName] onto the running service named [name]'s work
      * directory, regardless of which node it's running on.
@@ -87,6 +123,10 @@ class ServiceService internal constructor(
      */
     fun copyTemplate(name: String, templateName: String): Boolean =
         runBlocking(Dispatchers.IO) { client.copyTemplate(name, templateName) }.success
+
+    /** Non-blocking form of [copyTemplate]. */
+    fun copyTemplateAsync(name: String, templateName: String): CompletableFuture<Boolean> =
+        scope.future { client.copyTemplate(name, templateName).success }
 
     /**
      * Streams the console output of the running service named [name] to [listener] —
@@ -115,12 +155,18 @@ class ServiceService internal constructor(
  */
 fun Service.shutdown(): Boolean = Polocloud.serviceService.stop(name())
 
+/** Non-blocking form of [Service.shutdown]. */
+fun Service.shutdownAsync(): CompletableFuture<Boolean> = Polocloud.serviceService.stopAsync(name())
+
 /**
  * Runs [command] in this service's console, regardless of which node it's running on.
  *
  * @return `false` if it's no longer running anywhere in the cluster.
  */
 fun Service.execute(command: String): Boolean = Polocloud.serviceService.executeCommand(name(), command)
+
+/** Non-blocking form of [Service.execute]. */
+fun Service.executeAsync(command: String): CompletableFuture<Boolean> = Polocloud.serviceService.executeCommandAsync(name(), command)
 
 /**
  * Re-applies template [templateName] onto this service's work directory, regardless of
@@ -129,6 +175,9 @@ fun Service.execute(command: String): Boolean = Polocloud.serviceService.execute
  * @return `false` if it's no longer running anywhere in the cluster.
  */
 fun Service.copyTemplate(templateName: String): Boolean = Polocloud.serviceService.copyTemplate(name(), templateName)
+
+/** Non-blocking form of [Service.copyTemplate]. */
+fun Service.copyTemplateAsync(templateName: String): CompletableFuture<Boolean> = Polocloud.serviceService.copyTemplateAsync(name(), templateName)
 
 /** Streams this service's console output to [listener]. See [ServiceService.streamLogs]. */
 fun Service.streamLogs(listener: Consumer<String>): AutoCloseable = Polocloud.serviceService.streamLogs(name(), listener)

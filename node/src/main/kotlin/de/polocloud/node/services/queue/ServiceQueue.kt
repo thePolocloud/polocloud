@@ -95,8 +95,9 @@ class ServiceQueue(
     }
 
     /** The groups and indexes currently queued, e.g. `lobby-1`. Exposed for testing. */
-    internal fun queuedIndexes(groupName: String): List<Int> =
+    internal fun queuedIndexes(groupName: String): List<Int> = synchronized(queue) {
         queue.filter { it.second.name == groupName }.map { it.first.index }
+    }
 
     /** Runs a single `enqueueRequired` pass without starting the background thread. Exposed for testing. */
     internal fun enqueueRequiredForTest() = enqueueRequired()
@@ -124,7 +125,7 @@ class ServiceQueue(
             if (serviceProvider.crashLoopGuard.isBackingOff(group.name)) continue
 
             val cluster = clusterState(group, eligible)
-            val queued = queue.count { it.second.name == group.name }.toLong()
+            val queued = synchronized(queue) { queue.count { it.second.name == group.name } }.toLong()
             val clusterNeeded = (group.minOnline - cluster.running - queued).coerceAtLeast(0)
 
             if (clusterNeeded <= 0) continue
@@ -152,7 +153,7 @@ class ServiceQueue(
                 )
 
                 serviceProvider.update(service)
-                queue.offer(Pair(service, group))
+                synchronized(queue) { queue.offer(Pair(service, group)) }
                 logger.info("Queued {}-{} [memory: {}MB, platform: {}/{}]",
                     group.name, index, group.memory, group.platform, group.version
                 )
@@ -236,27 +237,7 @@ class ServiceQueue(
             perNodeRunning,
         )
     }
-
-    /**
-     * Deterministically distributes [count] outstanding replicas of a group across
-     * [eligible] nodes: each replica goes to the currently least-loaded node among those
-     * with memory headroom for it ([hasCapacity]), breaking ties by which of those nodes
-     * already runs the fewest instances of this specific group ([perNodeRunning]), then
-     * by node id for full determinism. A node's simulated running count and memory usage
-     * are updated after each pick (not its heartbeat load — a fresh heartbeat won't
-     * reflect a not-yet-started service anyway) so a multi-replica catch-up burst — e.g.
-     * after a node crash — spreads itself back out and fills each node's capacity
-     * correctly instead of piling onto whichever single node wins the first comparison.
-     *
-     * If no eligible node has room for a given replica, it is simply left unassigned —
-     * [NodeData.maxMemory] is a hard cap, so a group can end up short of `minOnline`
-     * rather than overbooking a node; capacity freeing up (or a new node joining) on a
-     * later tick lets a subsequent pass catch it up.
-     *
-     * Every eligible node runs this exact simulation over the same cluster-wide
-     * snapshot, so they all agree on the same assignment without any locking or leader
-     * RPC — same best-effort, self-healing model as [clusterState].
-     */
+    
     private fun assignReplicas(
         eligible: List<NodeData>,
         perNodeRunning: Map<String, Int>,
@@ -288,7 +269,7 @@ class ServiceQueue(
     }
 
     private fun drainQueue() {
-        val batch = generateSequence { queue.poll() }.toList()
+        val batch = synchronized(queue) { generateSequence { queue.poll() }.toList() }
         if (batch.isEmpty()) return
 
         runBlocking {
@@ -309,10 +290,10 @@ class ServiceQueue(
 
     /** [clusterOtherIndexes] are indexes already used by eligible peers, so two nodes never pick the same one. */
     private fun nextIndex(group: Group, clusterOtherIndexes: Set<Int>): Int {
-        val usedIndexes = queue
-            .filter { it.second.name == group.name }
-            .map { it.first.index }
-            .toSet() + clusterOtherIndexes
+        val queuedIndexes = synchronized(queue) {
+            queue.filter { it.second.name == group.name }.map { it.first.index }.toSet()
+        }
+        val usedIndexes = queuedIndexes + clusterOtherIndexes
         var index = 1
         while (index in usedIndexes) index++
         return index

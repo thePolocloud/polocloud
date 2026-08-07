@@ -16,6 +16,12 @@ dependencies {
     // BouncyCastle is required at runtime by the inherited CertificateStorage
     implementation(libs.bundles.tls)
 
+    // CompletableFuture-returning `*Async` SDK methods, additive alongside the existing
+    // blocking ones — see ServiceService/GroupService. `implementation`, not `api`: only
+    // used internally to build the CompletableFuture; consumers don't need this artifact
+    // on their own classpath just to receive/use the (plain JDK) CompletableFuture itself.
+    implementation(libs.kotlinx.coroutines.jdk8)
+
     // testing
     testImplementation(libs.bundles.testing)
     testImplementation(libs.kotlinx.coroutines.core)
