@@ -28,6 +28,9 @@ object GroupProtoMapper {
         maxOnline = data.maxOnline,
         platform = data.platform,
         version = data.version,
+        // GroupData has no `static` field (not yet exposed over the wire) — matches the
+        // prior constructor default.
+        static = false,
         propertiesJson = PropertyCodec.encode(data.propertiesMap),
         templatesJson = TemplateCodec.encode(data.templatesList),
         nodesJson = TemplateCodec.encode(data.nodesList),

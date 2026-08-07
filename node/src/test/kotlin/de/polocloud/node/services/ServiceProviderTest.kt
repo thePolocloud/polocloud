@@ -13,7 +13,7 @@ class ServiceProviderTest {
     private fun provider() = ServiceProvider()
 
     private fun local(group: String, index: Int) =
-        LocalService(Service(UUID.randomUUID(), index, group, ServiceState.RUNNING, "127.0.0.1", 30000 + index))
+        LocalService(Service(UUID.randomUUID(), index, group, ServiceState.RUNNING, "127.0.0.1", 30000 + index, ""))
 
     @Test
     fun `findLocal resolves a running service by its cluster name, case-insensitively`() {

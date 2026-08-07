@@ -12,28 +12,37 @@ data class Group (
     val maxOnline: Long,
     val platform: String,
     val version: String,
-    var static: Boolean = false,
+    // No default values on this constructor, even ergonomic ones (e.g. `static: Boolean =
+    // false`) — SqlExecutor.resolveMeta() in polocloud-database picks
+    // `declaredConstructors.first()` to reflectively rebuild rows, and a Kotlin default
+    // parameter value makes the compiler emit a second, synthetic constructor
+    // (real-arg-count + 2 for the bitmask/marker). `declaredConstructors` order is
+    // unspecified, so `.first()` can pick either one — when it picks the synthetic one,
+    // SqlExecutor.mapRow()'s N-arg call throws and every find()/findAll() on this table
+    // silently returns empty (the exception is swallowed and logged). Callers that want
+    // defaulting behavior should use named-arg construction at the call site instead.
+    var static: Boolean,
     /**
      * Free-form key/value properties (e.g. `fallback=true`), persisted as JSON.
      *
      * Stored as a JSON string because the SQL layer maps each field to one column
      * and cannot persist a `Map` directly. Read [properties] for the decoded view.
      */
-    val propertiesJson: String = "{}",
+    val propertiesJson: String,
     /**
      * Ordered names of the templates applied to a service of this group on start,
      * persisted as JSON for the same reason as [propertiesJson]. Templates are copied
      * in this order into the service work directory, so a later entry's files win over
      * an earlier one's on conflict — see [de.polocloud.node.group.template.GroupTemplateService].
      */
-    val templatesJson: String = "[]",
+    val templatesJson: String,
     /**
      * Names of the nodes ([de.polocloud.node.cluster.node.NodeData.name]) this group is
      * allowed to start services on, persisted as JSON for the same reason as
      * [templatesJson]. Empty means unrestricted — any online node is eligible. See
      * [de.polocloud.node.services.queue.GroupNodeEligibility].
      */
-    val nodesJson: String = "[]",
+    val nodesJson: String,
 ) {
 
     /**
@@ -57,4 +66,34 @@ data class Group (
      */
     val nodes: List<String>
         get() = TemplateCodec.decode(nodesJson)
+
+    companion object {
+        /**
+         * Convenience factory for a newly-created, non-static group with no properties,
+         * templates or node restrictions yet. A plain function (not a constructor
+         * default) so it doesn't reintroduce the synthetic-constructor ambiguity the
+         * primary constructor's lack of defaults avoids — see [static]'s doc.
+         */
+        fun new(
+            name: String,
+            memory: Int,
+            startThreshold: Double,
+            minOnline: Long,
+            maxOnline: Long,
+            platform: String,
+            version: String,
+        ) = Group(
+            name = name,
+            memory = memory,
+            startThreshold = startThreshold,
+            minOnline = minOnline,
+            maxOnline = maxOnline,
+            platform = platform,
+            version = version,
+            static = false,
+            propertiesJson = "{}",
+            templatesJson = "[]",
+            nodesJson = "[]",
+        )
+    }
 }

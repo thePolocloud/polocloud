@@ -36,7 +36,7 @@ class ServiceGrpcEndpoint(
 
     private val executor = GrpcModule.createExecutor(groupService, serviceProvider)
     private val groupApiService = GroupApiServiceImpl(executor)
-    private val serviceApiService = ServiceApiServiceImpl(executor)
+    private val serviceApiService = ServiceApiServiceImpl(executor, serviceProvider)
     private val eventProviderService = EventProviderServiceImpl()
 
     private val server = GrpcEndpoint.Builder(address)

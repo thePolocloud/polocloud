@@ -25,3 +25,12 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+// bridge/build.gradle.kts pins its own toolchain to 25 specifically to match this
+// module's bytecode ("Match the polocloud api toolchain so the bundled bytecode stays
+// consumable") — but without this module pinning the same version explicitly, it instead
+// compiled at whatever JDK happened to invoke Gradle, silently breaking that contract
+// (and the build) on any machine/CI whose default JDK isn't 25.
+kotlin {
+    jvmToolchain(25)
+}

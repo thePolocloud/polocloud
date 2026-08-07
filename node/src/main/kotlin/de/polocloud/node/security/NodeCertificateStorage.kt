@@ -1,6 +1,8 @@
 package de.polocloud.node.security
 
 import de.polocloud.common.communication.certificate.CertificateStorage
+import de.polocloud.common.communication.certificate.restrictDirToOwnerOnly
+import de.polocloud.common.communication.certificate.restrictToOwnerOnly
 import de.polocloud.node.utils.rootDir
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x509.*
@@ -79,6 +81,7 @@ object NodeCertificateStorage : CertificateStorage() {
      */
     override fun onInitialized() {
         Files.createDirectories(caPath)
+        restrictDirToOwnerOnly(caPath)
         caKeyPair = loadOrCreateCaKeyPair()
 
         if (!isRegistered()) {
@@ -104,7 +107,9 @@ object NodeCertificateStorage : CertificateStorage() {
      */
     fun adoptClusterCaKeyPair(privateKeyPem: String, publicKeyPem: String) {
         Files.createDirectories(caPath)
+        restrictDirToOwnerOnly(caPath)
         caPrivateKeyFile.writeText(privateKeyPem)
+        restrictToOwnerOnly(caPrivateKeyFile)
         caPublicKeyFile.writeText(publicKeyPem)
         caKeyPair = loadKeyPairFromPem(caPrivateKeyFile, caPublicKeyFile)
     }
@@ -186,10 +191,12 @@ object NodeCertificateStorage : CertificateStorage() {
             loadKeyPairFromPem(caPrivateKeyFile, caPublicKeyFile)
         } else {
             Files.createDirectories(caPath)
+            restrictDirToOwnerOnly(caPath)
             val kp = KeyPairGenerator.getInstance("RSA")
                 .apply { initialize(2048) }
                 .generateKeyPair()
             writePem(caPrivateKeyFile, kp.private)
+            restrictToOwnerOnly(caPrivateKeyFile)
             writePem(caPublicKeyFile, kp.public)
             kp
         }

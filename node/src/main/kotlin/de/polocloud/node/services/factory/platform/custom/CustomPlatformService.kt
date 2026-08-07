@@ -30,7 +30,7 @@ class CustomPlatformService(private val platformService: PlatformService) {
      * `platformService.find(name)`; this only guards the custom-platform table itself.
      */
     fun create(name: String, type: String, language: String): CustomPlatform {
-        val platform = CustomPlatform(name = name, type = type.uppercase(), language = language.uppercase())
+        val platform = CustomPlatform(name = name, type = type.uppercase(), language = language.uppercase(), versionsJson = "[]")
         CustomPlatformRepository.save(platform)
         platformService.registerCustom(platform.toPlatform())
         return platform

@@ -51,7 +51,10 @@ jobs:
           echo "last_tag=$LAST_TAG"      >> $GITHUB_OUTPUT
 
       - name: Build (DEV)
-        run: ./gradlew build -x test
+        # Tests run here too (not just ci.yml's push trigger) so a release is never cut
+        # from a build that fails them, even if this workflow somehow runs before ci.yml
+        # has gated the push.
+        run: ./gradlew build
           -Ppolocloud.version.major=3
           -Ppolocloud.version.minor=0
           -Ppolocloud.version.patch=${{ steps.version.outputs.patch }}

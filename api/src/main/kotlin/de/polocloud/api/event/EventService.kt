@@ -9,7 +9,9 @@ import de.polocloud.shared.event.EventRegistry
 import io.grpc.ManagedChannel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -44,7 +46,7 @@ class EventService internal constructor(
 ) {
 
     private val listeners = ConcurrentHashMap<Class<out Event>, CopyOnWriteArrayList<Consumer<out Event>>>()
-    private val streams = ConcurrentHashMap<String, Boolean>()
+    private val streams = ConcurrentHashMap<String, Job>()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private fun stub() = EventProviderGrpcKt.EventProviderCoroutineStub(channelProvider())
@@ -62,9 +64,25 @@ class EventService internal constructor(
         openStream(EventCodec.nameOf(type))
     }
 
-    /** Removes a previously [subscribed][subscribe] listener. */
+    /**
+     * Removes a previously [subscribed][subscribe] listener.
+     *
+     * Once [type] has no listeners left, its cluster stream is closed and the node is
+     * told to drop the subscription — otherwise the stream would keep running (and the
+     * node keep broadcasting to it) for as long as this process lives.
+     */
     fun <T : Event> unsubscribe(type: Class<T>, listener: Consumer<T>) {
-        listeners[type]?.remove(listener)
+        var lastListenerRemoved = false
+        listeners.computeIfPresent(type) { _, current ->
+            current.remove(listener)
+            if (current.isEmpty()) {
+                lastListenerRemoved = true
+                null
+            } else {
+                current
+            }
+        }
+        if (lastListenerRemoved) closeStream(EventCodec.nameOf(type))
     }
 
     /** Publishes [event] to the node, which broadcasts it to all subscribers. */
@@ -81,10 +99,9 @@ class EventService internal constructor(
     fun close() = scope.cancel()
 
     private fun openStream(eventName: String) {
-        // One stream per event name; putIfAbsent guards against concurrent subscribes.
-        if (streams.putIfAbsent(eventName, true) != null) return
-
-        scope.launch {
+        // Started lazily so it only actually runs once this call has won the slot below —
+        // otherwise a race with a concurrent subscribe() could briefly open two streams.
+        val job = scope.launch(start = CoroutineStart.LAZY) {
             val request = EventSubscribeRequest.newBuilder()
                 .setEventName(eventName)
                 .setServiceName(serviceName)
@@ -99,6 +116,28 @@ class EventService internal constructor(
                     // Node restart / transient channel failure — back off and retry.
                     delay(RECONNECT_DELAY_MS)
                 }
+            }
+        }
+
+        // One stream per event name; putIfAbsent guards against concurrent subscribes.
+        if (streams.putIfAbsent(eventName, job) != null) {
+            job.cancel()
+            return
+        }
+        job.start()
+    }
+
+    /** Cancels [eventName]'s stream and tells the node to drop the subscription. */
+    private fun closeStream(eventName: String) {
+        streams.remove(eventName)?.cancel()
+        scope.launch {
+            runCatching {
+                stub().unsubscribe(
+                    EventSubscribeRequest.newBuilder()
+                        .setEventName(eventName)
+                        .setServiceName(serviceName)
+                        .build()
+                )
             }
         }
     }

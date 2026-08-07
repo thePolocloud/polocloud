@@ -18,3 +18,9 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+// See common/build.gradle.kts — same reasoning: this module is one of api's
+// dependencies, so it must match api's pinned toolchain (25) too.
+kotlin {
+    jvmToolchain(25)
+}

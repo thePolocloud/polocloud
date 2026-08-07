@@ -17,11 +17,18 @@ import de.polocloud.database.RepositoryName
  *                      for why this can't be a `List` column directly.
  */
 @RepositoryName("custom_platforms")
+// No default values on this constructor, even ergonomic ones — SqlExecutor.resolveMeta()
+// in polocloud-database picks `declaredConstructors.first()` to reflectively rebuild
+// rows, and a Kotlin default parameter value makes the compiler emit a second, synthetic
+// constructor (real-arg-count + 2 for the bitmask/marker). `declaredConstructors` order
+// is unspecified, so `.first()` can pick either one — when it picks the synthetic one,
+// SqlExecutor.mapRow()'s N-arg call throws and every find()/findAll() on this table
+// silently returns empty (the exception is swallowed and logged).
 data class CustomPlatform(
     @EntryIdentifier val name: String,
     val type: String,
-    val language: String = "JAVA",
-    val versionsJson: String = "[]",
+    val language: String,
+    val versionsJson: String,
 ) {
 
     /** The decoded version list. Computed (no backing field) — the persisted form is [versionsJson]. */

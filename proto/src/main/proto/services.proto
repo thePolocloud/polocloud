@@ -96,6 +96,46 @@ message GetServiceResourceUsageResponse {
 // both consumers.
 service ServiceApiService {
   rpc FindServices (ServiceListRequest) returns (ServiceListResponse);
+  // Stops a running service cluster-wide — the caller (a plugin/service via the SDK)
+  // needs no cluster topology awareness; the receiving node forwards to the service's
+  // owning node if it isn't running locally. Reuses ServiceManager's message shapes
+  // since the semantics are identical.
+  rpc StopService (StopServiceRequest) returns (StopServiceResponse);
+  // Runs a console command in a running service cluster-wide, mirroring StopService.
+  rpc ExecuteServiceCommand (ExecuteServiceCommandRequest) returns (ExecuteServiceCommandResponse);
+  // Counts services matching a filter cluster-wide without materializing the full
+  // ServiceData list — peers are asked for their own count only, not their service data.
+  rpc CountServices (ServiceCountRequest) returns (ServiceCountResponse);
+  // Streams a service's buffered recent log lines followed by its live output,
+  // cluster-wide — mirrors ServiceManager.StreamServiceLogs, forwarding to the
+  // service's owning node when it isn't running locally.
+  rpc StreamServiceLogs (StreamServiceLogsRequest) returns (stream ServiceLogLine);
+  // Re-applies a named template onto a running service's work directory, cluster-wide —
+  // the SDK counterpart of the CLI's `service <name> copy <templateName>`.
+  rpc CopyTemplate (CopyTemplateRequest) returns (CopyTemplateResponse);
+}
+
+message ServiceCountRequest {
+  optional string group_filter = 1;
+  optional string state_filter = 2;
+  // See ServiceListRequest.local_only.
+  bool local_only = 3;
+}
+
+message ServiceCountResponse {
+  int32 count = 1;
+}
+
+message CopyTemplateRequest {
+  string service_name = 1;
+  string template_name = 2;
+}
+
+message CopyTemplateResponse {
+  bool copied = 1;
+  // Set when copied is false (e.g. the service is not running, or has no work
+  // directory yet).
+  string message = 2;
 }
 
 message ServiceListRequest {

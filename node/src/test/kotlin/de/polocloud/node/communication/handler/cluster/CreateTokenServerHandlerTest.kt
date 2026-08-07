@@ -53,11 +53,19 @@ class CreateTokenServerHandlerTest {
     private fun registeredNode(index: Int) = NodeData(
         id = UUID.randomUUID(),
         nodeIndex = index,
+        groupName = "node",
         hostname = "10.0.0.$index",
         port = 4240 + index,
         state = NodeState.ONLINE,
+        head = false,
+        electedAt = null,
+        term = 0,
+        votedFor = null,
         version = "3",
         gitCommitHash = "abc",
+        firstConnection = kotlin.time.Clock.System.now(),
+        lastConnection = kotlin.time.Clock.System.now(),
+        maxMemory = 0,
     ).also { NodeRepository.save(it) }
 
     private fun handler(issued: RegistrationToken = RegistrationToken("issued-token", Long.MAX_VALUE)) =

@@ -49,7 +49,7 @@ class NodeGrpcEndpoint(
     private val serviceManager = ServiceManagerImpl(executor, serviceProvider)
     // Also exposed here (not only on ServiceGrpcEndpoint) so a peer node can fetch this
     // node's local ServiceData when assembling the cluster-wide FindServices view.
-    private val serviceApiService = ServiceApiServiceImpl(executor)
+    private val serviceApiService = ServiceApiServiceImpl(executor, serviceProvider)
     // Lets a non-head node forward a locally-launched service's CSR to whichever node
     // currently holds the cluster CA's private key — see ServiceRegistrationServiceImpl.
     private val serviceRegistrationService = ServiceRegistrationServiceImpl()

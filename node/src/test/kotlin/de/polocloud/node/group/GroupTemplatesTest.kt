@@ -24,16 +24,14 @@ class GroupTemplatesTest {
 
     @Test
     fun `templates default to empty`() {
-        val group = Group("lobby", 512, 0.5, 1, 3, "velocity", "3.5.0")
+        val group = Group.new("lobby", 512, 0.5, 1, 3, "velocity", "3.5.0")
         assertTrue(group.templates.isEmpty())
     }
 
     @Test
     fun `templates preserve insertion order`() {
-        val group = Group(
-            "lobby", 512, 0.5, 1, 3, "velocity", "3.5.0",
-            templatesJson = TemplateCodec.encode(listOf("GLOBAL", "GLOBAL_PROXY", "lobby")),
-        )
+        val group = Group.new("lobby", 512, 0.5, 1, 3, "velocity", "3.5.0")
+            .copy(templatesJson = TemplateCodec.encode(listOf("GLOBAL", "GLOBAL_PROXY", "lobby")))
         assertEquals(listOf("GLOBAL", "GLOBAL_PROXY", "lobby"), group.templates)
     }
 

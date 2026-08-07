@@ -38,8 +38,12 @@ object NodeFactory {
             state = NodeState.STARTING,
             head = head,
             electedAt = electedAt,
+            term = 0,
+            votedFor = null,
             version = version,
             gitCommitHash = gitCommitHash,
+            firstConnection = now(),
+            lastConnection = now(),
             maxMemory = maxMemory,
         )
 }

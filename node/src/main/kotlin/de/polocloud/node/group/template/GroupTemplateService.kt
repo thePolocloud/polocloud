@@ -1,5 +1,6 @@
 package de.polocloud.node.group.template
 
+import de.polocloud.node.utils.isSafePathSegment
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -42,8 +43,18 @@ object GroupTemplateService {
         directoryOf(name).mkdirs()
     }
 
-    /** The folder backing template [name], regardless of whether it currently exists. */
-    fun directoryOf(name: String): File = File(root, name)
+    /**
+     * The folder backing template [name], regardless of whether it currently exists.
+     *
+     * @throws IllegalArgumentException if [name] isn't safe as a single path segment
+     * under [root] (see [isSafePathSegment]) — otherwise a name like `../../etc` would
+     * resolve outside `local/templates/` entirely, letting [copyInto] read (or [delete]
+     * remove) arbitrary files on the node's filesystem.
+     */
+    fun directoryOf(name: String): File {
+        require(isSafePathSegment(name)) { "Invalid template name '$name'." }
+        return File(root, name)
+    }
 
     /** Names of every template folder currently under [root], sorted alphabetically. */
     fun listAll(): List<String> =
@@ -62,7 +73,11 @@ object GroupTemplateService {
      */
     fun copyInto(templates: List<String>, targetDir: File) {
         for (name in templates) {
-            val source = directoryOf(name)
+            val source = runCatching { directoryOf(name) }
+                .getOrElse {
+                    logger.error("Refusing to apply template '{}': {}", name, it.message)
+                    continue
+                }
             if (!source.isDirectory) {
                 logger.warn("Template '{}' has no folder at {} — skipping", name, source.path)
                 continue

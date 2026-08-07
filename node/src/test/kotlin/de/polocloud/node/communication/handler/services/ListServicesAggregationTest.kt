@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.time.Clock
 
 class ListServicesAggregationTest {
 
@@ -25,14 +26,20 @@ class ListServicesAggregationTest {
         val provider = ServiceProvider(nodeId = localNodeId.toString())
         names.forEach { (group, index) ->
             provider.localServices += LocalService(
-                Service(UUID.randomUUID(), index, group, ServiceState.RUNNING, "127.0.0.1", 30000 + index)
+                Service(UUID.randomUUID(), index, group, ServiceState.RUNNING, "127.0.0.1", 30000 + index, "")
             )
         }
         return provider
     }
 
     private fun node(id: UUID = UUID.randomUUID(), name: String = "node") =
-        NodeData(id = id, nodeIndex = 1, groupName = name, hostname = "10.0.0.1", port = 4240, state = NodeState.ONLINE, version = "3", gitCommitHash = "abc")
+        NodeData(
+            id = id, nodeIndex = 1, groupName = name, hostname = "10.0.0.1", port = 4240, state = NodeState.ONLINE,
+            head = false, electedAt = null, term = 0, votedFor = null,
+            version = "3", gitCommitHash = "abc",
+            firstConnection = Clock.System.now(), lastConnection = Clock.System.now(),
+            maxMemory = 0,
+        )
 
     private fun peerService(group: String, index: Int) = ProtoServiceProcessData.newBuilder()
         .setUuid(UUID.randomUUID().toString()).setPlan(group).setIndex(index).setState("RUNNING").build()

@@ -30,12 +30,19 @@ class ElectionStateTest {
     private fun node(id: UUID, index: Int) = NodeData(
         id = id,
         nodeIndex = index,
+        groupName = "node",
         hostname = "10.0.0.$index",
         port = 4240 + index,
         state = NodeState.ONLINE,
+        head = false,
+        electedAt = null,
+        term = 0,
+        votedFor = null,
         version = "3",
         gitCommitHash = "abc",
         firstConnection = now(),
+        lastConnection = now(),
+        maxMemory = 0,
     )
 
     private fun newState(

@@ -29,8 +29,19 @@ import java.security.cert.X509Certificate
  * and the certificate CN — which for a service connection is that service's id (e.g. `proxy-1`,
  * `lobby-1`; see [de.polocloud.node.security.ServiceIdentityProvisioner.buildCsr], which signs
  * every service's client certificate with `CN=<serviceId>`).
+ *
+ * Also publishes that same id under [SERVICE_SUBJECT_CTX_KEY], a key distinct from
+ * [CliSessionInterceptor.SUBJECT_CTX_KEY] — this endpoint is the *only* place
+ * [SERVICE_SUBJECT_CTX_KEY] is ever set, so [de.polocloud.node.communication.handler.CallerAuthorization]
+ * can tell "this call came from a launched service via the SDK" apart from "this call came
+ * from a trusted CLI operator or peer node via [de.polocloud.node.communication.grpc.NodeGrpcEndpoint]",
+ * which share [CliSessionInterceptor.SUBJECT_CTX_KEY] and would otherwise be indistinguishable.
  */
 class ServiceIdentityInterceptor : ServerInterceptor {
+
+    companion object {
+        val SERVICE_SUBJECT_CTX_KEY: Context.Key<String> = Context.key("service-identity-subject")
+    }
 
     override fun <ReqT, RespT> interceptCall(
         call: ServerCall<ReqT, RespT>,
@@ -40,7 +51,10 @@ class ServiceIdentityInterceptor : ServerInterceptor {
         var context = Context.current()
 
         extractIp(call)?.let { context = context.withValue(GrpcClientContext.CLIENT_IP, it) }
-        extractServiceId(call)?.let { context = context.withValue(CliSessionInterceptor.SUBJECT_CTX_KEY, it) }
+        extractServiceId(call)?.let {
+            context = context.withValue(CliSessionInterceptor.SUBJECT_CTX_KEY, it)
+            context = context.withValue(SERVICE_SUBJECT_CTX_KEY, it)
+        }
 
         return Contexts.interceptCall(context, call, headers, next)
     }

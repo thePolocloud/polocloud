@@ -54,12 +54,19 @@ class NodeHeartBeatMonitorTest {
     private fun node(lastConnection: kotlin.time.Instant, index: Int, state: NodeState) = NodeData(
         id = UUID.randomUUID(),
         nodeIndex = index,
+        groupName = "node",
         hostname = "10.0.0.$index",
         port = 4240 + index,
         state = state,
+        head = false,
+        electedAt = null,
+        term = 0,
+        votedFor = null,
         version = "3",
         gitCommitHash = "abc",
+        firstConnection = now(),
         lastConnection = lastConnection,
+        maxMemory = 0,
     ).also { NodeRepository.save(it) }
 
     @Test

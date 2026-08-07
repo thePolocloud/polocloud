@@ -3,6 +3,7 @@ package de.polocloud.node.group.template
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -78,6 +79,23 @@ class GroupTemplateServiceTest {
 
         // Must not throw even though this template was never created.
         GroupTemplateService.copyInto(listOf("does-not-exist-${UUID.randomUUID()}"), target)
+
+        assertTrue(target.listFiles()?.isEmpty() != false)
+    }
+
+    @Test
+    fun `directoryOf rejects a name that would escape the templates root`() {
+        assertThrows(IllegalArgumentException::class.java) { GroupTemplateService.directoryOf("../secrets") }
+        assertThrows(IllegalArgumentException::class.java) { GroupTemplateService.directoryOf("..") }
+        assertThrows(IllegalArgumentException::class.java) { GroupTemplateService.directoryOf("a/../../b") }
+    }
+
+    @Test
+    fun `copyInto skips a traversal attempt instead of reading outside the templates root`() {
+        val target = createTempDirectory().toFile().also { targets += it }
+
+        // Must not throw and must not copy anything from outside local/templates/.
+        GroupTemplateService.copyInto(listOf("../../.."), target)
 
         assertTrue(target.listFiles()?.isEmpty() != false)
     }

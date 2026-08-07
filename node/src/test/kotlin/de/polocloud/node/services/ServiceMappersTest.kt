@@ -14,7 +14,7 @@ class ServiceMappersTest {
         group: String = "lobby",
         port: Int = 30000,
     ): LocalService {
-        val service = LocalService(Service(UUID.randomUUID(), index, group, state, "10.0.0.5", port))
+        val service = LocalService(Service(UUID.randomUUID(), index, group, state, "10.0.0.5", port, ""))
         service.properties["fallback"] = "true"
         return service
     }

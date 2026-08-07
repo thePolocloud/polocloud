@@ -2,6 +2,8 @@ package de.polocloud.node.security
 
 import de.polocloud.common.Address
 import de.polocloud.common.communication.certificate.certToPem
+import de.polocloud.common.communication.certificate.restrictDirToOwnerOnly
+import de.polocloud.common.communication.certificate.restrictToOwnerOnly
 import de.polocloud.common.communication.security.toPem
 import de.polocloud.node.cluster.node.NodeRepository
 import de.polocloud.node.communication.grpc.NodeGrpcClient
@@ -62,12 +64,15 @@ object ServiceIdentityProvisioner {
      */
     fun provision(identityDir: File, serviceId: String, planName: String) {
         identityDir.mkdirs()
+        restrictDirToOwnerOnly(identityDir.toPath())
 
         val keyPair = generateKeyPair()
         val csr = buildCsr(keyPair, serviceId)
         val (certificatePem, caCertificatePem) = signWithRetry(csr, serviceId, planName)
 
-        writePem(File(identityDir, "private-key.pem"), keyPair.private)
+        val privateKeyFile = File(identityDir, "private-key.pem")
+        writePem(privateKeyFile, keyPair.private)
+        restrictToOwnerOnly(privateKeyFile)
         writePem(File(identityDir, "public-key.pem"), keyPair.public)
         File(identityDir, "certificate.pem").writeText(certificatePem)
         File(identityDir, "ca.pem").writeText(caCertificatePem)

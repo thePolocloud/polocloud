@@ -14,6 +14,7 @@ import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.time.Clock
 
 class ClusterEventRelayTest {
 
@@ -25,7 +26,13 @@ class ClusterEventRelayTest {
     }
 
     private fun node(id: UUID = UUID.randomUUID(), name: String = "node") =
-        NodeData(id = id, nodeIndex = 1, groupName = name, hostname = "10.0.0.9", port = 4240, state = NodeState.ONLINE, version = "3", gitCommitHash = "abc")
+        NodeData(
+            id = id, nodeIndex = 1, groupName = name, hostname = "10.0.0.9", port = 4240, state = NodeState.ONLINE,
+            head = false, electedAt = null, term = 0, votedFor = null,
+            version = "3", gitCommitHash = "abc",
+            firstConnection = Clock.System.now(), lastConnection = Clock.System.now(),
+            maxMemory = 0,
+        )
 
     private fun fire() = ClusterEventService.call(GroupUpdatedEvent("lobby", Properties()))
 

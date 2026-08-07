@@ -2,6 +2,7 @@ package de.polocloud.node.communication.impl.services
 
 import de.polocloud.common.communication.server.executor.GrpcServerExecutor
 import de.polocloud.node.communication.grpc.GrpcContextFactory
+import de.polocloud.node.services.LocalServiceLogStreaming
 import de.polocloud.node.services.ServiceProvider
 import de.polocloud.proto.ExecuteServiceCommandRequest
 import de.polocloud.proto.ExecuteServiceCommandResponse
@@ -16,7 +17,6 @@ import de.polocloud.proto.StopGroupServicesResponse
 import de.polocloud.proto.StopServiceRequest
 import de.polocloud.proto.StopServiceResponse
 import de.polocloud.proto.StreamServiceLogsRequest
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
@@ -52,18 +52,10 @@ class ServiceManagerImpl(
      * long as the peer stays subscribed (mirrors
      * [de.polocloud.node.communication.impl.node.NodeServiceImpl.listenForEvents]).
      */
-    override fun streamServiceLogs(request: StreamServiceLogsRequest): Flow<ServiceLogLine> = callbackFlow {
+    override fun streamServiceLogs(request: StreamServiceLogsRequest): Flow<ServiceLogLine> {
         val local = serviceProvider.findLocal(request.serviceName)
-        if (local == null) {
-            close(IllegalStateException("Service '${request.serviceName}' is not running on this node."))
-            return@callbackFlow
-        }
+            ?: return callbackFlow { close(IllegalStateException("Service '${request.serviceName}' is not running on this node.")) }
 
-        local.recentLogs().forEach { line -> trySend(ServiceLogLine.newBuilder().setLine(line).build()) }
-
-        val listener: (String) -> Unit = { line -> trySend(ServiceLogLine.newBuilder().setLine(line).build()) }
-        local.addLogListener(listener)
-
-        awaitClose { local.removeLogListener(listener) }
+        return LocalServiceLogStreaming.stream(local)
     }
 }

@@ -144,6 +144,14 @@ class NodeLifecycle(
             context.serviceGrpcEndpoint.close(mode)
         }
 
+        // Also broadcasts this node's departure to peers and stops CLI session cleanup —
+        // see NodeGrpcEndpoint.close. Previously never called, so the mTLS server socket
+        // stayed bound, peers only learned this node left via heartbeat timeout instead of
+        // immediately, and the Netty server threads leaked past process shutdown.
+        safe("grpcEndpoint") {
+            context.grpcEndpoint.close(mode)
+        }
+
         safe("registrationManager") {
             context.registrationManager.close(mode)
         }

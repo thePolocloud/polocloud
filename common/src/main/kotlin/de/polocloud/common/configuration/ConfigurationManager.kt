@@ -29,11 +29,15 @@ object ConfigurationManager {
     }
 
     /**
-     * Reads the config of a given path and serializer.
+     * One-shot read of [path] via [serializer], without registering it in [configs] or
+     * watching it for changes — unlike [load], which requires a `@ConfigurationFile`
+     * annotated class. Used for configs owned by something other than this process (e.g.
+     * the CLI's `Cli.resolveInitialConfiguration` reads a separate installer-generated
+     * config once, on first boot, to seed the CLI's own initial configuration).
+     *
      * @param path
      * @param serializer
      */
-    @Deprecated("This method is no longer supported!")
     fun <T> read(path: Path, serializer: KSerializer<T>): T? {
         return if (path.exists()) {
             val content = Files.readString(path)

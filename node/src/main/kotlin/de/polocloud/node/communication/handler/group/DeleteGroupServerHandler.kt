@@ -2,6 +2,7 @@ package de.polocloud.node.communication.handler.group
 
 import de.polocloud.common.communication.server.context.GrpcServerContext
 import de.polocloud.common.communication.server.handler.GrpcServerHandler
+import de.polocloud.node.communication.handler.CallerAuthorization
 import de.polocloud.node.group.GroupService
 import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.services.cluster.ClusterGroupShutdown
@@ -17,6 +18,8 @@ class DeleteGroupServerHandler(
         request: DeleteGroupRequest,
         context: GrpcServerContext
     ): DeleteGroupResponse {
+        CallerAuthorization.requireTrustedCaller(context, "delete groups")
+
         val group = groupService.find(request.name)
             ?: return DeleteGroupResponse.newBuilder().setSuccess(false).build()
 

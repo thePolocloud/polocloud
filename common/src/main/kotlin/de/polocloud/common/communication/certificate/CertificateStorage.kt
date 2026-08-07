@@ -75,6 +75,7 @@ abstract class CertificateStorage {
     fun initialize() {
         ensureBouncyCastle()
         Files.createDirectories(storageDir)
+        restrictDirToOwnerOnly(storageDir)
         keyPair = loadOrCreateKeyPair()
         onInitialized()
     }
@@ -148,6 +149,7 @@ abstract class CertificateStorage {
         } else {
             val kp = generateKeyPair()
             writePem(priv, kp.private)
+            restrictToOwnerOnly(priv)
             writePem(pub,  kp.public)
             kp
         }

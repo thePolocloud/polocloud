@@ -9,11 +9,10 @@ class GroupProtoMapperTest {
 
     @Test
     fun `toProto exposes the decoded properties`() {
-        val group = Group(
+        val group = Group.new(
             name = "Lobby", memory = 512, startThreshold = 0.5, minOnline = 1, maxOnline = 3,
             platform = "velocity", version = "3.5.0",
-            propertiesJson = """{"fallback":"true"}""",
-        )
+        ).copy(propertiesJson = """{"fallback":"true"}""")
         val data = GroupProtoMapper.toProto(group)
         assertEquals("Lobby", data.name)
         assertEquals("true", data.propertiesMap["fallback"])
@@ -47,7 +46,7 @@ class GroupProtoMapperTest {
 
     @Test
     fun `group without properties yields an empty proto map`() {
-        val group = Group("Lobby", 512, 0.0, 0, 1, "velocity", "3.5.0")
+        val group = Group.new("Lobby", 512, 0.0, 0, 1, "velocity", "3.5.0")
         assertTrue(GroupProtoMapper.toProto(group).propertiesMap.isEmpty())
     }
 }

@@ -3,6 +3,7 @@ package de.polocloud.node.group
 import de.polocloud.node.event.ClusterEventService
 import de.polocloud.node.group.template.GroupTemplateService
 import de.polocloud.node.services.factory.PlatformService
+import de.polocloud.node.utils.isSafePathSegment
 import de.polocloud.shared.event.group.GroupUpdatedEvent
 import de.polocloud.shared.property.Properties
 import org.slf4j.LoggerFactory
@@ -23,7 +24,7 @@ open class GroupService(private val platformService: PlatformService = PlatformS
     open fun find(name: String) = GroupRepository.find(name)
 
     fun create(name: String, memory: Int, startThreshold: Double, minOnline: Long, maxOnline: Long, platform: String, version: String) : Group =
-        create(Group(name, memory, startThreshold, minOnline, maxOnline, platform, version))
+        create(Group.new(name, memory, startThreshold, minOnline, maxOnline, platform, version))
 
     /**
      * Persists [group], assigning its default templates first if none were set:
@@ -35,8 +36,19 @@ open class GroupService(private val platformService: PlatformService = PlatformS
      *
      * A caller that already set [Group.templates] explicitly (e.g. re-creating a group
      * from a backup) is left untouched.
+     *
+     * @throws IllegalStateException if [Group.name] isn't safe as a filesystem path
+     * segment (see [isSafePathSegment]) — it's used verbatim both as a service work
+     * directory name (`servers/<group.name>-<index>`, see
+     * [de.polocloud.node.services.factory.FactoryService]) and, implicitly, as a template
+     * name (see [defaultTemplatesFor]), so an unsafe name could otherwise resolve outside
+     * either of those directories. Uses the same exception type as the API handler's other
+     * validation checks (see `CreateGroupServerHandler`), so it maps to the same gRPC
+     * status there.
      */
     open fun create(group: Group): Group {
+        check(isSafePathSegment(group.name)) { "Invalid group name '${group.name}'." }
+
         val withTemplates = applyDefaultTemplates(group)
         GroupRepository.save(withTemplates)
         return withTemplates

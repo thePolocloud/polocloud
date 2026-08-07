@@ -34,9 +34,9 @@ private class InMemoryGroupService(initial: List<Group> = emptyList()) : GroupSe
 
 class GroupServerHandlerTest {
 
-    private val lobby = Group("Lobby", 512, 0.8, 1, 3, "velocity", "3.5.0")
-    private val proxy = Group("Proxy", 256, 0.5, 1, 2, "velocity", "3.5.0")
-    private val survival = Group("Survival", 1024, 0.9, 0, 5, "paper", "1.21")
+    private val lobby = Group.new("Lobby", 512, 0.8, 1, 3, "velocity", "3.5.0")
+    private val proxy = Group.new("Proxy", 256, 0.5, 1, 2, "velocity", "3.5.0")
+    private val survival = Group.new("Survival", 1024, 0.9, 0, 5, "paper", "1.21")
 
     private fun service() = InMemoryGroupService(listOf(lobby, proxy, survival))
 
@@ -164,5 +164,52 @@ class GroupServerHandlerTest {
         )
 
         assertFalse(response.success)
+    }
+
+    // Group mutation is CLI/peer-only — never exposed to a launched service via the SDK
+    // (see CallerAuthorization). A "serviceSubject" in the context means the call arrived
+    // via ServiceGrpcEndpoint, i.e. from a plugin, not a trusted CLI operator or peer node.
+    private fun serviceCallContext() = GrpcServerContext().with("serviceSubject", "lobby-1")
+
+    @Test
+    fun `create rejects a call from a launched service`() {
+        val handler = CreateGroupServerHandler(InMemoryGroupService())
+
+        assertThrows(IllegalStateException::class.java) {
+            runBlocking {
+                handler.handle(
+                    CreateGroupRequest.newBuilder().setGroup(groupData("New")).build(),
+                    serviceCallContext()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `update rejects a call from a launched service`() {
+        val handler = UpdateGroupServerHandler(service())
+
+        assertThrows(IllegalStateException::class.java) {
+            runBlocking {
+                handler.handle(
+                    UpdateGroupRequest.newBuilder().setGroup(groupData("Lobby", platform = "paper")).build(),
+                    serviceCallContext()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `delete rejects a call from a launched service`() {
+        val handler = DeleteGroupServerHandler(service(), ServiceProvider())
+
+        assertThrows(IllegalStateException::class.java) {
+            runBlocking {
+                handler.handle(
+                    DeleteGroupRequest.newBuilder().setName("Lobby").build(),
+                    serviceCallContext()
+                )
+            }
+        }
     }
 }

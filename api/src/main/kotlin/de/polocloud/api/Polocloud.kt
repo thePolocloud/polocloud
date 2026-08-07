@@ -43,6 +43,7 @@ object Polocloud {
      */
     fun close() {
         eventService.close()
+        serviceService.close()
         connection.close()
     }
 }

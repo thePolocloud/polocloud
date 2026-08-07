@@ -38,7 +38,7 @@ private class FakeProcess(
 class LocalServiceTest {
 
     private fun localService() =
-        LocalService(Service(UUID.randomUUID(), 1, "lobby", ServiceState.RUNNING, "127.0.0.1", 30000))
+        LocalService(Service(UUID.randomUUID(), 1, "lobby", ServiceState.RUNNING, "127.0.0.1", 30000, ""))
 
     private fun await(timeoutMs: Long = 2000, condition: () -> Boolean) {
         val deadline = System.currentTimeMillis() + timeoutMs

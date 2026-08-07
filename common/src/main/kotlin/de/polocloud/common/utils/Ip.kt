@@ -1,10 +1,13 @@
 package de.polocloud.common.utils
 
+import org.slf4j.LoggerFactory
 import java.net.HttpURLConnection
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.net.SocketException
 import java.net.URI
+
+private val logger = LoggerFactory.getLogger("de.polocloud.common.utils.Ip")
 
 /**
  * Returns the local IPv4 address of the device.
@@ -24,7 +27,7 @@ fun localIpAddress(): String {
             }
         }
     } catch (ex: SocketException) {
-        ex.printStackTrace()
+        logger.warn("Failed to enumerate network interfaces: {}", ex.message)
     }
     throw IllegalArgumentException("No local IPv4 address found")
 }
@@ -50,7 +53,9 @@ fun publicIpAddress(timeoutMs: Int = 5000): String? {
                 }
             }
         } catch (e: Exception) {
+            logger.debug("Failed to resolve public IP via {}: {}", service, e.message)
         }
     }
+    logger.warn("Could not resolve a public IP address — all {} fallback services failed", services.size)
     return null
 }
