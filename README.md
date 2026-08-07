@@ -12,22 +12,6 @@
 
 Modular by design: a cloud daemon, an admin CLI, a plugin SDK, and ready-made addons for Velocity, Waterfall/BungeeCord, and Bukkit.
 
-- [Features](#features)
-- [Supported platforms](#supported-platforms)
-- [User Guide](#user-guide)
-  - [Requirements](#requirements)
-  - [Getting Started](#getting-started)
-  - [CLI](#cli)
-  - [Clustering](#clustering)
-- [Versioning](#versioning)
-- [Development](#development)
-  - [Prerequisites](#prerequisites)
-  - [Commands](#commands)
-  - [Architecture](#architecture)
-  - [References](#references)
-  - [📜 License](#-license)
-  - [🤝 Community](#-community)
-
 <details>
 <summary><strong>Features</strong></summary>
 
