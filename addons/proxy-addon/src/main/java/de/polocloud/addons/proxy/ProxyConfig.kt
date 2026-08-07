@@ -77,7 +77,7 @@ enum class PlayerCountMode {
 
 /**
  * How the `%online%`/`%max%` placeholders (MOTD, tab list) are computed — see
- * [de.polocloud.addons.proxy.velocity.PlayerCountResolver]. [maxOverride] (when `> 0`) replaces
+ * [de.polocloud.addons.proxy.core.PlayerCountResolver]. [maxOverride] (when `> 0`) replaces
  * the computed maximum in [PlayerCountMode.LOCAL]/[PlayerCountMode.NETWORK] mode; leave it `0`
  * to use the real value.
  */

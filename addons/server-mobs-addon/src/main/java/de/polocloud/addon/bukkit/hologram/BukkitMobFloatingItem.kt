@@ -29,11 +29,27 @@ object BukkitMobFloatingItem {
     /** Shrinks the floating item below its normal held/dropped size. */
     private const val SCALE = 0.3f
 
+    /**
+     * Whether the running server exposes [ItemDisplay] — added in Minecraft 1.19.4. This
+     * addon's plugin.yml only declares `api-version: 1.13`, so it also loads fine on older
+     * servers where the class (and [Transformation]/[Quaternionf] usage below) doesn't exist
+     * at all; probing for it here up front lets [show] fail soft instead of the server
+     * throwing a `NoClassDefFoundError` the first time a mob is given an item.
+     */
+    private val supported = runCatching { Class.forName("org.bukkit.entity.ItemDisplay") }.isSuccess
+
+    private var warned = false
+
     private val displays = ConcurrentHashMap<Position, ItemDisplay>()
     private val yaws = ConcurrentHashMap<Position, Float>()
 
     /** Shows/updates the floating item at [position], [height] blocks above its feet. `null`/invalid [material] hides it instead. */
     fun show(position: Position, material: String?, height: Double) {
+        if (!supported) {
+            warnUnsupported()
+            return
+        }
+
         val itemMaterial = material?.let { runCatching { Material.valueOf(it) }.getOrNull() }
         if (itemMaterial == null) {
             hide(position)
@@ -80,6 +96,15 @@ object BukkitMobFloatingItem {
                 current.rightRotation,
             )
         }
+    }
+
+    /** Logs a one-time warning that this server can't run the floating-item feature, without disabling the addon itself. */
+    private fun warnUnsupported() {
+        if (warned) return
+        warned = true
+        Bukkit.getLogger().warning(
+            "[ServerMobs] Floating items above mob holograms need ItemDisplay entities (Minecraft 1.19.4+); this server doesn't support them, so the feature is disabled."
+        )
     }
 
     private fun spawn(world: World, position: Position): ItemDisplay {

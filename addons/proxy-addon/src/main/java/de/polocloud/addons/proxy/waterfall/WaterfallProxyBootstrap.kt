@@ -3,8 +3,8 @@ package de.polocloud.addons.proxy.waterfall
 import de.polocloud.addons.proxy.Messages
 import de.polocloud.addons.proxy.ProxyConfig
 import de.polocloud.addons.proxy.config.ReloadableConfig
-import de.polocloud.addons.proxy.config.SingleDocumentStorage
 import de.polocloud.addons.proxy.waterfall.command.ProxyCommand
+import de.polocloud.common.configuration.SingleDocumentStorage
 import net.md_5.bungee.api.chat.TextComponent
 import net.md_5.bungee.api.event.PostLoginEvent
 import net.md_5.bungee.api.event.ProxyPingEvent

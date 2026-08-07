@@ -1,15 +1,11 @@
 package de.polocloud.addons.sign.system.layout
 
 import de.polocloud.addons.sign.system.SignEntryType
-import de.polocloud.common.configuration.ConfigurationManager
-import de.polocloud.common.configuration.watcher.FileWatcher
+import de.polocloud.common.configuration.SingleDocumentStorage
 import de.polocloud.shared.service.ServiceState
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
-import kotlin.io.path.readText
 
 /**
  * Persists [SignLayout] definitions — frames, colors, animation timing, banner pattern
@@ -18,9 +14,11 @@ import kotlin.io.path.readText
  * colors or timing without recompiling the addon: [LayoutRegistry] previously only ever
  * held the hardcoded [LayoutRegistry.defaultSignLayout].
  *
- * Reuses [ConfigurationManager]'s shared `Json` instance, same reasoning as [de.polocloud.addons.sign.system.SignStorage]:
+ * Built on the shared [SingleDocumentStorage] (same reasoning as [de.polocloud.addons.sign.system.SignStorage]:
  * the file lives under the plugin's runtime-resolved data folder, which the static-path
- * [de.polocloud.common.configuration.ConfigurationFile] annotation can't express.
+ * [de.polocloud.common.configuration.ConfigurationFile] annotation can't express) — only the
+ * seeding decision (empty file? decode failure? has content but no layouts?) stays here, since
+ * it needs to fall back to [seed] differently in each case.
  */
 class LayoutStorage(private val file: Path) {
 
@@ -34,7 +32,7 @@ class LayoutStorage(private val file: Path) {
     @Serializable
     private data class Document(val layouts: List<LayoutDto> = emptyList())
 
-    private var watcher: FileWatcher? = null
+    private val storage = SingleDocumentStorage(file, Document.serializer())
 
     /** Loads persisted layouts, or seeds [file] with [seed]'s result if it doesn't exist yet (or fails to parse). */
     fun load(seed: () -> List<SignLayout>): List<SignLayout> {
@@ -44,10 +42,7 @@ class LayoutStorage(private val file: Path) {
             return defaults
         }
 
-        val document = runCatching {
-            ConfigurationManager.json.decodeFromString<Document>(file.readText())
-        }.getOrNull()
-
+        val document = storage.readOrNull()
         if (document == null || document.layouts.isEmpty()) return seed()
 
         return document.layouts.map { dto ->
@@ -58,16 +53,11 @@ class LayoutStorage(private val file: Path) {
     }
 
     fun save(layouts: Collection<SignLayout>) {
-        val document = Document(layouts.map { LayoutDto(it.id, it.type.id, it.explicitAnimations()) })
-
-        file.parent?.let(Files::createDirectories)
-        file.toFile().writeText(ConfigurationManager.json.encodeToString(document))
+        storage.save(Document(layouts.map { LayoutDto(it.id, it.type.id, it.explicitAnimations()) }))
     }
 
     /** Calls [onReload] whenever [file] is modified on disk, e.g. by an operator hand-editing it. */
-    fun watch(onReload: () -> Unit) {
-        watcher = FileWatcher(file, onReload)
-    }
+    fun watch(onReload: () -> Unit) = storage.watch(onReload)
 
-    fun stopWatching() = watcher?.stop()
+    fun stopWatching() = storage.stopWatching()
 }

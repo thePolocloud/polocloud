@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Every visual aspect of a server mob that an operator can configure without recompiling the
- * addon — persisted to `display.json` via [de.polocloud.addon.config.SingleDocumentStorage],
+ * addon — persisted to `display.json` via [de.polocloud.common.configuration.SingleDocumentStorage],
  * hot-reloaded through [de.polocloud.addon.config.ReloadableConfig]. Mirrors how
  * [de.polocloud.addons.sign.system.layout.SignLayout] configures the sign-system addon's
  * appearance, just for a single global display instead of a set of named/per-state layouts.
