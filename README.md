@@ -143,6 +143,9 @@ Stability comes from the channel in the version string, not from GitHub's `draft
 
 </details>
 
+<details>
+<summary><strong>Development</strong></summary>
+
 ## Development
 
 ### Prerequisites
@@ -166,6 +169,8 @@ Nodes communicate over [gRPC with protobuf contracts](proto/src/main/proto), and
 - [CODE_OF_CONDUCT](.github/CODE_OF_CONDUCT.md)
 - [CONTRIBUTING GUIDELINE](.github/CONTRIBUTING.md)
 - [SECURITY POLICY](.github/SECURITY.md)
+
+</details>
 
 <div align="center">
 
