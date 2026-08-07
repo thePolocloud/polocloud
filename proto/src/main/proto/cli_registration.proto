@@ -17,6 +17,10 @@ message RegisterCliRequest {
 }
 
 message RegisterCliResponse {
+  // Fields 1 and 2 have never been used by any shipped version of this message;
+  // reserved so a future field can't be added at a number that might already carry
+  // meaning elsewhere.
+  reserved 1, 2;
   bool accepted = 3;
   string message = 4;
   string certificate_pem = 5;

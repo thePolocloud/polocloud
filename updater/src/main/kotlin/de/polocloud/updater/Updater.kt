@@ -9,6 +9,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.security.MessageDigest
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 import java.util.jar.JarFile
 import java.util.jar.JarInputStream
 import kotlin.system.exitProcess
@@ -60,6 +63,9 @@ object Updater {
 
     private const val VERSION_MARKER_FILE = "version"
 
+    /** How long [relaunch] waits for the freshly spawned process to still be alive before trusting it and exiting. */
+    private val RELAUNCH_HEALTH_CHECK_TIMEOUT = Duration.ofSeconds(5)
+
     /**
      * Downloads the newer release's jar (if any) and unpacks its embedded modules into
      * [UPDATE_DIR]. Never restarts the process — the caller decides whether/when to
@@ -75,9 +81,10 @@ object Updater {
 
         val asset = update.release.assets.firstOrNull { it.name.endsWith(".jar") }
             ?: return UpdateResult.Failed("release ${update.version.toDisplayString()} has no downloadable jar asset")
+        val checksumAsset = update.release.assets.firstOrNull { it.name == "${asset.name}.sha256" }
 
         return try {
-            val releaseJar = downloadToTemp(asset)
+            val releaseJar = downloadToTemp(asset, checksumAsset)
             try {
                 stage(releaseJar)
             } finally {
@@ -109,7 +116,14 @@ object Updater {
                     return
                 }
                 logger.info("Staged update to {}, restarting to apply it...", result.version.toDisplayString())
-                relaunch(jar)
+                if (!relaunch(jar)) {
+                    logger.error(
+                        "New process failed its post-relaunch health check — aborting the update and continuing " +
+                            "to run the current (still-working) version. The staged update remains in {} and will " +
+                            "be retried on the next auto-update attempt.",
+                        UPDATE_DIR,
+                    )
+                }
             }
             is UpdateResult.Failed -> logger.warn("Auto-update skipped: {}", result.reason)
             UpdateResult.UpToDate -> logger.debug("Already up to date, skipping auto-update.")
@@ -129,7 +143,7 @@ object Updater {
      */
     fun restart(extraJvmArgs: List<String> = emptyList()): Boolean {
         val jar = runningJarPath() ?: return false
-        relaunch(jar, extraJvmArgs)
+        return relaunch(jar, extraJvmArgs)
     }
 
     private fun runningJarPath(): Path? =
@@ -137,15 +151,69 @@ object Updater {
             ?.let { runCatching { Paths.get(it) }.getOrNull() }
             ?.takeIf { Files.isRegularFile(it) }
 
-    private fun downloadToTemp(asset: GithubAsset): Path {
+    /**
+     * Downloads [asset] to a temp file and, if [checksumAsset] is present (the release
+     * workflow publishes a `<jar-name>.sha256` sibling asset alongside every jar — see
+     * `master-prerelease.yml`'s "Stage release assets" step), verifies its SHA-256 digest
+     * against it before returning, so a corrupted download or a tampered asset is caught
+     * here rather than staged and later launched. Throws (and leaves nothing staged) on a
+     * mismatch, or if an older release has no checksum asset published for it at all.
+     */
+    private fun downloadToTemp(asset: GithubAsset, checksumAsset: GithubAsset?): Path {
         val tmp = Files.createTempFile("polocloud-update-", ".jar")
+        try {
+            val connection = URI.create(asset.browserDownloadUrl).toURL().openConnection()
+            connection.connectTimeout = 10_000
+            connection.readTimeout = 30_000
+            connection.getInputStream().use { input ->
+                Files.copy(input, tmp, StandardCopyOption.REPLACE_EXISTING)
+            }
+
+            if (checksumAsset == null) {
+                logger.warn(
+                    "Release asset '{}' has no accompanying '.sha256' checksum asset — skipping integrity " +
+                        "verification. This should only happen for releases published before checksum publishing " +
+                        "was introduced.",
+                    asset.name,
+                )
+            } else {
+                val expected = fetchChecksum(checksumAsset)
+                val actual = sha256Hex(tmp)
+                check(actual.equals(expected, ignoreCase = true)) {
+                    "SHA-256 mismatch for downloaded release asset '${asset.name}': expected $expected, got $actual " +
+                        "— refusing to stage a possibly corrupted or tampered download"
+                }
+            }
+
+            return tmp
+        } catch (e: Exception) {
+            Files.deleteIfExists(tmp)
+            throw e
+        }
+    }
+
+    /** Downloads a small `<jar-name>.sha256` asset and returns its hex digest (its only content). */
+    private fun fetchChecksum(asset: GithubAsset): String {
         val connection = URI.create(asset.browserDownloadUrl).toURL().openConnection()
         connection.connectTimeout = 10_000
         connection.readTimeout = 30_000
-        connection.getInputStream().use { input ->
-            Files.copy(input, tmp, StandardCopyOption.REPLACE_EXISTING)
+        val text = connection.getInputStream().use { it.readBytes().toString(Charsets.UTF_8) }
+        // Tolerate the coreutils `sha256sum <file>` format ("<hex>  <filename>") too, in
+        // case the checksum file is ever regenerated by hand instead of by the workflow.
+        return text.trim().substringBefore(' ').substringBefore('\t')
+    }
+
+    private fun sha256Hex(file: Path): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        Files.newInputStream(file).use { input ->
+            val buffer = ByteArray(8192)
+            while (true) {
+                val read = input.read(buffer)
+                if (read < 0) break
+                digest.update(buffer, 0, read)
+            }
         }
-        return tmp
+        return digest.digest().joinToString("") { "%02x".format(it) }
     }
 
     /** Unpacks every embedded module inside [releaseJar] into [UPDATE_DIR], plus a version marker. */
@@ -189,8 +257,25 @@ object Updater {
             EmbeddedModule(groupId, artifactId, version)
         }
 
-    /** Spawns a fresh, detached `java <extraJvmArgs> -jar <jar> <original args>` process, then exits this one. */
-    private fun relaunch(jar: Path, extraJvmArgs: List<String> = emptyList()): Nothing {
+    /**
+     * Spawns a fresh, detached `java <extraJvmArgs> -jar <jar> <original args>` process,
+     * then waits up to [RELAUNCH_HEALTH_CHECK_TIMEOUT] to confirm it's still alive before
+     * exiting this one.
+     *
+     * There's no readiness signal (PID file, health port, ...) shared between the old and
+     * new process to check instead, so "still running after the check window" is the most
+     * meaningful thing observable from here — good enough to catch the common failure mode
+     * of a corrupt/incompatible jar dying on startup (missing main class, `NoClassDefFoundError`,
+     * ...) before this process, the last known-good one, is given up. It will not catch a jar
+     * that starts fine but fails later — this is a startup sanity check, not a rollback
+     * mechanism.
+     *
+     * @return `true` if the health check passed — in which case this process is about to
+     * exit and the function never actually returns to its caller. `false` if the new process
+     * exited within the check window; in that case this process keeps running and nothing
+     * was exited.
+     */
+    private fun relaunch(jar: Path, extraJvmArgs: List<String> = emptyList()): Boolean {
         val javaBin = Paths.get(System.getProperty("java.home"), "bin", "java").toString()
         val launchArgs = System.getProperty(LAUNCH_ARGS_PROPERTY)
             ?.takeIf { it.isNotEmpty() }
@@ -202,11 +287,21 @@ object Updater {
         command += listOf("-jar", jar.toAbsolutePath().toString())
         command += launchArgs
 
-        ProcessBuilder(command)
+        val process = ProcessBuilder(command)
             .directory(File(System.getProperty("user.dir")))
             .inheritIO()
             .start()
 
-        exitProcess(0)
+        val exitedAlready = process.waitFor(RELAUNCH_HEALTH_CHECK_TIMEOUT.seconds, TimeUnit.SECONDS)
+        if (!exitedAlready) {
+            // Still running after the check window - trust it and hand off.
+            exitProcess(0)
+        }
+
+        logger.error(
+            "New process (pid {}) exited with code {} within {}s of starting.",
+            process.pid(), process.exitValue(), RELAUNCH_HEALTH_CHECK_TIMEOUT.seconds,
+        )
+        return false
     }
 }

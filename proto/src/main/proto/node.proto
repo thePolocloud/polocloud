@@ -28,6 +28,7 @@ message RegisterNodeRequest {
 message RegisterNodeResponse {
   bool accepted = 1;
   string message = 2;
+  reserved 3; // was: optional string node_id, removed when certificate/ca_certificate were added
   optional string certificate = 4;
   optional string ca_certificate = 5;
 }

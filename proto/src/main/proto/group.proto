@@ -14,6 +14,9 @@ service GroupApiService {
 }
 
 message GroupListRequest {
+  // Field 1 has never been used by any shipped version of this message; reserved so a
+  // future field can't be added at a number that might already carry meaning elsewhere.
+  reserved 1;
   optional string name_filter = 2;
   optional string type_filter = 3;
 }
