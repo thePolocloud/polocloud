@@ -28,6 +28,9 @@ Modular by design: a cloud daemon, an admin CLI, a plugin SDK, and ready-made ad
   - [📜 License](#-license)
   - [🤝 Community](#-community)
 
+<details>
+<summary><strong>Features</strong></summary>
+
 ## Features
 
 - **Cluster mode:** Raft-style leader election, heartbeat-based crash detection, automatic node pruning, cross-node event relay.
@@ -40,11 +43,18 @@ Modular by design: a cloud daemon, an admin CLI, a plugin SDK, and ready-made ad
 - **Addons:** sign-system and server-mobs for Bukkit; hub, notify, and proxy for Velocity (proxy also supports Waterfall/BungeeCord).
 - **Updating:** Checks GitHub releases on boot; stages self-updates when `general.autoUpdate` is enabled or via the `update` command.
 
+</details>
+
+<details>
+<summary><strong>Supported platforms</strong></summary>
+
 ## Supported platforms
 
 - **Velocity:** Full support via the bridge plugin plus the hub, notify, and proxy addons. The bridge covers backend registration, fallback selection, initial server, and tab-complete relay.
 - **Waterfall / BungeeCord:** Proxy addon only - animated tab list, MOTD, player count, maintenance mode. Bridge plugin not available yet.
 - **Bukkit / Spigot:** sign-system and server-mobs. Sign-system shows animated server signs; server-mobs adds NPC mobs with live service status.
+
+</details>
 
 ## User Guide
 
@@ -76,6 +86,9 @@ There is no stable release yet - use the latest DEV build from the [releases pag
 
    Answer the wizard - the cloud starts the servers for you.
 
+<details>
+<summary><strong>CLI</strong></summary>
+
 ### CLI
 
 Run the CLI in a separate terminal and connect to the node:
@@ -89,6 +102,11 @@ connect <token>
 ```
 
 The token is in `config.json` under `cluster.cliAccess.registrationToken`. On a local setup `connect <token>` is enough - it assumes localhost.
+
+</details>
+
+<details>
+<summary><strong>Clustering</strong></summary>
 
 ### Clustering
 
@@ -110,6 +128,11 @@ Every node needs the same shared external database - H2 is single-node only. `cl
 
 Then restart the node and run `cluster join` again. See the [cluster architecture](node/CLUSTER.md) for how joining and leader election work.
 
+</details>
+
+<details>
+<summary><strong>Versioning</strong></summary>
+
 ## Versioning
 
 PoloCloud versions look like `3.1.0` (stable) or `3.0.7-dev.42` (pre-release) - `major.minor.patch[-channel.build]`.
@@ -117,6 +140,8 @@ PoloCloud versions look like `3.1.0` (stable) or `3.0.7-dev.42` (pre-release) - 
 **Channels**, from least to most stable: `SNAPSHOT` (local dev builds) > `DEV` (CI builds from every push to `master`, tagged `vX.Y.Z-dev.<run>` and published as GitHub pre-releases) > `ALPHA` > `BETA` > `RELEASE` (stable, tagged `vX.Y.Z`).
 
 Stability comes from the channel in the version string, not from GitHub's `draft`/`prerelease` flags.
+
+</details>
 
 ## Development
 
