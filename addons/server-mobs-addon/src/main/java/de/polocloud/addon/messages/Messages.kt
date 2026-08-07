@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Every player-facing string the server-mobs addon sends, persisted to `messages.json` in the
- * plugin's data folder via [de.polocloud.addon.config.SingleDocumentStorage] and hot-reloaded
+ * plugin's data folder via [de.polocloud.common.configuration.SingleDocumentStorage] and hot-reloaded
  * through [de.polocloud.addon.config.ReloadableConfig] — an operator can reword any message
  * without recompiling the addon. [groupNotFound]/[mobSpawned] support the `%group%` placeholder,
  * [invalidItem] the `%item%` placeholder.

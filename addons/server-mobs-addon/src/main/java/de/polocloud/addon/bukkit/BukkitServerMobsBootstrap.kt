@@ -3,9 +3,9 @@ package de.polocloud.addon.bukkit
 import de.polocloud.addon.ServerMobAddon
 import de.polocloud.addon.bukkit.commands.BukkitServerMobsCommand
 import de.polocloud.addon.config.ReloadableConfig
-import de.polocloud.addon.config.SingleDocumentStorage
 import de.polocloud.addon.display.MobDisplay
 import de.polocloud.addon.messages.Messages
+import de.polocloud.common.configuration.SingleDocumentStorage
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 

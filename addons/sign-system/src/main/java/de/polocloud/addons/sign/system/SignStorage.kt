@@ -1,12 +1,8 @@
 package de.polocloud.addons.sign.system
 
-import de.polocloud.common.configuration.ConfigurationManager
+import de.polocloud.common.configuration.SingleDocumentStorage
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.readText
 
 /**
  * Persists attached [SignEntry]s (minus their live [de.polocloud.shared.service.Service]
@@ -14,10 +10,10 @@ import kotlin.io.path.readText
  *
  * Without this, every attached sign would need to be re-added by hand on every
  * restart — defeating the point of showing already-running servers immediately on
- * boot. Reuses [ConfigurationManager]'s shared `Json` instance for consistency with
- * the rest of the project rather than introducing a second JSON setup.
+ * boot. Built on the shared [SingleDocumentStorage] (also used by [de.polocloud.addons.sign.system.layout.LayoutStorage]
+ * and the proxy-addon/server-mobs-addon configs) rather than a bespoke JSON read/write.
  */
-class SignStorage(private val file: Path) {
+class SignStorage(file: Path) {
 
     @Serializable
     private data class Entry(
@@ -30,12 +26,10 @@ class SignStorage(private val file: Path) {
     @Serializable
     private data class Document(val entries: List<Entry> = emptyList())
 
-    fun load(): List<SignEntry> {
-        if (!file.exists()) return emptyList()
+    private val storage = SingleDocumentStorage(file, Document.serializer())
 
-        val document = runCatching {
-            ConfigurationManager.json.decodeFromString<Document>(file.readText())
-        }.getOrElse { Document() }
+    fun load(): List<SignEntry> {
+        val document = storage.readOrNull() ?: Document()
 
         return document.entries.map { entry ->
             SignEntry(SignEntryType(entry.type), entry.position, entry.group, entry.layoutId)
@@ -43,9 +37,6 @@ class SignStorage(private val file: Path) {
     }
 
     fun save(entries: Collection<SignEntry>) {
-        val document = Document(entries.map { Entry(it.type.id, it.group, it.layoutId, it.position) })
-
-        file.parent?.let(Files::createDirectories)
-        file.toFile().writeText(ConfigurationManager.json.encodeToString(document))
+        storage.save(Document(entries.map { Entry(it.type.id, it.group, it.layoutId, it.position) }))
     }
 }

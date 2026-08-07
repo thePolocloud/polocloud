@@ -12,8 +12,8 @@ import com.velocitypowered.api.proxy.ProxyServer
 import de.polocloud.addons.proxy.Messages
 import de.polocloud.addons.proxy.ProxyConfig
 import de.polocloud.addons.proxy.config.ReloadableConfig
-import de.polocloud.addons.proxy.config.SingleDocumentStorage
 import de.polocloud.addons.proxy.velocity.command.ProxyCommand
+import de.polocloud.common.configuration.SingleDocumentStorage
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.slf4j.Logger

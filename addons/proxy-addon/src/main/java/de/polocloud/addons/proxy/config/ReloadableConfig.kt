@@ -1,5 +1,7 @@
 package de.polocloud.addons.proxy.config
 
+import de.polocloud.common.configuration.SingleDocumentStorage
+
 /**
  * Holds the current, in-memory value of a [SingleDocumentStorage]-backed document, reloading it
  * whenever the backing file changes on disk.
