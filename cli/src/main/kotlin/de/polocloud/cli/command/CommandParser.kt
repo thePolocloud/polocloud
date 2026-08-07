@@ -3,6 +3,7 @@ package de.polocloud.cli.command
 import de.polocloud.cli.command.arguments.InputContext
 import de.polocloud.cli.command.arguments.type.StringArrayArgument
 import de.polocloud.cli.logger
+import de.polocloud.i18n.api.TranslationService
 
 /**
  * Parses raw terminal input and dispatches it to the correct [Command] and [CommandSyntax].
@@ -29,6 +30,7 @@ class CommandParser(private val commandService: CommandService) {
         val matches = commandService.findByName(commandId)
 
         if (matches.isEmpty()) {
+            printUnknownCommand(commandId)
             return
         }
 
@@ -56,6 +58,8 @@ class CommandParser(private val commandService: CommandService) {
      * @return The matched [CommandSyntax] if one was found and executed, or `null` otherwise.
      */
     private fun matchSyntax(command: Command, args: Array<String>): CommandSyntax? {
+        var wrongReason: String? = null
+
         for (syntax in command.syntaxes) {
             val arguments = syntax.arguments
             val lastArgument = arguments.lastOrNull() ?: continue
@@ -72,7 +76,15 @@ class CommandParser(private val commandService: CommandService) {
                 val argument = arguments[i]
                 val rawInput = args.getOrNull(i) ?: break
 
-                if (!argument.predication(rawInput)) break
+                if (!argument.predication(rawInput)) {
+                    if (wrongReason == null) {
+                        val reason = argument.wrongReason(rawInput)
+                        if (reason.isNotEmpty()) {
+                            wrongReason = reason
+                        }
+                    }
+                    break
+                }
 
                 val value = if (argument is StringArrayArgument) {
                     argument.buildResult(args.drop(i).joinToString(" "), context)
@@ -92,6 +104,10 @@ class CommandParser(private val commandService: CommandService) {
             if (matched) return syntax
         }
 
+        if (wrongReason != null) {
+            logger.info(wrongReason)
+        }
+
         return null
     }
 
@@ -104,5 +120,55 @@ class CommandParser(private val commandService: CommandService) {
         command.syntaxes.forEach { syntax ->
             logger.info(" &8- &7${syntax.usage()}")
         }
+    }
+
+    /**
+     * Logs an "unknown command" message for [commandId], along with a "did you mean" hint
+     * if a registered command name is reasonably close (small edit distance).
+     *
+     * @param commandId The unrecognized command name entered by the user.
+     */
+    private fun printUnknownCommand(commandId: String) {
+        logger.info(TranslationService.tr("cli", "cli.command.unknown", "command" to commandId))
+
+        val suggestion = commandService.registeredCommands()
+            .map { it.name }
+            .minByOrNull { levenshtein(commandId.lowercase(), it.lowercase()) }
+            ?.takeIf { levenshtein(commandId.lowercase(), it.lowercase()) <= SUGGESTION_MAX_DISTANCE }
+
+        if (suggestion != null) {
+            logger.info(TranslationService.tr("cli", "cli.command.unknown.suggestion", "suggestion" to suggestion))
+        }
+    }
+
+    /**
+     * Computes the Levenshtein (edit) distance between [a] and [b].
+     *
+     * Used only for a cheap "did you mean" hint on unknown commands - not a full
+     * fuzzy-matching implementation.
+     */
+    private fun levenshtein(a: String, b: String): Int {
+        val costs = IntArray(b.length + 1) { it }
+
+        for (i in 1..a.length) {
+            var previous = costs[0]
+            costs[0] = i
+
+            for (j in 1..b.length) {
+                val current = costs[j]
+                costs[j] = if (a[i - 1] == b[j - 1]) {
+                    previous
+                } else {
+                    1 + minOf(previous, costs[j], costs[j - 1])
+                }
+                previous = current
+            }
+        }
+
+        return costs[b.length]
+    }
+
+    private companion object {
+        private const val SUGGESTION_MAX_DISTANCE = 2
     }
 }

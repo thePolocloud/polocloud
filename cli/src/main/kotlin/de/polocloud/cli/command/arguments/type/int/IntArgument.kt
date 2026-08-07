@@ -38,7 +38,7 @@ open class IntArgument(
         return when (validate(rawInput)) {
             IntArgumentError.INVALID_INT -> TranslationService.tr("cli", "cli.argument.int.invalid", "value" to rawInput)
             IntArgumentError.LOWER_THAN_MIN -> TranslationService.tr("cli", "cli.argument.int.min", "key" to key, "min" to minValue)
-            IntArgumentError.HIGHER_THAN_MAX -> TranslationService.tr("cli", "cli.argument.int.max", "key" to key, "min" to minValue)
+            IntArgumentError.HIGHER_THAN_MAX -> TranslationService.tr("cli", "cli.argument.int.max", "key" to key, "max" to maxValue)
             null -> ""
         }
     }
