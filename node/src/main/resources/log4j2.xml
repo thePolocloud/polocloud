@@ -32,8 +32,7 @@
     </Appenders>
 
     <Loggers>
-
-        <Logger name="de.polocloud" level="debug" additivity="false">
+        <Logger name="de.polocloud" level="${sys:org.apache.logging.log4j.level:-info}" additivity="false">
             <AppenderRef ref="console"/>
             <AppenderRef ref="file"/>
         </Logger>

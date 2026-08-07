@@ -29,28 +29,30 @@ jobs:
       - name: Determine next version (3.0.x+1)
         id: version
         run: |
-          # Newest existing tag of the form v3.0.<patch>-dev.<build>. Patch is what we
-          # increment; build is this workflow's own run number, so it plays no part in
-          # ordering tags here — only the patch does.
-          LAST_TAG=$(git tag -l 'v3.0.*-dev.*' --sort=-v:refname | head -n1)
+          # Newest existing tag of the form v3.0.<patch>-dev.<build> or
+          # v3.0.<patch>-alpha.<build> — matches both so patch numbering stays continuous
+          # across the dev -> alpha channel rename below. Patch is what we increment;
+          # build is this workflow's own run number, so it plays no part in ordering tags
+          # here — only the patch does.
+          LAST_TAG=$(git tag -l 'v3.0.*-dev.*' 'v3.0.*-alpha.*' --sort=-v:refname | head -n1)
 
           if [ -z "$LAST_TAG" ]; then
             NEXT_PATCH=1
-            echo "No previous v3.0.*-dev.* tag found, starting at 3.0.1"
+            echo "No previous v3.0.*-dev.*/v3.0.*-alpha.* tag found, starting at 3.0.1"
           else
-            LAST_PATCH=$(echo "$LAST_TAG" | sed -E 's/^v3\.0\.([0-9]+)-dev\.[0-9]+$/\1/')
+            LAST_PATCH=$(echo "$LAST_TAG" | sed -E 's/^v3\.0\.([0-9]+)-(dev|alpha)\.[0-9]+$/\1/')
             NEXT_PATCH=$((LAST_PATCH + 1))
             echo "Last tag: $LAST_TAG -> next patch: $NEXT_PATCH"
           fi
 
           VERSION="3.0.$NEXT_PATCH"
-          TAG="v$VERSION-dev.${{ github.run_number }}"
+          TAG="v$VERSION-alpha.${{ github.run_number }}"
           echo "version=$VERSION"        >> $GITHUB_OUTPUT
           echo "patch=$NEXT_PATCH"       >> $GITHUB_OUTPUT
           echo "tag=$TAG"                >> $GITHUB_OUTPUT
           echo "last_tag=$LAST_TAG"      >> $GITHUB_OUTPUT
 
-      - name: Build (DEV)
+      - name: Build (ALPHA)
         # Tests run here too (not just ci.yml's push trigger) so a release is never cut
         # from a build that fails them, even if this workflow somehow runs before ci.yml
         # has gated the push.
@@ -58,7 +60,7 @@ jobs:
           -Ppolocloud.version.major=3
           -Ppolocloud.version.minor=0
           -Ppolocloud.version.patch=${{ steps.version.outputs.patch }}
-          -Ppolocloud.version.channel=DEV
+          -Ppolocloud.version.channel=ALPHA
           -Ppolocloud.version.build=${{ github.run_number }}
 
       - name: Generate changelog
@@ -111,7 +113,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: PoloCloud ${{ steps.version.outputs.version }} (dev build ${{ github.run_number }})
+          name: PoloCloud ${{ steps.version.outputs.version }} (alpha build ${{ github.run_number }})
           body_path: CHANGELOG.md
           prerelease: true
           draft: false
