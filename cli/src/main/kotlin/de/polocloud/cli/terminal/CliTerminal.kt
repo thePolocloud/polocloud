@@ -42,7 +42,7 @@ class CliTerminal(
 
     private val lineReader: LineReaderImpl = LineReaderBuilder.builder()
         .terminal(this.terminal)
-        .completer(TabCompleter)
+        .completer(TabCompleter(this.commandService))
         .option(LineReader.Option.AUTO_MENU_LIST, true)
         .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
         .option(LineReader.Option.AUTO_PARAM_SLASH, false)
@@ -84,6 +84,21 @@ class CliTerminal(
      */
     fun emptyLine() {
         this.lineReader.printAbove(" ")
+    }
+
+    /**
+     * Prompts the user with a yes/no [message] and blocks the calling thread until answered.
+     *
+     * Only "y" or "yes" (case-insensitive) is treated as confirmation; any other input,
+     * including blank input, is treated as a rejection. Intended for guarding destructive
+     * actions (e.g. shutdown, disconnect) behind an explicit confirmation step.
+     *
+     * @param message The confirmation question to display, e.g. `"Are you sure...? (yes/no)"`.
+     * @return `true` if the user confirmed, `false` otherwise.
+     */
+    fun confirm(message: String): Boolean {
+        val answer = this.lineReader.readLine(AnsiColors.translate("$message "))
+        return answer.trim().equals("y", ignoreCase = true) || answer.trim().equals("yes", ignoreCase = true)
     }
 
     /**

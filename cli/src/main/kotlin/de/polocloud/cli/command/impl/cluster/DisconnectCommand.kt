@@ -17,6 +17,11 @@ class DisconnectCommand(
                 return@defaultExecution
             }
 
+            if (!Cli.terminal.confirm(TranslationService.tr("cli", "cli.command.impl.disconnect.confirmation"))) {
+                logger.info(TranslationService.tr("cli", "cli.command.impl.disconnect.cancelled"))
+                return@defaultExecution
+            }
+
             connectionManager.disconnect()
             connectionManager.certificateStorage.clearCertificates()
 
