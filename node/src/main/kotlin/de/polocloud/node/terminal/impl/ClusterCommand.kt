@@ -101,7 +101,7 @@ class ClusterCommand(
         logger.info("Nodes (${nodes.size}):")
         nodes.sortedBy { it.nodeIndex }.forEach { node ->
             val load = latestHeartbeat(node)?.let {
-                " &8|&r load: ${decimal(it.systemCpuUsage)}% cpu, ${decimal(it.systemMemoryUsage)}% mem, ${decimal(it.tps)} tps"
+                " &8|&r load: ${decimal(it.systemCpuUsage)}% cpu, ${decimal(it.systemMemoryUsage)}% mem"
             } ?: " &8|&r load: -"
             logger.info(
                 "  ${node.name()}${if (node.head) " (head)" else ""} &8|&r state: ${node.state} &8|&r host: ${node.hostname}:${node.port}$load"
@@ -126,7 +126,6 @@ class ClusterCommand(
             logger.info("  heartbeat: ${timestamp(heartbeat.heartBeatAt.toEpochMilliseconds()) { elapsed -> "$elapsed ago" }}")
             logger.info("    system:      ${white("${decimal(heartbeat.systemCpuUsage)}% cpu, ${decimal(heartbeat.systemMemoryUsage)}% memory")}")
             logger.info("    application: ${white("${decimal(heartbeat.applicationCpuUsage)}% cpu, ${decimal(heartbeat.applicationMemoryUsage)}% memory")}")
-            logger.info("    tps:         ${white(decimal(heartbeat.tps))}")
         }
     }
 

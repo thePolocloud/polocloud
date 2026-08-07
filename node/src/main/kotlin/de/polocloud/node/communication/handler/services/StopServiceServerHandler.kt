@@ -1,12 +1,11 @@
 package de.polocloud.node.communication.handler.services
 
-import de.polocloud.common.Address
 import de.polocloud.common.communication.server.context.GrpcServerContext
 import de.polocloud.common.communication.server.handler.GrpcServerHandler
-import de.polocloud.node.communication.grpc.NodeGrpcClient
 import de.polocloud.node.communication.handler.CallerAuthorization
 import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.services.cluster.ClusterServiceRouting
+import de.polocloud.node.services.cluster.ClusterServiceRouting.forwardToOwningNode
 import de.polocloud.proto.ServiceManagerGrpcKt
 import de.polocloud.proto.StopServiceRequest
 import de.polocloud.proto.StopServiceResponse
@@ -42,19 +41,17 @@ class StopServiceServerHandler(
         val node = service?.let { ClusterServiceRouting.resolveOwningNode(it, serviceProvider.nodeId) }
             ?: return notRunning(request.serviceName)
 
-        val client = NodeGrpcClient()
-        return try {
-            client.connect(Address(node.hostname, node.port))
+        return forwardToOwningNode(
+            node = node,
+            logger = logger,
+            requestName = "StopService",
+            serviceName = request.serviceName,
+            onFailure = { message ->
+                StopServiceResponse.newBuilder().setStopped(false).setMessage(message).build()
+            },
+        ) { client ->
             val stub = ServiceManagerGrpcKt.ServiceManagerCoroutineStub(client.channel())
             stub.stopService(request)
-        } catch (ex: Exception) {
-            logger.warn("Failed to forward StopService for '{}' to node {}: {}", request.serviceName, node.name(), ex.message)
-            StopServiceResponse.newBuilder()
-                .setStopped(false)
-                .setMessage("Could not reach the node hosting '${request.serviceName}': ${ex.message}")
-                .build()
-        } finally {
-            client.disconnect()
         }
     }
 

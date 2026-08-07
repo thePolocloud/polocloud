@@ -12,7 +12,7 @@ object ServiceProcessProtoMapper {
     fun toProto(service: LocalService, nodeId: String = ""): ProtoServiceProcessData =
         ProtoServiceProcessData.newBuilder()
             .setUuid(service.id.toString())
-            .setIndex(service.index)
+            .setIndex(service.serviceIndex)
             .setPlan(service.groupName)
             .setNodeId(nodeId)
             .setBoundPort(service.port)

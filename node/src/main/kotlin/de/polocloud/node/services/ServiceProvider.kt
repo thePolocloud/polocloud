@@ -87,7 +87,7 @@ class ServiceProvider(
         val index = name.substringAfterLast('-', "").toIntOrNull()
         if (index != null) {
             val groupName = name.substringBeforeLast('-')
-            val narrowed = ServiceRepository.findByGroup(groupName).firstOrNull { it.index == index }
+            val narrowed = ServiceRepository.findByGroup(groupName).firstOrNull { it.serviceIndex == index }
             if (narrowed != null) return narrowed
         }
         return findAll().firstOrNull { it.name().equals(name, ignoreCase = true) }

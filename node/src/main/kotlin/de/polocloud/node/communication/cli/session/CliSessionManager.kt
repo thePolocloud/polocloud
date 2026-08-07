@@ -5,11 +5,14 @@ import java.util.concurrent.ConcurrentHashMap
 
 class CliSessionManager : ICliSessionManager {
 
+    // Keyed by the lowercased subject (a cert CN) — applied consistently at every read
+    // and write site below — so lookup/removal can't silently miss (and leak a session)
+    // just because a caller's casing differs from the one a session was created with.
     private val sessions = ConcurrentHashMap<String, CliSession>()
 
     override fun createOrUpdate(subject: String, address: String): CliSession {
         val now = now()
-        return sessions.compute(subject) { _, existing ->
+        return sessions.compute(subject.lowercase()) { _, existing ->
             existing?.copy(address = address, lastAccess = now)
                 ?: CliSession(
                     sessionId  = UUID.randomUUID().toString(),
@@ -23,14 +26,14 @@ class CliSessionManager : ICliSessionManager {
 
     override fun touch(subject: String) {
         val now = now()
-        sessions.computeIfPresent(subject) { _, session -> session.copy(lastAccess = now) }
+        sessions.computeIfPresent(subject.lowercase()) { _, session -> session.copy(lastAccess = now) }
     }
 
     override fun remove(subject: String) {
         sessions.remove(subject.lowercase())
     }
 
-    override fun get(subject: String): CliSession? = sessions[subject]
+    override fun get(subject: String): CliSession? = sessions[subject.lowercase()]
 
     override fun all(): Collection<CliSession> = sessions.values.toList()
 

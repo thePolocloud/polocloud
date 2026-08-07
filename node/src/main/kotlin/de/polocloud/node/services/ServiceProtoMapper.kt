@@ -10,7 +10,7 @@ object ServiceProtoMapper {
 
     fun toProto(service: LocalService): ServiceData = ServiceData.newBuilder()
         .setId(service.id.toString())
-        .setIndex(service.index)
+        .setIndex(service.serviceIndex)
         .setGroup(service.groupName)
         .setState(service.state.name)
         .setPort(service.port)

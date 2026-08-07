@@ -1,13 +1,12 @@
 package de.polocloud.node.communication.handler.services
 
-import de.polocloud.common.Address
 import de.polocloud.common.communication.server.context.GrpcServerContext
 import de.polocloud.common.communication.server.handler.GrpcServerHandler
-import de.polocloud.node.communication.grpc.NodeGrpcClient
 import de.polocloud.node.communication.handler.CallerAuthorization
 import de.polocloud.node.group.template.GroupTemplateService
 import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.services.cluster.ClusterServiceRouting
+import de.polocloud.node.services.cluster.ClusterServiceRouting.forwardToOwningNode
 import de.polocloud.node.utils.isSafePathSegment
 import de.polocloud.proto.CopyTemplateRequest
 import de.polocloud.proto.CopyTemplateResponse
@@ -55,19 +54,17 @@ class CopyTemplateServerHandler(
         val node = service?.let { ClusterServiceRouting.resolveOwningNode(it, serviceProvider.nodeId) }
             ?: return notRunning(request.serviceName)
 
-        val client = NodeGrpcClient()
-        return try {
-            client.connect(Address(node.hostname, node.port))
+        return forwardToOwningNode(
+            node = node,
+            logger = logger,
+            requestName = "CopyTemplate",
+            serviceName = request.serviceName,
+            onFailure = { message ->
+                CopyTemplateResponse.newBuilder().setCopied(false).setMessage(message).build()
+            },
+        ) { client ->
             val stub = ServiceApiServiceGrpcKt.ServiceApiServiceCoroutineStub(client.channel())
             stub.copyTemplate(request)
-        } catch (ex: Exception) {
-            logger.warn("Failed to forward CopyTemplate for '{}' to node {}: {}", request.serviceName, node.name(), ex.message)
-            CopyTemplateResponse.newBuilder()
-                .setCopied(false)
-                .setMessage("Could not reach the node hosting '${request.serviceName}': ${ex.message}")
-                .build()
-        } finally {
-            client.disconnect()
         }
     }
 

@@ -11,7 +11,7 @@ import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.deleteRecursively
 
 class LocalService(private val service: Service) : Service(
-    service.id, service.index, service.groupName, service.state, service.hostname, service.port, service.nodeId
+    service.id, service.serviceIndex, service.groupName, service.state, service.hostname, service.port, service.nodeId
 ) {
 
     private companion object {

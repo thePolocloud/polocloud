@@ -309,13 +309,25 @@ class ServiceCommand(
             val stub = ServiceManagerGrpcKt.ServiceManagerCoroutineStub(client.channel())
             val request = StreamServiceLogsRequest.newBuilder().setServiceName(service.name()).build()
             val lines = mutableListOf<String>()
+            // Non-null once the stream itself fails mid-collection (as opposed to the
+            // expected cancellation below, which always cuts the stream off after 300ms —
+            // that's by design, not a failure), so the operator sees *why* the snapshot may
+            // be short instead of the collected lines silently looking like the full history.
+            var failureReason: String? = null
             runBlocking {
                 val job = launch(Dispatchers.IO) {
-                    stub.streamServiceLogs(request).onEach { lines.add(it.line) }.catch { }.collect()
+                    stub.streamServiceLogs(request)
+                        .onEach { lines.add(it.line) }
+                        .catch { ex ->
+                            logger.warn("Log stream from ${node.name()} for ${service.name()} failed mid-snapshot: ${ex.message}", ex)
+                            failureReason = ex.message ?: ex::class.simpleName ?: "unknown error"
+                        }
+                        .collect()
                 }
                 delay(300)
                 job.cancelAndJoin()
             }
+            failureReason?.let { reason -> lines.add("[log history may be incomplete: $reason]") }
             lines
         } catch (ex: Exception) {
             logger.info("Could not reach ${node.name()} to fetch logs for ${service.name()}: ${ex.message}")

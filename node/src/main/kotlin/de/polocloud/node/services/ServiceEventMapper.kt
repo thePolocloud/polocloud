@@ -14,7 +14,7 @@ object ServiceEventMapper {
 
     fun toShared(service: LocalService): Service = Service(
         id = service.id.toString(),
-        index = service.index,
+        index = service.serviceIndex,
         group = service.groupName,
         // Node and shared now share the same ServiceState enum, so no conversion is needed.
         state = service.state,

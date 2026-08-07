@@ -210,13 +210,6 @@ later:
   instead of trusting its own local config — worth revisiting if inconsistent-timing
   incidents actually show up in practice, since forcing adoption is also a real behavior
   change an operator might not want (e.g. deliberately tighter timing on one node).
-- `Service` (`node/.../services/Service.kt`) has the same `index` column-name problem
-  `NodeData` used to have (its field is now `NodeData.nodeIndex`, renamed for exactly
-  this reason — see §10): `polocloud-database` emits unquoted column names, and `INDEX`
-  is reserved on MySQL/MariaDB, so the `services` table's `CREATE TABLE` fails there the
-  same way. Confirmed by running a real node against MariaDB. Not fixed here since it's
-  outside the cluster module, but it blocks `ServiceProvider` (and therefore normal node
-  startup) on MySQL/MariaDB just as badly as the `nodes` table issue did.
 
 ## 10. Verified against a real multi-process cluster
 
@@ -236,4 +229,6 @@ throwaway MariaDB container:
   normal Raft cluster does, since the survivors alone still form a majority.
 - This exercise is also what surfaced the `NodeData.nodeIndex` rename and the
   `NodeIdentityService`/`RegistrationManager.tryJoinCluster` NPE-on-denied-join fix
-  above, plus the still-open `Service.index` issue.
+  above, plus the same `index` column-name problem in `Service`
+  (`node/.../services/Service.kt`), fixed the same way as `NodeData.nodeIndex`: the
+  field is now `Service.serviceIndex`.

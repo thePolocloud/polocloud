@@ -61,7 +61,7 @@ class FactoryService(
                 "Version '${group.version}' not available for platform '${group.platform}'"
             )
 
-        val workDir = File("servers/${group.name}-${service.index}")
+        val workDir = File("servers/${group.name}-${service.serviceIndex}")
         val process = PlatformProcess(platform, version)
         val jar = process.download(workDir)
 
@@ -137,7 +137,7 @@ class FactoryService(
                 serviceProvider.crashLoopGuard.recordExit(group.name, ranForMillis)
             }
         }
-        logger.info("Service {}-{} started (pid: {})", group.name, service.index, proc.pid())
+        logger.info("Service {}-{} started (pid: {})", group.name, service.serviceIndex, proc.pid())
     }
 
     /**
@@ -165,7 +165,7 @@ class FactoryService(
             placeholders = mapOf(
                 "server_port" to service.port.toString(),
                 "server_hostname" to service.hostname,
-                "service_name" to "${group.name}-${service.index}",
+                "service_name" to "${group.name}-${service.serviceIndex}",
                 "service_id" to service.id.toString(),
                 "group_name" to group.name,
                 "FORWARDING_SECRET" to forwardingHandler.secret,
@@ -216,7 +216,7 @@ class FactoryService(
         pruneDeadProcesses()
         return serviceProvider.localServices
             .filter { it.groupName == groupName }
-            .map { it.index }
+            .map { it.serviceIndex }
             .toSet()
     }
 

@@ -101,7 +101,6 @@ class NodeHeartBeatMonitorTest {
                 systemMemoryUsage = 1.0,
                 applicationCpuUsage = 1.0,
                 applicationMemoryUsage = 1.0,
-                tps = 20.0,
             )
         )
 
@@ -122,7 +121,6 @@ class NodeHeartBeatMonitorTest {
                 systemMemoryUsage = 1.0,
                 applicationCpuUsage = 1.0,
                 applicationMemoryUsage = 1.0,
-                tps = 20.0,
             )
         )
 
@@ -143,7 +141,6 @@ class NodeHeartBeatMonitorTest {
                 systemMemoryUsage = 1.0,
                 applicationCpuUsage = 1.0,
                 applicationMemoryUsage = 1.0,
-                tps = 20.0,
             )
         )
 

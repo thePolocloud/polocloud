@@ -48,11 +48,17 @@ object PlatformDownloader {
      */
     private fun resolveAssetUrl(): String {
         val root = Json.parseToJsonElement(URI(LATEST_RELEASE_URL).toURL().readText()).jsonObject
-        val asset = root["assets"]!!.jsonArray
+        // Safe-navigate every step instead of chained `!!`: an unexpected GitHub API
+        // response (shape change, rate-limit error body instead of a release) should fail
+        // with a message that says what's missing, not a bare NPE pointing at this line.
+        val assets = root["assets"]?.jsonArray
+            ?: error("Unexpected GitHub releases API response: missing 'assets' field")
+        val asset = assets
             .map { it.jsonObject }
-            .firstOrNull { it["name"]!!.jsonPrimitive.content == ASSET_NAME }
+            .firstOrNull { it["name"]?.jsonPrimitive?.content == ASSET_NAME }
             ?: error("Latest release of polocloud-platforms does not contain asset '$ASSET_NAME'")
-        return asset["browser_download_url"]!!.jsonPrimitive.content
+        return asset["browser_download_url"]?.jsonPrimitive?.content
+            ?: error("Unexpected GitHub releases API response: asset '$ASSET_NAME' has no 'browser_download_url' field")
     }
 
     /**

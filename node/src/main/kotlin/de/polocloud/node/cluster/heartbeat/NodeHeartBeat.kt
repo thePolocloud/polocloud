@@ -8,14 +8,22 @@ import java.util.UUID
 import kotlin.time.Instant
 
 /**
- * Represents a heartbeat from a node, including usage metrics and TPS.
+ * Represents a heartbeat from a node, including usage metrics.
+ *
+ * Used to carry a `tps` (ticks per second) field, computed from a `(50L..60L).random()`
+ * fabrication — polocloud's node process is a headless orchestrator, not a Minecraft
+ * server, so it has no real per-tick game loop to measure, and reporting random noise
+ * as if it were one is worse than not reporting anything. Removed rather than replaced
+ * with a stand-in metric (e.g. heartbeat-scheduler lag): none of this node's existing
+ * loops run at a rate an operator would recognize as "tps", so relabeling their lag as
+ * such would just be dishonest in a different shape. Consumers (`ClusterCommand`,
+ * `InfoCommand`) now show no tps line at all instead of a fake number.
  *
  * @param id unique identifier of the heartbeat entry
  * @param nodeId the node that sent this heartbeat
  * @param heartBeatAt timestamp of the heartbeat (epoch millis)
  * @param cpuUsage CPU usage in percentage (0.0..100.0)
  * @param memoryUsage Memory usage in percentage (0.0..100.0)
- * @param tps ticks per second of the node
  */
 
 @RepositoryName("nodes_heartbeats")
@@ -29,8 +37,6 @@ data class NodeHeartBeat(
 
     val applicationCpuUsage: Double,
     val applicationMemoryUsage: Double,
-
-    val tps: Double
 ) {
 
     init {
@@ -45,6 +51,5 @@ data class NodeHeartBeat(
         systemMemoryUsage - other.systemMemoryUsage,
         applicationCpuUsage - other.applicationCpuUsage,
         applicationMemoryUsage - other.applicationMemoryUsage,
-        tps - other.tps
     )
 }

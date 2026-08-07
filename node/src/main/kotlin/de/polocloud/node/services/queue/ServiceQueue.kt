@@ -96,7 +96,7 @@ class ServiceQueue(
 
     /** The groups and indexes currently queued, e.g. `lobby-1`. Exposed for testing. */
     internal fun queuedIndexes(groupName: String): List<Int> = synchronized(queue) {
-        queue.filter { it.second.name == groupName }.map { it.first.index }
+        queue.filter { it.second.name == groupName }.map { it.first.serviceIndex }
     }
 
     /** Runs a single `enqueueRequired` pass without starting the background thread. Exposed for testing. */
@@ -280,18 +280,18 @@ class ServiceQueue(
     }
 
     private fun startOne(service: LocalService, group: Group) {
-        logger.info("Starting {}-{} [memory: {}MB, platform: {}/{}]", group.name, service.index, group.memory, group.platform, group.version)
+        logger.info("Starting {}-{} [memory: {}MB, platform: {}/{}]", group.name, service.serviceIndex, group.memory, group.platform, group.version)
         try {
             factory.start(service, group)
         } catch (e: Exception) {
-            logger.error("Failed to start {}-{}: {}", group.name, service.index, e.message)
+            logger.error("Failed to start {}-{}: {}", group.name, service.serviceIndex, e.message)
         }
     }
 
     /** [clusterOtherIndexes] are indexes already used by eligible peers, so two nodes never pick the same one. */
     private fun nextIndex(group: Group, clusterOtherIndexes: Set<Int>): Int {
         val queuedIndexes = synchronized(queue) {
-            queue.filter { it.second.name == group.name }.map { it.first.index }.toSet()
+            queue.filter { it.second.name == group.name }.map { it.first.serviceIndex }.toSet()
         }
         val usedIndexes = queuedIndexes + clusterOtherIndexes
         var index = 1

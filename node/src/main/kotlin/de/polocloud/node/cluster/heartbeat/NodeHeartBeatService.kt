@@ -17,8 +17,8 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * Service for generating and managing heartbeats for a cluster node.
  *
- * This service collects system metrics like CPU and memory usage, calculates TPS (Ticks per Second),
- * and stores this information periodically in the database. Additionally, old heartbeats are cleaned up.
+ * This service collects system metrics like CPU and memory usage and stores this
+ * information periodically in the database. Additionally, old heartbeats are cleaned up.
  *
  * @property factory The database connection used for saving heartbeats.
  */
@@ -28,7 +28,6 @@ class NodeHeartBeatService {
     private val systemResources: ResourceProvider = SystemResources
     private val applicationResources: ResourceProvider = ApplicationResources
 
-    private val tickDurations = mutableListOf<Long>()
     private var schedulerJob: Job? = null
 
     /**
@@ -115,7 +114,7 @@ class NodeHeartBeatService {
     /**
      * Generates a new heartbeat based on current system metrics.
      *
-     * @return A [NodeHeartBeat] object with CPU usage, memory usage, and TPS data.
+     * @return A [NodeHeartBeat] object with CPU usage and memory usage data.
      */
     fun generate(): NodeHeartBeat {
         val systemUsed = systemResources.usedMemory()
@@ -130,13 +129,6 @@ class NodeHeartBeatService {
         val applicationCpuUsage = applicationResources.cpuUsage()
         val applicationMemoryUsage = if (appMax == 0.0) 0.0 else (appUsed / appMax) * 100.0
 
-        val tickDuration = (50L..60L).random()
-        tickDurations.add(tickDuration)
-        if (tickDurations.size > 100) tickDurations.removeAt(0)
-
-        val avgTick = tickDurations.average()
-        val tps = 1000.0 / avgTick
-
         return NodeHeartBeat(
             id = UUID.randomUUID().toString(),
             nodeId = NodeEnvironment.runtime.nodeId.get(),
@@ -145,7 +137,6 @@ class NodeHeartBeatService {
             systemMemoryUsage = systemMemoryUsage,
             applicationCpuUsage = applicationCpuUsage,
             applicationMemoryUsage = applicationMemoryUsage,
-            tps = tps
         )
     }
 }

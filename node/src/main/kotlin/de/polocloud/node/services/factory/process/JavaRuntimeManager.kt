@@ -66,8 +66,19 @@ object JavaRuntimeManager {
         val url = "https://api.adoptium.net/v3/assets/latest/$javaVersion/hotspot" +
                 "?os=${detectOs()}&architecture=${detectArch()}&image_type=jre"
         val root = Json.parseToJsonElement(URI(url).toURL().readText()).jsonArray
-        val pkg = root[0].jsonObject["binary"]!!.jsonObject["package"]!!.jsonObject
-        return pkg["link"]!!.jsonPrimitive.content to pkg["name"]!!.jsonPrimitive.content
+        // Safe-navigate every step instead of chained `!!`: an unexpected Adoptium API
+        // response (shape change, rate-limit error body, empty result for an unsupported
+        // version/arch combination) should fail with a message that says what's missing,
+        // not a bare NPE pointing at this line.
+        val asset = root.firstOrNull()?.jsonObject
+            ?: error("Unexpected Adoptium API response for Java $javaVersion: no matching asset returned")
+        val pkg = asset["binary"]?.jsonObject?.get("package")?.jsonObject
+            ?: error("Unexpected Adoptium API response for Java $javaVersion: missing 'binary.package' field")
+        val link = pkg["link"]?.jsonPrimitive?.content
+            ?: error("Unexpected Adoptium API response for Java $javaVersion: missing 'package.link' field")
+        val name = pkg["name"]?.jsonPrimitive?.content
+            ?: error("Unexpected Adoptium API response for Java $javaVersion: missing 'package.name' field")
+        return link to name
     }
 
     /**

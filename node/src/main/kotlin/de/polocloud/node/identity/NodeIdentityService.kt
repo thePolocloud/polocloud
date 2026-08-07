@@ -139,8 +139,16 @@ class NodeIdentityService(
         grpc.start()
         serviceGrpc.start()
 
+        // Mirrors the guard above: the join just succeeded and this node was in
+        // NodeRepository as of tryJoinCluster returning true, but nothing prevents it from
+        // being evicted (e.g. pruned as unreachable, or removed by an operator) in the
+        // brief window between that success and this read. Fail clearly instead of
+        // `!!`-crashing on the resulting NPE.
         val nodeData = NodeRepository.find(localId)
-        container = LocalNodeContainer(nodeData!!)
+            ?: throw IllegalStateException(
+                "This node '$localId' was registered by the cluster but its record disappeared before startup could finish — it may have been evicted concurrently; retry the join."
+            )
+        container = LocalNodeContainer(nodeData)
 
         return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider)
     }

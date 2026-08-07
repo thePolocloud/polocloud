@@ -1,12 +1,11 @@
 package de.polocloud.node.communication.handler.services
 
-import de.polocloud.common.Address
 import de.polocloud.common.communication.server.context.GrpcServerContext
 import de.polocloud.common.communication.server.handler.GrpcServerHandler
-import de.polocloud.node.communication.grpc.NodeGrpcClient
 import de.polocloud.node.communication.handler.CallerAuthorization
 import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.services.cluster.ClusterServiceRouting
+import de.polocloud.node.services.cluster.ClusterServiceRouting.forwardToOwningNode
 import de.polocloud.proto.ExecuteServiceCommandRequest
 import de.polocloud.proto.ExecuteServiceCommandResponse
 import de.polocloud.proto.ServiceManagerGrpcKt
@@ -44,19 +43,17 @@ class ExecuteServiceCommandServerHandler(
         val node = service?.let { ClusterServiceRouting.resolveOwningNode(it, serviceProvider.nodeId) }
             ?: return notRunning(request.serviceName)
 
-        val client = NodeGrpcClient()
-        return try {
-            client.connect(Address(node.hostname, node.port))
+        return forwardToOwningNode(
+            node = node,
+            logger = logger,
+            requestName = "ExecuteServiceCommand",
+            serviceName = request.serviceName,
+            onFailure = { message ->
+                ExecuteServiceCommandResponse.newBuilder().setExecuted(false).setMessage(message).build()
+            },
+        ) { client ->
             val stub = ServiceManagerGrpcKt.ServiceManagerCoroutineStub(client.channel())
             stub.executeServiceCommand(request)
-        } catch (ex: Exception) {
-            logger.warn("Failed to forward ExecuteServiceCommand for '{}' to node {}: {}", request.serviceName, node.name(), ex.message)
-            ExecuteServiceCommandResponse.newBuilder()
-                .setExecuted(false)
-                .setMessage("Could not reach the node hosting '${request.serviceName}': ${ex.message}")
-                .build()
-        } finally {
-            client.disconnect()
         }
     }
 

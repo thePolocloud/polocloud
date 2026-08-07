@@ -18,7 +18,11 @@ import java.util.UUID
 // silently returns empty (the exception is swallowed and logged).
 open class Service(
     @EntryIdentifier val id: UUID,
-    val index: Int,
+    // Named `serviceIndex`, not `index` — `polocloud-database` emits unquoted column
+    // names, and `INDEX` is reserved on MySQL/MariaDB, so a plain `index` column fails
+    // `CREATE TABLE` there. Same problem `NodeData.index` had; fixed the same way (see
+    // `NodeData.nodeIndex`).
+    val serviceIndex: Int,
     @EntryRef(clazz = Group::class) val groupName: String,
     var state: ServiceState,
     var hostname: String,
@@ -33,5 +37,5 @@ open class Service(
     val nodeId: String,
 ) {
 
-    fun name() = groupName + "-" + index
+    fun name() = groupName + "-" + serviceIndex
 }
