@@ -151,7 +151,7 @@ Nodes communicate over [gRPC with protobuf contracts](proto/src/main/proto), and
 ### References
 
 - [CODE_OF_CONDUCT](.github/CODE_OF_CONDUCT.md)
-- [CONTRIBUTING GUIDELINE](.github/CONTRIBUTING.md)
+- [CONTRIBUTING GUIDELINES](.github/CONTRIBUTING.md)
 - [SECURITY POLICY](.github/SECURITY.md)
 
 </details>
