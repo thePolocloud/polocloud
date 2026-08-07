@@ -5,6 +5,7 @@ import de.polocloud.node.core.context.NodeRuntimeContext
 import de.polocloud.node.terminal.impl.ClearCommand
 import de.polocloud.node.terminal.impl.ClusterCommand
 import de.polocloud.node.terminal.impl.GroupCommand
+import de.polocloud.node.terminal.impl.HelpCommand
 import de.polocloud.node.terminal.impl.InfoCommand
 import de.polocloud.node.terminal.impl.PlatformCommand
 import de.polocloud.node.terminal.impl.ReloadCommand
@@ -110,6 +111,7 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
         )
         this.commandService.registerCommand(ShutdownCommand())
         this.commandService.registerCommand(ClearCommand(this))
+        this.commandService.registerCommand(HelpCommand(this))
         this.commandService.registerCommand(UpdateCommand())
         this.commandService.registerCommand(TemplateCommand(this.context.groupService))
         this.commandService.registerCommand(
