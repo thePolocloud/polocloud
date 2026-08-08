@@ -85,7 +85,7 @@ class LocalServiceTest {
         service.process = FakeProcess(lines)
         service.startLogCapture()
 
-        await { service.recentLogs().size >= 300 }
+        await { service.recentLogs().lastOrNull() == "line-400" }
         val logs = service.recentLogs()
         assertEquals(300, logs.size)
         assertEquals("line-400", logs.last())
