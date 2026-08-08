@@ -115,12 +115,12 @@ jobs:
           done
           ls -la release-assets
 
-      - name: Create GitHub Pre-Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: PoloCloud ${{ steps.version.outputs.version }} (alpha build ${{ github.run_number }})
           body_path: CHANGELOG.md
-          prerelease: true
+          prerelease: false
           draft: false
           files: release-assets/*
