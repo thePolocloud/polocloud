@@ -3,13 +3,22 @@ name: Master Pre-Release
 on:
   push:
     branches: [ master ]
+  workflow_dispatch: {}
 
 permissions:
   contents: write
 
+# Serialize runs so two pushes in quick succession can't read the same
+# LAST_TAG and mint the same patch/tag twice. Runs queue instead of
+# cancelling, since an in-flight release upload must never be killed mid-way.
+concurrency:
+  group: master-prerelease
+  cancel-in-progress: false
+
 jobs:
   prerelease:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v7

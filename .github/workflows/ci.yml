@@ -8,9 +8,16 @@ on:
 permissions:
   contents: read
 
+# Cancel superseded runs on the same PR/branch — a stale run testing an
+# already-replaced commit just burns CI minutes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v7
