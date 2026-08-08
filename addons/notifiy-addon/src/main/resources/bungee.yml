@@ -1,0 +1,5 @@
+name: PolocloudNotifyAddon
+main: de.polocloud.addons.notify.waterfall.WaterfallNotifyBootstrap
+version: ${version}
+author: polocloud
+description: Notifies players with a permission when a service starts, comes online or stops

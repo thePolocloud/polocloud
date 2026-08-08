@@ -1,0 +1,5 @@
+name: PolocloudHubAddon
+main: de.polocloud.addons.hub.waterfall.WaterfallHubBootstrap
+version: ${version}
+author: polocloud
+description: Handle /hub and aliases commands
