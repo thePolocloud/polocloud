@@ -40,7 +40,7 @@ class GroupServiceTemplatesTest {
         // PlatformService() has no platforms loaded, so the platform type is unresolved
         // and roleTemplateFor falls back to GLOBAL_SERVER — this exercises that same
         // fallback end to end through applyDefaultTemplates.
-        val group = Group.new("lobby", 512, 0.5, 1, 3, "paper", "1.21")
+        val group = Group("lobby", 512, 0.5, 1, 3, "paper", "1.21")
 
         val result = service.applyDefaultTemplates(group)
 
@@ -49,7 +49,7 @@ class GroupServiceTemplatesTest {
 
     @Test
     fun `a group that already has templates is left untouched`() {
-        val group = Group.new("proxy", 512, 0.5, 1, 3, "velocity", "3.5.0")
+        val group = Group("proxy", 512, 0.5, 1, 3, "velocity", "3.5.0")
             .copy(templatesJson = TemplateCodec.encode(listOf("custom")))
 
         val result = service.applyDefaultTemplates(group)

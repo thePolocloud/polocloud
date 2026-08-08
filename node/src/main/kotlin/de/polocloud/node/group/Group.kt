@@ -66,34 +66,39 @@ data class Group (
      */
     val nodes: List<String>
         get() = TemplateCodec.decode(nodesJson)
-
-    companion object {
-        /**
-         * Convenience factory for a newly-created, non-static group with no properties,
-         * templates or node restrictions yet. A plain function (not a constructor
-         * default) so it doesn't reintroduce the synthetic-constructor ambiguity the
-         * primary constructor's lack of defaults avoids — see [static]'s doc.
-         */
-        fun new(
-            name: String,
-            memory: Int,
-            startThreshold: Double,
-            minOnline: Long,
-            maxOnline: Long,
-            platform: String,
-            version: String,
-        ) = Group(
-            name = name,
-            memory = memory,
-            startThreshold = startThreshold,
-            minOnline = minOnline,
-            maxOnline = maxOnline,
-            platform = platform,
-            version = version,
-            static = false,
-            propertiesJson = "{}",
-            templatesJson = "[]",
-            nodesJson = "[]",
-        )
-    }
 }
+
+/**
+ * Convenience factory for a newly-created, non-static group with no properties, templates
+ * or node restrictions yet. A top-level pseudo-constructor (not a companion-object member,
+ * not a constructor default) — [Group] is persisted via reflection, and
+ * `SqlExecutor.resolveMeta()` in `polocloud-database` builds the SQL column list off
+ * `declaredFields`, which picks up a companion object's compiler-generated `Companion`
+ * static field as a bogus extra column. Its value (`Group$Companion`) isn't `Serializable`,
+ * so every insert fails with `NotSerializableException` even though the group still ends up
+ * created in memory. `NodeData`/`Service` avoid a companion object for the same reason; this
+ * keeps `Group` consistent with them while still being callable as `Group(name, memory, ...)`.
+ * A constructor default would reintroduce a different reflection hazard instead — see
+ * [Group.static]'s doc.
+ */
+fun Group(
+    name: String,
+    memory: Int,
+    startThreshold: Double,
+    minOnline: Long,
+    maxOnline: Long,
+    platform: String,
+    version: String,
+) = Group(
+    name = name,
+    memory = memory,
+    startThreshold = startThreshold,
+    minOnline = minOnline,
+    maxOnline = maxOnline,
+    platform = platform,
+    version = version,
+    static = false,
+    propertiesJson = "{}",
+    templatesJson = "[]",
+    nodesJson = "[]",
+)

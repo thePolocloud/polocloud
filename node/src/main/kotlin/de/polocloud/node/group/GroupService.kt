@@ -24,7 +24,7 @@ open class GroupService(private val platformService: PlatformService = PlatformS
     open fun find(name: String) = GroupRepository.find(name)
 
     fun create(name: String, memory: Int, startThreshold: Double, minOnline: Long, maxOnline: Long, platform: String, version: String) : Group =
-        create(Group.new(name, memory, startThreshold, minOnline, maxOnline, platform, version))
+        create(Group(name, memory, startThreshold, minOnline, maxOnline, platform, version))
 
     /**
      * Persists [group], assigning its default templates first if none were set:

@@ -77,7 +77,7 @@ class ServiceQueueConcurrencyTest {
         // for the whole test — `running` never grows since nothing here ever drains/starts.
         // Persisted (not just supplied via `groups = {...}` below) so ServiceProvider.update's
         // insert of each queued service satisfies the services table's FK on groupName.
-        val group = Group.new("lobby-${UUID.randomUUID()}", 64, 0.0, 200, 200, "PAPER", "1.21")
+        val group = Group("lobby-${UUID.randomUUID()}", 64, 0.0, 200, 200, "PAPER", "1.21")
         GroupRepository.save(group)
 
         val provider = ServiceProvider(nodeId = selfId.toString())

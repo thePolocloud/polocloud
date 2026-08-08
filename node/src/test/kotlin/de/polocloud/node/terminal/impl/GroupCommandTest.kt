@@ -70,7 +70,7 @@ class GroupCommandTest {
 
     @BeforeEach
     fun setUp() {
-        groups = InMemoryGroupService(listOf(Group.new("lobby", 512, 0.5, 1, 3, "velocity", "3.5.0")))
+        groups = InMemoryGroupService(listOf(Group("lobby", 512, 0.5, 1, 3, "velocity", "3.5.0")))
         commands = CommandService()
         commands.registerCommand(GroupCommand(groups, PlatformService(), ServiceProvider(), FakeWizardPrompt(emptyList())))
     }

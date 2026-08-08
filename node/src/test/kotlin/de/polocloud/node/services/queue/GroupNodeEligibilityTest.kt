@@ -27,7 +27,7 @@ class GroupNodeEligibilityTest {
         )
 
     private fun group(nodes: List<String> = emptyList()) =
-        Group.new("lobby", 512, 0.0, 1, 10, "PAPER", "1.21").copy(nodesJson = TemplateCodec.encode(nodes))
+        Group("lobby", 512, 0.0, 1, 10, "PAPER", "1.21").copy(nodesJson = TemplateCodec.encode(nodes))
 
     @Test
     fun `an empty whitelist is unrestricted and every online node is eligible`() {

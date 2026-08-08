@@ -72,7 +72,7 @@ class ServiceQueueEligibilityTest {
         )
 
     private fun group(name: String = "lobby", minOnline: Long = 1, nodes: List<String> = emptyList()) =
-        Group.new(name, 512, 0.0, minOnline, 10, "PAPER", "1.21").copy(nodesJson = TemplateCodec.encode(nodes))
+        Group(name, 512, 0.0, minOnline, 10, "PAPER", "1.21").copy(nodesJson = TemplateCodec.encode(nodes))
 
     private fun queue(
         provider: ServiceProvider = ServiceProvider(nodeId = selfId.toString()),

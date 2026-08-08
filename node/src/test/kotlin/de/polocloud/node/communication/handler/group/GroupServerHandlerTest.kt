@@ -34,9 +34,9 @@ private class InMemoryGroupService(initial: List<Group> = emptyList()) : GroupSe
 
 class GroupServerHandlerTest {
 
-    private val lobby = Group.new("Lobby", 512, 0.8, 1, 3, "velocity", "3.5.0")
-    private val proxy = Group.new("Proxy", 256, 0.5, 1, 2, "velocity", "3.5.0")
-    private val survival = Group.new("Survival", 1024, 0.9, 0, 5, "paper", "1.21")
+    private val lobby = Group("Lobby", 512, 0.8, 1, 3, "velocity", "3.5.0")
+    private val proxy = Group("Proxy", 256, 0.5, 1, 2, "velocity", "3.5.0")
+    private val survival = Group("Survival", 1024, 0.9, 0, 5, "paper", "1.21")
 
     private fun service() = InMemoryGroupService(listOf(lobby, proxy, survival))
 
