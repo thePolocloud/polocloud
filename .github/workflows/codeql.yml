@@ -43,7 +43,7 @@ jobs:
           build-mode: manual
 
       - name: Build
-        run: ./gradlew build -x test
+        run: ./gradlew build -x test --no-build-cache --no-daemon
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
