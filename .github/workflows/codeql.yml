@@ -37,6 +37,10 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: java-kotlin
+          # Kotlin needs an actual compile to extract from; the default "none" build-mode
+          # skips build tracing entirely, silently leaving all .kt files unanalyzed even
+          # though the Build step below still runs.
+          build-mode: manual
 
       - name: Build
         run: ./gradlew build -x test
