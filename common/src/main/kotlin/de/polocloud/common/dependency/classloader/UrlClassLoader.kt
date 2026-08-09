@@ -1,4 +1,4 @@
-package de.polocloud.common.dependency.classlaoder
+package de.polocloud.common.dependency.classloader
 
 import java.lang.reflect.Method
 import java.net.URL
