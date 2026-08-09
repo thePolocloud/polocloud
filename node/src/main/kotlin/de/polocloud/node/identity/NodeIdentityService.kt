@@ -99,7 +99,7 @@ class NodeIdentityService(
             grpc.start()
             serviceGrpc.start()
 
-            return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider)
+            return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider, electionService)
         }
 
         val possibleNode = NodeRepository.find(localId)
@@ -115,7 +115,7 @@ class NodeIdentityService(
             grpc.start()
             serviceGrpc.start()
 
-            return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider)
+            return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider, electionService)
         }
 
         if (launchProperties.clusterRegistration == null) {
@@ -150,7 +150,7 @@ class NodeIdentityService(
             )
         container = LocalNodeContainer(nodeData)
 
-        return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider)
+        return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider, electionService)
     }
 
     /**

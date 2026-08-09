@@ -8,6 +8,7 @@ import de.polocloud.node.cluster.node.NodeRepository
 import de.polocloud.proto.NodeState
 import org.slf4j.LoggerFactory
 import java.util.UUID
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.time.Clock.System.now
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -27,6 +28,15 @@ class NodeElectionService {
 
     private var localId: UUID? = null
     private var election: ElectionState? = null
+
+    // Notified whenever THIS node's own head status flips (true = became head, false =
+    // lost it) — e.g. ModuleManager uses this to enable/disable SINGLE_ACTIVE modules on
+    // failover instead of only ever checking isHead() once at boot.
+    private val leadershipListeners = CopyOnWriteArrayList<(Boolean) -> Unit>()
+
+    fun addLeadershipListener(listener: (Boolean) -> Unit) {
+        leadershipListeners.add(listener)
+    }
 
     fun start(
         localId: UUID,
@@ -119,6 +129,9 @@ class NodeElectionService {
             node.head = shouldBeHead
             if (shouldBeHead) node.electedAt = now()
             NodeRepository.save(node)
+            if (node.id == localId) {
+                leadershipListeners.forEach { it(shouldBeHead) }
+            }
         }
         logger.info("Node {} elected as new head for term {}", nodes.firstOrNull { it.id == leaderId }?.name() ?: leaderId, term)
     }

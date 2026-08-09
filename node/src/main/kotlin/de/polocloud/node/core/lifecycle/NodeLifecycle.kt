@@ -12,6 +12,7 @@ import de.polocloud.node.core.NodeRuntime
 import de.polocloud.node.core.configuration.NodeConfigurations
 import de.polocloud.node.core.context.NodeRuntimeContext
 import de.polocloud.node.event.ClusterEventRelay
+import de.polocloud.node.module.ClusterModuleRegistry
 import de.polocloud.updater.UpdateChecker
 import de.polocloud.updater.Updater
 import org.apache.logging.log4j.LogManager
@@ -84,6 +85,9 @@ class NodeLifecycle(
         context.groupService.run()
         context.serviceProvider.run()
 
+        ClusterModuleRegistry.start()
+        context.moduleManager.loadAll()
+
         // Start relaying local events to peers so subscribers on any node see the whole
         // cluster's service lifecycle live. No-op while this is the only node.
         eventRelay = ClusterEventRelay(context.serviceProvider.nodeId).also { it.install() }
@@ -116,6 +120,11 @@ class NodeLifecycle(
 
         safe("eventRelay") {
             eventRelay?.close()
+        }
+
+        safe("moduleManager") {
+            context.moduleManager.unloadAll()
+            ClusterModuleRegistry.stop()
         }
 
         safe("heartBeatMonitor") {

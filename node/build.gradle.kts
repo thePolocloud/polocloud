@@ -16,6 +16,10 @@ dependencies {
     //kotlin
     polocloudRuntime(libs.kotlinx.serialization.json)
     polocloudRuntime(libs.kotlinx.coroutines.core)
+    // Modules pull in `api` (see projects.moduleApi below), whose ServiceService/GroupService
+    // *Async methods need kotlinx-coroutines-jdk8 (kotlinx.coroutines.future.future) at
+    // runtime — node itself never called that code path before modules existed.
+    polocloudRuntime(libs.kotlinx.coroutines.jdk8)
     polocloudRuntime(libs.kotlin.reflect)
 
     //logging
@@ -51,6 +55,7 @@ dependencies {
     implementation(projects.proto)
     implementation(projects.shared)
     implementation(projects.updater)
+    implementation(projects.moduleApi)
 
     // testing
     testImplementation(projects.common)

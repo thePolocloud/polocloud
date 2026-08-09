@@ -5,20 +5,22 @@ import de.polocloud.common.commands.type.KeywordArgument
 import de.polocloud.common.configuration.ConfigurationHolder
 import de.polocloud.node.core.configuration.NodeConfigurations
 import de.polocloud.node.group.template.GroupTemplateService
+import de.polocloud.node.module.ModuleManager
 import de.polocloud.node.services.factory.PlatformService
 import org.slf4j.LoggerFactory
 
 /**
  * Terminal command that resynchronizes the node's live state with disk/remote sources
  * without requiring a full restart: the `config.json` ([holder]), the downloaded platform
- * template bundle ([PlatformService.resync]) and the global template folders
- * ([GroupTemplateService.ensureGlobalTemplates]). Each part can also be reloaded on its own
- * via a subcommand.
+ * template bundle ([PlatformService.resync]), the global template folders
+ * ([GroupTemplateService.ensureGlobalTemplates]) and every module under `local/modules/`
+ * ([ModuleManager.reload]). Each part can also be reloaded on its own via a subcommand.
  */
 class ReloadCommand(
     private val holder: ConfigurationHolder<NodeConfigurations>,
     private val platformService: PlatformService,
-) : Command("reload", "Resynchronizes config, platforms and templates", "rl") {
+    private val moduleManager: ModuleManager,
+) : Command("reload", "Resynchronizes config, platforms, templates and modules", "rl") {
 
     private val logger = LoggerFactory.getLogger(ReloadCommand::class.java)
 
@@ -27,6 +29,7 @@ class ReloadCommand(
             reloadConfig()
             reloadPlatforms()
             reloadTemplates()
+            reloadModules()
             logger.info("Reload complete.")
         }
 
@@ -41,6 +44,10 @@ class ReloadCommand(
         syntax({
             reloadTemplates()
         }, "Ensure all global template folders exist", KeywordArgument("templates"))
+
+        syntax({
+            reloadModules()
+        }, "Unload and reload every module from local/modules", KeywordArgument("modules"))
     }
 
     private fun reloadConfig() {
@@ -55,5 +62,10 @@ class ReloadCommand(
     private fun reloadTemplates() {
         GroupTemplateService.ensureGlobalTemplates()
         logger.info("Templates reloaded.")
+    }
+
+    private fun reloadModules() {
+        moduleManager.reload()
+        logger.info("Modules reloaded.")
     }
 }

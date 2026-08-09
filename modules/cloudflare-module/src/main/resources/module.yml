@@ -1,0 +1,7 @@
+name: cloudflare
+version: 1.0.0
+main: de.polocloud.modules.cloudflare.CloudflareModule
+description: Keeps a Cloudflare DNS record in sync with this cluster's online proxies
+authors: [polocloud]
+scope: SINGLE_ACTIVE
+api-version: 3.0.0

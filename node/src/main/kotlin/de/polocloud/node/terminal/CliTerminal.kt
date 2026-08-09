@@ -7,6 +7,7 @@ import de.polocloud.node.terminal.impl.ClusterCommand
 import de.polocloud.node.terminal.impl.GroupCommand
 import de.polocloud.node.terminal.impl.HelpCommand
 import de.polocloud.node.terminal.impl.InfoCommand
+import de.polocloud.node.terminal.impl.ModuleCommand
 import de.polocloud.node.terminal.impl.PlatformCommand
 import de.polocloud.node.terminal.impl.ReloadCommand
 import de.polocloud.node.terminal.impl.ServiceCommand
@@ -126,8 +127,10 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
             ReloadCommand(
                 this.context.holder,
                 this.context.serviceProvider.platformService,
+                this.context.moduleManager,
             )
         )
+        this.commandService.registerCommand(ModuleCommand(this.context.moduleManager))
     }
 
     /**
