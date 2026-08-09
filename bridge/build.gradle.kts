@@ -42,7 +42,7 @@ kotlin {
 tasks.processResources {
     val tokens = mapOf("version" to project.version.toString())
     inputs.properties(tokens)
-    filesMatching(listOf("velocity-plugin.json", "bungee.yml")) {
+    filesMatching(listOf("velocity-plugin.json")) {
         expand(tokens)
     }
 }
