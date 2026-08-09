@@ -110,7 +110,7 @@ jobs:
             runner/build/libs/*.jar \
             addons/sign-system/build/libs/*-all.jar \
             addons/hub-addon/build/libs/*-all.jar \
-            addons/notifiy-addon/build/libs/*-all.jar \
+            addons/notify-addon/build/libs/*-all.jar \
             addons/proxy-addon/build/libs/*-all.jar \
             addons/server-mobs-addon/build/libs/*-all.jar \
             modules/cloudflare-module/build/libs/*.jar \
