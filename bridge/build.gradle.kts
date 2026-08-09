@@ -4,7 +4,7 @@ plugins {
 }
 
 repositories {
-    // velocity-api + waterfall-api live in the PaperMC repository
+    // velocity-api lives in the PaperMC repository
     maven("https://repo.papermc.io/repository/maven-public/")
 }
 
@@ -14,9 +14,9 @@ dependencies {
     // which does not have the polocloud runtime on its classpath.
     implementation(projects.api)
 
-    // Provided by the proxy at runtime — never bundled.
+    // Provided by Velocity at runtime — never bundled.
+    // Waterfall/BungeeCord bridge support is not available yet, so waterfall-api is intentionally omitted.
     compileOnly(libs.velocity.api)
-    compileOnly(libs.waterfall.api)
 
     // testing
     testImplementation(libs.bundles.testing)
