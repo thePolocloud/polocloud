@@ -25,7 +25,9 @@ import kotlin.time.Duration.Companion.seconds
  *
  * Load order for a single [loadAll]/[reload] pass:
  *  1. every jar's `module.yml` is read
- *  2. modules are topologically sorted by `depends`/`soft-depends`
+ *  2. modules are topologically sorted by `depends`/`soft-depends` (see [resolveLoadOrder]);
+ *     any module caught in a circular `depends`/`soft-depends` chain is failed out instead
+ *     of loaded in some arbitrary order
  *  3. each module is instantiated, attached and [PolocloudModule.onLoad]-ed, in that order
  *  4. each successfully loaded module is then enabled, in that order — unless it's
  *     [ModuleScope.SINGLE_ACTIVE] and this node isn't currently head, in which case it
@@ -50,9 +52,9 @@ class ModuleManager(
     private val modules = LinkedHashMap<String, ModuleContainer>()
 
     // Keyed by module name once a descriptor was readable, otherwise by jar file name —
-    // so a jar that fails to even parse still shows up somewhere. Cleared per-key on the
-    // next successful load of that same key.
-    private val failures = LinkedHashMap<String, String>()
+    // so a jar that fails to even parse still shows up somewhere; see ModuleFailure.source
+    // to tell the two apart. Cleared per-key on the next successful load of that same key.
+    private val failures = LinkedHashMap<String, ModuleFailure>()
 
     private var watcher: ModuleFolderWatcher? = null
 
@@ -74,7 +76,7 @@ class ModuleManager(
     fun find(name: String): ModuleContainer? = modules[name]
 
     /** Reasons the most recent [loadAll]/[reload]/watcher pass failed to load a module, keyed by module (or jar) name. */
-    fun failures(): Map<String, String> = failures.toMap()
+    fun failures(): Map<String, ModuleFailure> = failures.toMap()
 
     /** Scans [folder] for jars, loads/enables every module found, then starts watching it for changes. */
     fun loadAll() {
@@ -90,18 +92,21 @@ class ModuleManager(
                 val descriptor = try {
                     ModuleDescriptorParser.parse(jar)
                 } catch (e: Exception) {
-                    fail(jar.name, e.message ?: e.toString())
+                    fail(jar.name, e.message ?: e.toString(), ModuleFailure.Source.JAR)
                     continue
                 }
                 val existing = descriptorsByJar.keys.find { it.name == descriptor.name }
                 if (existing != null) {
-                    fail(jar.name, "duplicate module name '${descriptor.name}' (also in '${descriptorsByJar.getValue(existing).name}')")
+                    fail(jar.name, "duplicate module name '${descriptor.name}' (also in '${descriptorsByJar.getValue(existing).name}')", ModuleFailure.Source.JAR)
                     continue
                 }
                 descriptorsByJar[descriptor] = jar
             }
 
-            val order = resolveLoadOrder(descriptorsByJar.keys)
+            val (order, cyclic) = resolveLoadOrder(descriptorsByJar.keys)
+            for (descriptor in cyclic) {
+                fail(descriptor.name, "part of a circular module dependency chain (via depends/soft-depends) — not loaded")
+            }
             for (descriptor in order) {
                 load(descriptorsByJar.getValue(descriptor), descriptor)
             }
@@ -134,22 +139,54 @@ class ModuleManager(
         loadAll()
     }
 
-    /** Unloads and re-loads a single module by name. Returns `false` if it isn't currently loaded. */
+    /**
+     * Unloads and re-loads a single module by name, without touching any other loaded
+     * module. Returns `false` if it isn't currently loaded.
+     *
+     * This only re-validates [name] itself (its own `depends`, api-version, classload) —
+     * it does *not* re-run [resolveLoadOrder] against the rest of [modules]. Any other
+     * currently-loaded module that hard-depends on [name] keeps running untouched while
+     * [name] is briefly gone; if the reload then fails, that dependent's contract is
+     * broken (its dependency vanished), so it's disabled and flagged as failed too rather
+     * than silently kept running without it.
+     */
     fun reload(name: String): Boolean {
         val container = modules[name] ?: return false
+
+        val dependents = hardDependentsOf(name, modules.values.map { it.descriptor })
+        if (dependents.isNotEmpty()) {
+            logger.warn("Reloading module '{}' — the following loaded modules hard-depend on it and are not reloaded themselves: {}", name, dependents)
+        }
+
         unload(container)
 
         val descriptor = try {
             ModuleDescriptorParser.parse(container.jarFile)
         } catch (e: Exception) {
             fail(name, e.message ?: e.toString())
+            failDependents(name, dependents)
             return true
         }
         load(container.jarFile, descriptor)
-        modules[descriptor.name]?.let { reloaded ->
-            if (shouldBeEnabled(reloaded.descriptor.scope, electionService.isHead())) enable(reloaded)
+
+        val reloaded = modules[descriptor.name]
+        if (reloaded == null) {
+            failDependents(name, dependents)
+            return true
         }
+        if (shouldBeEnabled(reloaded.descriptor.scope, electionService.isHead())) enable(reloaded)
         return true
+    }
+
+    /** Disables and flags every still-loaded module in [dependentNames] because their hard dependency [dependencyName] failed to come back after a targeted [reload]. */
+    private fun failDependents(dependencyName: String, dependentNames: List<String>) {
+        for (dependentName in dependentNames) {
+            val dependent = modules[dependentName] ?: continue
+            val reason = "hard dependency '$dependencyName' failed to reload"
+            logger.error("Disabling module '{}' — {}", dependentName, reason)
+            disable(dependent)
+            fail(dependentName, reason)
+        }
     }
 
     /** Enables an already-loaded, currently disabled/standby module in place. Returns `false` if it isn't loaded. */
@@ -279,8 +316,8 @@ class ModuleManager(
         }
     }
 
-    private fun fail(key: String, reason: String) {
-        failures[key] = reason
+    private fun fail(key: String, reason: String, source: ModuleFailure.Source = ModuleFailure.Source.MODULE) {
+        failures[key] = ModuleFailure(reason, source)
         logger.error("Module '{}': {}", key, reason)
     }
 
@@ -313,7 +350,7 @@ class ModuleManager(
         val descriptor = try {
             ModuleDescriptorParser.parse(jar)
         } catch (e: Exception) {
-            fail(jar.name, e.message ?: e.toString())
+            fail(jar.name, e.message ?: e.toString(), ModuleFailure.Source.JAR)
             return
         }
 
@@ -351,35 +388,62 @@ class ModuleManager(
         internal fun shouldBeEnabled(scope: ModuleScope, isHead: Boolean): Boolean =
             scope == ModuleScope.EVERY_NODE || isHead
 
-        /**
-         * Kahn-style topological sort over `depends` + `soft-depends`. Missing soft
-         * dependencies are silently ignored (they only influence ordering when present); a
-         * cycle breaks the chain at the point it's detected and is logged, rather than
-         * refusing to load anything.
-         */
-        internal fun resolveLoadOrder(descriptors: Collection<ModuleDescriptor>): List<ModuleDescriptor> {
-            val byName = descriptors.associateBy { it.name }
-            val visited = mutableSetOf<String>()
-            val visiting = mutableSetOf<String>()
-            val result = mutableListOf<ModuleDescriptor>()
+        /** Names of currently-loaded [descriptors] that hard-`depends` on [name] — used to warn about / fail out a targeted [reload]'s fallout. */
+        internal fun hardDependentsOf(name: String, descriptors: Collection<ModuleDescriptor>): List<String> =
+            descriptors.filter { it.name != name && name in it.depends }.map { it.name }
 
-            fun visit(descriptor: ModuleDescriptor) {
-                if (descriptor.name in visited) return
-                if (descriptor.name in visiting) {
-                    logger.error("Circular module dependency detected involving '{}' — breaking the cycle here", descriptor.name)
-                    return
+        /**
+         * Kahn-style topological sort over `depends` + `soft-depends`: repeatedly takes
+         * every descriptor with no remaining unresolved dependency, until none are left.
+         * Missing soft dependencies are silently ignored (they only influence ordering
+         * when present).
+         *
+         * Anything still left over once no further progress can be made — because it
+         * (transitively) depends on itself — is returned separately as [LoadOrderResult.cyclic]
+         * instead of being force-inserted in some arbitrary order: silently loading a
+         * module whose declared `depends` contract can't actually be satisfied is worse
+         * than refusing to load it and saying why.
+         */
+        internal fun resolveLoadOrder(descriptors: Collection<ModuleDescriptor>): LoadOrderResult {
+            val byName = descriptors.associateBy { it.name }
+            val remaining = LinkedHashSet(descriptors)
+            val inDegree = descriptors.associateTo(mutableMapOf()) { it.name to 0 }
+            val dependents = mutableMapOf<String, MutableList<ModuleDescriptor>>()
+
+            for (descriptor in descriptors) {
+                for (dependencyName in (descriptor.depends + descriptor.softDepends).distinct()) {
+                    if (byName[dependencyName] == null) continue
+                    dependents.getOrPut(dependencyName) { mutableListOf() } += descriptor
+                    inDegree[descriptor.name] = inDegree.getValue(descriptor.name) + 1
                 }
-                visiting += descriptor.name
-                for (dependencyName in descriptor.depends + descriptor.softDepends) {
-                    byName[dependencyName]?.let(::visit)
-                }
-                visiting -= descriptor.name
-                visited += descriptor.name
-                result += descriptor
             }
 
-            descriptors.forEach(::visit)
-            return result
+            val order = mutableListOf<ModuleDescriptor>()
+            var progressed = true
+            while (remaining.isNotEmpty() && progressed) {
+                progressed = false
+                val ready = remaining.filter { inDegree.getValue(it.name) == 0 }
+                for (descriptor in ready) {
+                    order += descriptor
+                    remaining -= descriptor
+                    progressed = true
+                    dependents[descriptor.name]?.forEach { dependent ->
+                        inDegree[dependent.name] = inDegree.getValue(dependent.name) - 1
+                    }
+                }
+            }
+
+            if (remaining.isNotEmpty()) {
+                logger.error(
+                    "Circular module dependency chain detected — the following modules won't be loaded: {}",
+                    remaining.joinToString { it.name },
+                )
+            }
+
+            return LoadOrderResult(order, remaining.toList())
         }
     }
+
+    /** [order]: a valid load order for every acyclic descriptor. [cyclic]: descriptors that couldn't be ordered because they (transitively) depend on themselves. */
+    internal data class LoadOrderResult(val order: List<ModuleDescriptor>, val cyclic: List<ModuleDescriptor>)
 }

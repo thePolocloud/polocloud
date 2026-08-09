@@ -29,9 +29,10 @@ class ModuleManagerPolicyTest {
         val c = descriptor("c", depends = listOf("b"))
 
         // Deliberately out of order on input — the sort must fix that up.
-        val order = ModuleManager.resolveLoadOrder(listOf(c, a, b)).map { it.name }
+        val result = ModuleManager.resolveLoadOrder(listOf(c, a, b))
 
-        assertEquals(listOf("a", "b", "c"), order)
+        assertEquals(listOf("a", "b", "c"), result.order.map { it.name })
+        assertTrue(result.cyclic.isEmpty())
     }
 
     @Test
@@ -39,29 +40,56 @@ class ModuleManagerPolicyTest {
         val a = descriptor("a")
         val b = descriptor("b", softDepends = listOf("a"))
 
-        val order = ModuleManager.resolveLoadOrder(listOf(b, a)).map { it.name }
+        val result = ModuleManager.resolveLoadOrder(listOf(b, a))
 
-        assertEquals(listOf("a", "b"), order)
+        assertEquals(listOf("a", "b"), result.order.map { it.name })
     }
 
     @Test
     fun `resolveLoadOrder ignores a missing soft-depend instead of failing`() {
         val onlyModule = descriptor("only", softDepends = listOf("nonexistent"))
 
-        val order = ModuleManager.resolveLoadOrder(listOf(onlyModule)).map { it.name }
+        val result = ModuleManager.resolveLoadOrder(listOf(onlyModule))
 
-        assertEquals(listOf("only"), order)
+        assertEquals(listOf("only"), result.order.map { it.name })
+        assertTrue(result.cyclic.isEmpty())
     }
 
     @Test
-    fun `resolveLoadOrder breaks a circular hard dependency instead of hanging`() {
+    fun `resolveLoadOrder pulls a circular hard dependency out instead of guessing an order`() {
         val a = descriptor("a", depends = listOf("b"))
         val b = descriptor("b", depends = listOf("a"))
 
-        val order = ModuleManager.resolveLoadOrder(listOf(a, b)).map { it.name }.toSet()
+        val result = ModuleManager.resolveLoadOrder(listOf(a, b))
 
-        // Both are still returned exactly once each — the cycle is broken, not dropped.
-        assertEquals(setOf("a", "b"), order)
+        // Neither is loadable, so neither is in the order — but both are reported so
+        // ModuleManager can fail them out explicitly instead of silently guessing.
+        assertTrue(result.order.isEmpty())
+        assertEquals(setOf("a", "b"), result.cyclic.map { it.name }.toSet())
+    }
+
+    @Test
+    fun `resolveLoadOrder excludes a module that only transitively depends on a cycle`() {
+        val a = descriptor("a", depends = listOf("b"))
+        val b = descriptor("b", depends = listOf("a"))
+        val c = descriptor("c", depends = listOf("a"))
+
+        val result = ModuleManager.resolveLoadOrder(listOf(a, b, c))
+
+        assertTrue(result.order.isEmpty())
+        assertEquals(setOf("a", "b", "c"), result.cyclic.map { it.name }.toSet())
+    }
+
+    @Test
+    fun `hardDependentsOf finds loaded modules that hard-depend on the given name`() {
+        val a = descriptor("a")
+        val b = descriptor("b", depends = listOf("a"))
+        val c = descriptor("c", softDepends = listOf("a"))
+        val d = descriptor("d")
+
+        val dependents = ModuleManager.hardDependentsOf("a", listOf(a, b, c, d))
+
+        assertEquals(listOf("b"), dependents)
     }
 
     @Test

@@ -1,11 +1,5 @@
 package de.polocloud.moduleapi
 
-/**
- * Declares how a module behaves when its jar is deployed to more than one node in the
- * same cluster — the deployment topology is a filesystem/config concern
- * (`local/modules/`), not something the module itself controls, so a module can't assume
- * it is the only instance running.
- */
 enum class ModuleScope {
 
     /**

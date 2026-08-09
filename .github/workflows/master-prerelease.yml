@@ -105,10 +105,6 @@ jobs:
           # GitHub release assets are always a flat list (no real subfolders without
           # zipping, which we don't want), so we just normalize every asset's file name
           # to start with "polocloud-" here instead.
-          #
-          # Each jar also gets a sibling "<name>.sha256" asset containing just its hex
-          # digest — the Updater module downloads and verifies against it before staging
-          # a self-update, so a corrupted/tampered download is caught instead of applied.
           mkdir -p release-assets
           for f in \
             runner/build/libs/*.jar \
@@ -121,7 +117,6 @@ jobs:
           ; do
             target="release-assets/polocloud-$(basename "$f")"
             cp "$f" "$target"
-            sha256sum "$target" | cut -d' ' -f1 > "$target.sha256"
           done
           ls -la release-assets
 

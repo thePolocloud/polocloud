@@ -44,14 +44,11 @@ class ModuleFolderWatcher(
                     if (!name.endsWith(".jar")) return@forEach
 
                     val file = File(folder, name)
-                    // Debounce: a jar being copied in fires several MODIFY events before
-                    // the copy finishes; wait a beat so we read a complete file.
-                    Thread.sleep(300)
 
                     runCatching {
                         if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
                             onJarRemoved(file)
-                        } else if (file.isFile) {
+                        } else if (awaitStableFile(file)) {
                             onJarChanged(file)
                         }
                     }.onFailure { logger.error("Module watcher failed to handle '{}': {}", name, it.message, it) }
@@ -65,5 +62,32 @@ class ModuleFolderWatcher(
     fun stop() {
         running = false
         runCatching { watchService.close() }
+    }
+
+    /**
+     * Polls [file]'s size until two consecutive reads, [STABILIZE_POLL_MS] apart, agree —
+     * a jar being copied/moved in fires several MODIFY events before the write finishes,
+     * so a fixed "wait a beat" debounce either fires too early on a slow copy (large jar,
+     * slow disk/network mount) or wastes time on a fast one. Gives up and proceeds anyway
+     * after [STABILIZE_MAX_WAIT_MS] so a copy that never truly settles can't wedge the
+     * watcher thread forever. Returns `false` if the file disappeared while waiting (e.g.
+     * a rename-then-delete raced us).
+     */
+    private fun awaitStableFile(file: File): Boolean {
+        var previousSize = -1L
+        val deadline = System.currentTimeMillis() + STABILIZE_MAX_WAIT_MS
+        while (System.currentTimeMillis() < deadline) {
+            if (!file.isFile) return false
+            val size = file.length()
+            if (size == previousSize) return true
+            previousSize = size
+            Thread.sleep(STABILIZE_POLL_MS)
+        }
+        return file.isFile
+    }
+
+    private companion object {
+        const val STABILIZE_POLL_MS = 100L
+        const val STABILIZE_MAX_WAIT_MS = 10_000L
     }
 }

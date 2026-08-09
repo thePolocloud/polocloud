@@ -1,5 +1,6 @@
 package de.polocloud.node.module
 
+import de.polocloud.node.cluster.node.NodeRepository
 import de.polocloud.node.event.ClusterEventService
 import de.polocloud.shared.event.EventCodec
 import kotlinx.coroutines.CoroutineScope
@@ -20,10 +21,12 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * A single node with no peers still works: it just only ever sees its own events.
  *
- * Known gap: an entry for a node that goes offline is never actively removed — it just
- * stops being updated. Fine for a live "who's running this right now" view (a crashed
- * node's last-known status is still informative), but [statusesFor] can return stale
- * entries for a node that's no longer in the cluster at all.
+ * An entry for a node that merely goes offline (crashes, restarts) is never actively
+ * removed by an event — it just stops being updated, which is fine and intentional: a
+ * crashed node's last-known status is still informative for a live "who's running this
+ * right now" view. But once that node is gone from [NodeRepository] entirely (deleted,
+ * e.g. by the periodic stale-node prune), its entries no longer describe anything real,
+ * so [moduleNames] and [statusesFor] prune them against [NodeRepository] on every read.
  */
 object ClusterModuleRegistry {
 
@@ -67,13 +70,29 @@ object ClusterModuleRegistry {
         }.onFailure { logger.warn("Failed to publish module status for '{}': {}", container.descriptor.name, it.message) }
     }
 
-    /** Names of every module this registry has seen a status report for, from any node. */
-    fun moduleNames(): Set<String> = statuses.keys.toSet()
+    /** Names of every module this registry has seen a status report for, from any node still in the cluster. */
+    fun moduleNames(): Set<String> {
+        prune()
+        return statuses.keys.toSet()
+    }
 
     /** Every known node's latest status for [moduleName], most recently reporting node first isn't guaranteed — see [ModuleStatusEvent]. */
-    fun statusesFor(moduleName: String): List<ModuleStatusEvent> = statuses[moduleName]?.values?.toList() ?: emptyList()
+    fun statusesFor(moduleName: String): List<ModuleStatusEvent> {
+        prune()
+        return statuses[moduleName]?.values?.toList() ?: emptyList()
+    }
 
     private fun apply(event: ModuleStatusEvent) {
         statuses.computeIfAbsent(event.moduleName) { ConcurrentHashMap() }[event.nodeId] = event
+    }
+
+    /** Drops entries for any node that no longer exists in [NodeRepository] at all — see the class doc for why merely-offline nodes are kept. */
+    private fun prune() {
+        val knownNodeIds = runCatching { NodeRepository.findAll().map { it.id.toString() }.toSet() }
+            .getOrElse { return } // DB unreachable — better to show possibly-stale data than none at all
+        for (perNode in statuses.values) {
+            perNode.keys.retainAll(knownNodeIds)
+        }
+        statuses.entries.removeIf { it.value.isEmpty() }
     }
 }

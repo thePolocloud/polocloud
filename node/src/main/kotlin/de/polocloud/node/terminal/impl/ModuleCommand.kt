@@ -4,6 +4,7 @@ import de.polocloud.common.commands.Command
 import de.polocloud.common.commands.type.KeywordArgument
 import de.polocloud.moduleapi.ModuleScope
 import de.polocloud.node.module.ClusterModuleRegistry
+import de.polocloud.node.module.ModuleFailure
 import de.polocloud.node.module.ModuleManager
 import de.polocloud.node.terminal.types.ModuleArgument
 import org.slf4j.LoggerFactory
@@ -79,8 +80,9 @@ class ModuleCommand(
 
         if (failures.isNotEmpty()) {
             logger.info("Failed to load (${failures.size}):")
-            failures.forEach { (name, reason) ->
-                logger.info("  $name &8|&r &cFAILED&r &8- &7$reason")
+            failures.forEach { (key, failure) ->
+                val label = if (failure.source == ModuleFailure.Source.JAR) "$key (jar)" else key
+                logger.info("  $label &8|&r &cFAILED&r &8- &7${failure.reason}")
             }
         }
     }
