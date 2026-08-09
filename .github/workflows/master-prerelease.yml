@@ -117,6 +117,7 @@ jobs:
             addons/notifiy-addon/build/libs/*-all.jar \
             addons/proxy-addon/build/libs/*-all.jar \
             addons/server-mobs-addon/build/libs/*-all.jar \
+            modules/cloudflare-module/build/libs/*.jar \
           ; do
             target="release-assets/polocloud-$(basename "$f")"
             cp "$f" "$target"
