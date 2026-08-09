@@ -1,7 +1,5 @@
-package de.polocloud.service.factory.process
+package de.polocloud.node.services.factory.process
 
-import de.polocloud.node.services.factory.process.GoRuntime
-import de.polocloud.node.services.factory.process.JavaRuntime
 import java.io.File
 
 /**

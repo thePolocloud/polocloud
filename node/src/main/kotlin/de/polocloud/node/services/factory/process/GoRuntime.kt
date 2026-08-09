@@ -1,6 +1,5 @@
 package de.polocloud.node.services.factory.process
 
-import de.polocloud.service.factory.process.PlatformRuntime
 import java.io.File
 
 /**

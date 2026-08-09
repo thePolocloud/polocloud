@@ -7,7 +7,7 @@ import de.polocloud.node.services.factory.platform.custom.CustomPlatform
 import de.polocloud.node.services.factory.platform.custom.CustomPlatformService
 import de.polocloud.node.services.factory.platform.PlatformVersionSource
 import de.polocloud.node.services.factory.platform.custom.PlatformSourceValidator
-import de.polocloud.service.factory.process.PlatformRuntime
+import de.polocloud.node.services.factory.process.PlatformRuntime
 import de.polocloud.node.terminal.WizardPrompt
 import de.polocloud.node.terminal.types.PlatformSourceArgument
 import de.polocloud.node.terminal.types.PlatformTypeArgument
