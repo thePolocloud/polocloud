@@ -35,4 +35,14 @@ dependencies {
 
     compileOnly(projects.common)
     implementation(projects.proto)
+
+    // testing — common is compileOnly for main, so it must be re-declared for tests
+    // that exercise CLI types depending on shared Address/serialization helpers.
+    testImplementation(projects.common)
+    testImplementation(libs.bundles.testing)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
