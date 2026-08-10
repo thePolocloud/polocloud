@@ -1,0 +1,5 @@
+name: PolocloudBridge
+main: de.polocloud.bridge.waterfall.WaterfallBridgePlugin
+version: ${version}
+author: polocloud
+description: Connects this proxy to the Polocloud node.
