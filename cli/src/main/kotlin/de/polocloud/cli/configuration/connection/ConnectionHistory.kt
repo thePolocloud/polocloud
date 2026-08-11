@@ -23,7 +23,9 @@ class ConnectionHistory(
             it.clusterAddress == entry.clusterAddress
         }
         history.add(0, entry)
-        if (history.size > maxEntries) history.dropLast(history.size - maxEntries)
+        if (history.size > maxEntries) {
+            history.subList(maxEntries, history.size).clear()
+        }
         save(history)
     }
 

@@ -13,11 +13,13 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * Shared entry point for both proxy plugin variants (Velocity and Waterfall).
+ * Shared entry point for the Velocity bridge plugin.
  *
- * Keeps the platform-specific plugin classes thin: they only translate the
- * platform lifecycle into a single [start] call and forward logging. All actual
+ * Keeps the platform-specific plugin class thin: it only translates the
+ * platform lifecycle into a single [start] call and forwards logging. All actual
  * work goes through the shipped Polocloud [api][Polocloud].
+ *
+ * A Waterfall/BungeeCord bridge variant is not available yet.
  */
 class BridgeBootstrap<T>(private val instance: BridgeInstance<T>) {
 

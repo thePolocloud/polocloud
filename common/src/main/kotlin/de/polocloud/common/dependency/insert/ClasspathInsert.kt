@@ -1,7 +1,7 @@
 package de.polocloud.common.dependency.insert
 
 import de.polocloud.common.dependency.Dependency
-import de.polocloud.common.dependency.classlaoder.UrlClassLoader.url
+import de.polocloud.common.dependency.classloader.UrlClassLoader.url
 import java.net.URI
 import java.net.URL
 import java.net.URLClassLoader

@@ -1,4 +1,4 @@
-package de.polocloud.service.factory.process
+package de.polocloud.node.services.factory.process
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray

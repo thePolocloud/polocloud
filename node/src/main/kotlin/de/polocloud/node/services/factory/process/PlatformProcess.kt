@@ -4,8 +4,6 @@ import de.polocloud.node.services.factory.platform.Platform
 import de.polocloud.node.services.factory.platform.PlatformVersion
 import de.polocloud.node.services.factory.platform.PlatformVersionSource
 import de.polocloud.node.services.factory.template.resolveJavaVersion
-import de.polocloud.service.factory.process.JavaRuntimeManager
-import de.polocloud.service.factory.process.PlatformRuntime
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
