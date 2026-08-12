@@ -21,7 +21,14 @@ import kotlin.time.Instant
 // removed defaults used to.
 data class NodeData(
     @EntryIdentifier val id : UUID,
-    val nodeIndex: Int,
+    /**
+     * Assigned by the cluster this node registers with (gap-filling — see
+     * `IndexGenerator.generateNode()`), not by this node itself. A live `cluster join`
+     * (see [de.polocloud.node.identity.NodeIdentityService.joinLive]) re-registers an
+     * already-running node into a different cluster, which reassigns this — hence `var`
+     * rather than fixed at creation like [groupName]/[hostname]/[port].
+     */
+    var nodeIndex: Int,
     val groupName: String,
     val hostname: String,
     val port: Int,
@@ -34,7 +41,8 @@ data class NodeData(
     var votedFor: UUID?,
     val version: String,
     val gitCommitHash: String,
-    val firstConnection: Instant,
+    /** Reset to the accepting cluster's "now" on every (re-)registration — see [nodeIndex]. */
+    var firstConnection: Instant,
     var lastConnection: Instant,
     /**
      * Total system memory (MB) this node reported at registration. 0 means unknown/not

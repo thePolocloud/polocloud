@@ -38,4 +38,31 @@ class LocalNodeContainer(val data: NodeData) : NodeContainer(data) {
         data.state = newState
         NodeRepository.save(this.data)
     }
+
+    /**
+     * Adopts the identity a live `cluster join` (see
+     * [de.polocloud.node.identity.NodeIdentityService.joinLive]) received from the
+     * accepting cluster into this existing, already-referenced [data] object, then
+     * persists it — rather than replacing [data]/this container outright, which would
+     * leave any other component holding a direct reference to the old objects stale.
+     *
+     * [newData] must describe the same node ([NodeData.id] unchanged — a join never
+     * changes this node's own identity, only which cluster it belongs to); only the
+     * fields the accepting cluster actually (re-)assigns on registration are copied —
+     * see `RegistrationService.registerNode`'s field-by-field behavior.
+     */
+    fun adoptJoinedIdentity(newData: NodeData) {
+        require(newData.id == data.id) { "adoptJoinedIdentity must not change this node's own id (was ${data.id}, got ${newData.id})" }
+
+        data.nodeIndex = newData.nodeIndex
+        data.state = newData.state
+        data.head = newData.head
+        data.electedAt = newData.electedAt
+        data.term = newData.term
+        data.votedFor = newData.votedFor
+        data.firstConnection = newData.firstConnection
+        data.lastConnection = newData.lastConnection
+
+        NodeRepository.save(this.data)
+    }
 }

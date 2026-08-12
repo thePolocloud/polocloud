@@ -15,18 +15,17 @@ data class ClusterJoinAnswers(val host: String, val port: Int, val token: String
 
 /**
  * The interactive `cluster join` wizard: collects the target node's address and a
- * registration token, then confirms before the caller ([ClusterCommand.join]) restarts
- * this process to actually perform the join — see that method for why a restart is
- * necessary rather than joining live.
+ * registration token, then confirms before the caller ([ClusterCommand.join]) performs
+ * the join live, in-process — see
+ * [de.polocloud.node.identity.NodeIdentityService.joinLive]. No process restart is
+ * involved: only this node's gRPC endpoints briefly restart in place to pick up the
+ * cluster-issued certificate.
  *
  * The port step probes the address with a plain TCP connect before letting the operator
- * continue — a restart is disruptive (this node briefly drops off the cluster, or exits
- * entirely if [de.polocloud.updater.Updater.restart] can't relaunch it), and the actual
- * gRPC join only runs on the *next* boot, so catching an unreachable target here avoids
- * that whole detour surfacing as a raw stack trace or a silent hang minutes later. It
- * deliberately does not validate the token itself: that would consume it (registration
- * tokens are single-use), so the token is only checked for real by the target during the
- * post-restart join.
+ * continue, so an unreachable target is caught here instead of surfacing as a raw stack
+ * trace once the join actually runs. It deliberately does not validate the token itself:
+ * that would consume it (registration tokens are single-use), so the token is only
+ * checked for real by the target during the join itself.
  */
 class ClusterJoinWizard(prompt: WizardPrompt) : Wizard<ClusterJoinAnswers?>(prompt, "Cluster join") {
 
@@ -87,7 +86,7 @@ class ClusterJoinWizard(prompt: WizardPrompt) : Wizard<ClusterJoinAnswers?>(prom
         ),
         WizardStep(
             question = { context -> "Join the cluster at ${context.arg(hostArgument)}:${context.arg(portArgument)} now?" },
-            description = { "Restarts this node's process immediately to complete the join — it briefly drops off the cluster while it restarts. The address was already confirmed reachable, but the token itself (validity, single use, version match) is only checked by the target once this node reboots." },
+            description = { "Performs the join immediately, in-process — this node's gRPC endpoints restart to pick up the cluster-issued certificate (briefly unreachable, a second or two) but the node process itself is never restarted, so any services it's already hosting keep running throughout. The address was already confirmed reachable, but the token itself (validity, single use, version match) is only checked by the target during the join." },
             argument = confirmArgument,
             label = "Confirm",
             format = { if (it) "yes" else "no" },

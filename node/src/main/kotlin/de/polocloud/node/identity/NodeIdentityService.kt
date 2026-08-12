@@ -12,7 +12,9 @@ import de.polocloud.node.communication.cli.session.ICliSessionManager
 import de.polocloud.node.communication.grpc.NodeGrpcClient
 import de.polocloud.node.communication.grpc.NodeGrpcEndpoint
 import de.polocloud.node.communication.grpc.ServiceGrpcEndpoint
+import de.polocloud.node.cluster.node.NodeData
 import de.polocloud.node.communication.registration.cli.CliRegistrationService
+import de.polocloud.node.communication.registration.node.RegistrationInfo
 import de.polocloud.node.communication.registration.node.RegistrationManager
 import de.polocloud.node.core.configuration.NodeConfigurations
 import de.polocloud.node.core.context.NodeRuntimeContext
@@ -27,7 +29,17 @@ import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.ZoneId
+import java.util.UUID
 import kotlin.time.Clock.System.now
+
+/** Outcome of a join handshake against an existing cluster — see [NodeIdentityService.joinLive]. */
+sealed interface JoinResult {
+    data class Success(val nodeData: NodeData) : JoinResult
+    data class Denied(val reason: String) : JoinResult
+    data class RecordMissing(val reason: String) : JoinResult
+    /** The target couldn't be reached at all (network/transport failure) — distinct from [Denied], which means it was reached but rejected the token. */
+    data class Unreachable(val reason: String) : JoinResult
+}
 
 class NodeIdentityService(
     private val nodeId: NodeIdProvider,
@@ -99,7 +111,7 @@ class NodeIdentityService(
             grpc.start()
             serviceGrpc.start()
 
-            return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider, electionService)
+            return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider, electionService, this)
         }
 
         val possibleNode = NodeRepository.find(localId)
@@ -115,7 +127,7 @@ class NodeIdentityService(
             grpc.start()
             serviceGrpc.start()
 
-            return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider, electionService)
+            return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider, electionService, this)
         }
 
         if (launchProperties.clusterRegistration == null) {
@@ -123,34 +135,108 @@ class NodeIdentityService(
             throw IllegalStateException("This node '$localId' is not registered in the cluster and no registration token was provided.")
         }
 
-
         // Confirmed by actually running this against a rejected join (reused token):
-        // without this check, the code fell through to grpc.start() and eventually
-        // `NodeRepository.find(localId)!!` below, crashing on an unrelated NPE instead
-        // of the clear, actionable error a denied join should produce.
-        if (!registrationManager.tryJoinCluster(launchProperties.clusterRegistration, localId, launchProperties.group)) {
-            throw IllegalStateException(
+        // without the handshake's own checks, boot fell through to grpc.start() and
+        // eventually `NodeRepository.find(localId)!!`, crashing on an unrelated NPE
+        // instead of the clear, actionable error a denied join should produce.
+        when (val result = performJoinHandshake(launchProperties.clusterRegistration, localId, launchProperties.group, serviceProvider)) {
+            is JoinResult.Denied -> throw IllegalStateException(result.reason)
+            is JoinResult.RecordMissing -> throw IllegalStateException(result.reason)
+            is JoinResult.Unreachable -> throw IllegalStateException(result.reason)
+            is JoinResult.Success -> container = LocalNodeContainer(result.nodeData)
+        }
+
+        grpc.start()
+        serviceGrpc.start()
+
+        return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider, electionService, this)
+    }
+
+    /**
+     * Performs the join handshake against an existing cluster — CSR/registration, then
+     * best-effort CA key pair and forwarding secret adoption — and re-reads the resulting
+     * [NodeData]. Shared by the boot path ([resolve]) and the live, in-process path
+     * ([joinLive]) so both go through the exact same handshake logic.
+     */
+    private fun performJoinHandshake(
+        registrationInfo: RegistrationInfo,
+        localId: UUID,
+        group: String,
+        serviceProvider: ServiceProvider,
+    ): JoinResult {
+        // RegistrationClient.tryRegister deliberately throws rather than returning a
+        // rejection for transport-level failures (unreachable host, connection refused,
+        // timeout, ...) — a genuinely different failure mode than the cluster reaching and
+        // rejecting the token, so it's surfaced as its own JoinResult here instead of
+        // leaking a raw exception into resolve()/joinLive's callers. The interactive
+        // `cluster join` wizard already pre-checks reachability to make this rare in
+        // practice, but a target that goes away in the brief window after that check (or a
+        // boot-time -Dpolocloud.join.host that was never reachable) still needs a clean,
+        // actionable result rather than an uncaught crash.
+        val accepted = try {
+            registrationManager.tryJoinCluster(registrationInfo, localId, group)
+        } catch (exception: Exception) {
+            logger.warn("Could not reach the cluster at '{}': {}", registrationInfo.address, exception.message)
+            return JoinResult.Unreachable(
+                "Could not reach the cluster at '${registrationInfo.address}': ${exception.message ?: exception.javaClass.simpleName}"
+            )
+        }
+        if (!accepted) {
+            return JoinResult.Denied(
                 "This node '$localId' was denied registration by the cluster — check that the registration token is valid, unused, and this node's version matches the cluster's."
             )
         }
         adoptClusterCaKeyPair()
         adoptForwardingSecret(serviceProvider)
 
-        grpc.start()
-        serviceGrpc.start()
-
-        // Mirrors the guard above: the join just succeeded and this node was in
-        // NodeRepository as of tryJoinCluster returning true, but nothing prevents it from
-        // being evicted (e.g. pruned as unreachable, or removed by an operator) in the
-        // brief window between that success and this read. Fail clearly instead of
-        // `!!`-crashing on the resulting NPE.
+        // Mirrors tryJoinCluster's own check: the join just succeeded and this node was in
+        // NodeRepository as of that call returning true, but nothing prevents it from being
+        // evicted (e.g. pruned as unreachable, or removed by an operator) in the brief
+        // window between that success and this read.
         val nodeData = NodeRepository.find(localId)
-            ?: throw IllegalStateException(
+            ?: return JoinResult.RecordMissing(
                 "This node '$localId' was registered by the cluster but its record disappeared before startup could finish — it may have been evicted concurrently; retry the join."
             )
-        container = LocalNodeContainer(nodeData)
+        return JoinResult.Success(nodeData)
+    }
 
-        return NodeRuntimeContext(holder, container, registrationManager, grpc, serviceGrpc, groupService, serviceProvider, electionService)
+    /**
+     * Live, in-process counterpart to the join branch of [resolve] — used by the
+     * interactive `cluster join` terminal command so a fresh, standalone node can join an
+     * existing cluster without restarting the node's JVM process. Performs the same
+     * handshake as boot-time joining, then rebuilds this node's gRPC endpoints in place
+     * (their mTLS material is baked in once at construction, so picking up the
+     * cluster-issued certificate requires a fresh [de.polocloud.node.communication.grpc.NodeGrpcEndpoint]/
+     * [de.polocloud.node.communication.grpc.ServiceGrpcEndpoint], not a process restart) —
+     * see [NodeRuntimeContext.replaceGrpcEndpoints].
+     */
+    fun joinLive(registrationInfo: RegistrationInfo, group: String, context: NodeRuntimeContext): JoinResult {
+        val result = performJoinHandshake(registrationInfo, nodeId.get(), group, context.serviceProvider)
+        if (result is JoinResult.Success) {
+            context.localNodeContainer.adoptJoinedIdentity(result.nodeData)
+
+            val bindAddress = Address(holder.value.general.bindAddress.hostname, holder.value.general.bindAddress.port)
+            context.replaceGrpcEndpoints(
+                buildGrpc = {
+                    NodeGrpcEndpoint(
+                        bindAddress,
+                        cliRegistrationService,
+                        cliSessionManager,
+                        context.groupService,
+                        context.serviceProvider,
+                        context.electionService,
+                    )
+                },
+                buildServiceGrpc = {
+                    ServiceGrpcEndpoint(
+                        Address(holder.value.general.apiAddress.hostname, holder.value.general.apiAddress.port),
+                        context.groupService,
+                        context.serviceProvider,
+                    )
+                },
+            )
+        }
+        return result
     }
 
     /**

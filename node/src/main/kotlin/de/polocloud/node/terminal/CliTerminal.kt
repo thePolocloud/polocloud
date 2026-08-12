@@ -95,10 +95,7 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
         )
         this.commandService.registerCommand(
             ClusterCommand(
-                this.context.localNodeContainer,
-                this.context.groupService,
-                this.context.serviceProvider,
-                this.context.holder,
+                this.context,
                 this,
             )
         )

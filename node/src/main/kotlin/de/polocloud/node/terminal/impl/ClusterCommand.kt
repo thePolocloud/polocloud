@@ -1,25 +1,22 @@
 package de.polocloud.node.terminal.impl
 
+import de.polocloud.common.Address
 import de.polocloud.common.commands.Command
 import de.polocloud.common.commands.type.KeywordArgument
-import de.polocloud.common.configuration.ConfigurationHolder
-import de.polocloud.common.system.PolocloudSystemProperties
 import de.polocloud.database.DatabaseCredentials
 import de.polocloud.node.cluster.heartbeat.NodeHeartBeat
 import de.polocloud.node.cluster.heartbeat.NodeHeartBeatRepository
-import de.polocloud.node.cluster.node.LocalNodeContainer
 import de.polocloud.node.cluster.node.NodeData
 import de.polocloud.node.cluster.node.NodeRepository
-import de.polocloud.node.core.configuration.NodeConfigurations
-import de.polocloud.node.group.GroupService
-import de.polocloud.node.services.ServiceProvider
+import de.polocloud.node.communication.registration.node.RegistrationInfo
+import de.polocloud.node.core.context.NodeRuntimeContext
+import de.polocloud.node.identity.JoinResult
 import de.polocloud.node.terminal.CommandOutput.decimal
 import de.polocloud.node.terminal.CommandOutput.timestamp
 import de.polocloud.node.terminal.CommandOutput.white
 import de.polocloud.node.terminal.WizardPrompt
 import de.polocloud.node.terminal.types.NodeArgument
 import de.polocloud.proto.NodeState
-import de.polocloud.updater.Updater
 import org.slf4j.LoggerFactory
 import kotlin.math.roundToInt
 
@@ -32,10 +29,7 @@ import kotlin.math.roundToInt
  * shape as [GroupCommand] (list/info) and [ServiceCommand] (list/bare-argument info).
  */
 class ClusterCommand(
-    private val localNodeContainer: LocalNodeContainer,
-    private val groupService: GroupService,
-    private val serviceProvider: ServiceProvider,
-    private val holder: ConfigurationHolder<NodeConfigurations>,
+    private val context: NodeRuntimeContext,
     private val wizardPrompt: WizardPrompt,
 ) : Command("cluster", "View the state of the cluster and its nodes") {
 
@@ -80,15 +74,15 @@ class ClusterCommand(
             "  nodes: ${white(nodes.size.toString())} total (${byState.entries.joinToString { (state, count) -> "$count ${state.name.lowercase()}" }})"
         )
         logger.info("  head: ${white(head?.name() ?: "(none — election pending)")}")
-        logger.info("  groups: ${white(groupService.findAll().size.toString())}")
-        logger.info("  services: ${white(serviceProvider.findAll().size.toString())}")
+        logger.info("  groups: ${white(context.groupService.findAll().size.toString())}")
+        logger.info("  services: ${white(context.serviceProvider.findAll().size.toString())}")
         logger.info(
             if (totalMemory > 0)
                 "  memory: ${white("${usedMemory.roundToInt()}MB / ${totalMemory}MB")} used across online nodes"
             else
                 "  memory: ${white("unknown")} (no online node reports its capacity)"
         )
-        logger.info("  this node: ${white(localNodeContainer.data.name())}${if (localNodeContainer.data.head) " (head)" else ""}")
+        logger.info("  this node: ${white(context.localNodeContainer.data.name())}${if (context.localNodeContainer.data.head) " (head)" else ""}")
         logger.info("Use 'cluster list' to see all nodes, or 'cluster <name>' for details.")
     }
 
@@ -133,23 +127,18 @@ class ClusterCommand(
         NodeHeartBeatRepository.find(node.id).maxByOrNull { it.heartBeatAt }
 
     /**
-     * Guides an operator through joining this node into an existing cluster. There is no
-     * live "join now, no restart" path in this codebase: `NodeIdentityService.resolve()`
-     * — the one place that actually performs a join — only ever runs once, at process
-     * boot, before the CLI even exists (see CLUSTER.md §3). So instead of reimplementing
-     * that handshake here, this collects what it needs and restarts the process with the
-     * join token handed to the next boot via the same system properties
-     * (`polocloud.join.token`/`.host`/`.port`) a manual restart would use — the next
-     * `resolve()` call does the real work through the already-battle-tested path.
+     * Guides an operator through joining this node into an existing cluster, live and
+     * in-process — see [de.polocloud.node.identity.NodeIdentityService.joinLive] for why
+     * this no longer needs a process restart the way it used to.
      */
     private fun join() {
-        val ownId = localNodeContainer.data.id
+        val ownId = context.localNodeContainer.data.id
         if (NodeRepository.findAll().any { it.id != ownId }) {
             logger.info("This node is already part of a cluster with other nodes — 'cluster join' is only for a fresh, standalone node.")
             return
         }
 
-        if (holder.value.localNode.database is DatabaseCredentials.H2) {
+        if (context.holder.value.localNode.database is DatabaseCredentials.H2) {
             logger.info("This node's 'localNode.database' (config.json) is still the default embedded H2 database.")
             logger.info("A real cluster requires every node to share the SAME external database (MariaDB/MySQL/PostgreSQL/MongoDB/Redis) — two nodes on separate H2 files are not a cluster.")
             logger.info("Point 'localNode.database' at that shared database, restart this node, then run 'cluster join' again.")
@@ -158,17 +147,20 @@ class ClusterCommand(
 
         val answers = ClusterJoinWizard(wizardPrompt).run() ?: return
 
-        logger.info("Restarting to join the cluster at ${answers.host}:${answers.port}...")
-        val restarted = Updater.restart(
-            listOf(
-                "-D${PolocloudSystemProperties.JOIN_TOKEN}=${answers.token}",
-                "-D${PolocloudSystemProperties.JOIN_HOST}=${answers.host}",
-                "-D${PolocloudSystemProperties.JOIN_PORT}=${answers.port}",
-            )
-        )
-        if (!restarted) {
-            logger.warn("Could not determine the running jar to restart automatically. Restart this node manually with:")
-            logger.warn("  -D${PolocloudSystemProperties.JOIN_TOKEN}=${answers.token} -D${PolocloudSystemProperties.JOIN_HOST}=${answers.host} -D${PolocloudSystemProperties.JOIN_PORT}=${answers.port}")
+        logger.info("Joining the cluster at ${answers.host}:${answers.port}...")
+
+        val registrationInfo = RegistrationInfo(answers.token, Address(answers.host, answers.port))
+        val group = context.localNodeContainer.data.groupName
+
+        when (val result = context.identityService.joinLive(registrationInfo, group, context)) {
+            is JoinResult.Denied ->
+                logger.warn("Cluster join denied: ${result.reason}")
+            is JoinResult.RecordMissing ->
+                logger.warn("Cluster join incomplete: ${result.reason}")
+            is JoinResult.Unreachable ->
+                logger.warn("Cluster join failed: ${result.reason}")
+            is JoinResult.Success ->
+                logger.info("Joined the cluster — this node is now '${result.nodeData.name()}'.")
         }
     }
 }
