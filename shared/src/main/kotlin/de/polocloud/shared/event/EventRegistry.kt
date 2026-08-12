@@ -1,6 +1,12 @@
 package de.polocloud.shared.event
 
 import de.polocloud.shared.event.group.GroupUpdatedEvent
+import de.polocloud.shared.event.player.PlayerDisconnectEvent
+import de.polocloud.shared.event.player.PlayerJoinEvent
+import de.polocloud.shared.event.player.PlayerKickEvent
+import de.polocloud.shared.event.player.PlayerKickRequestEvent
+import de.polocloud.shared.event.player.PlayerSendRequestEvent
+import de.polocloud.shared.event.player.PlayerSwitchEvent
 import de.polocloud.shared.event.server.PlayerCountChangedEvent
 import de.polocloud.shared.event.server.ServerStartEvent
 import de.polocloud.shared.event.server.ServerStoppedEvent
@@ -28,6 +34,12 @@ object EventRegistry {
         register(ServiceOnlineEvent::class.java)
         register(GroupUpdatedEvent::class.java)
         register(PlayerCountChangedEvent::class.java)
+        register(PlayerJoinEvent::class.java)
+        register(PlayerSwitchEvent::class.java)
+        register(PlayerDisconnectEvent::class.java)
+        register(PlayerKickEvent::class.java)
+        register(PlayerKickRequestEvent::class.java)
+        register(PlayerSendRequestEvent::class.java)
     }
 
     /** Makes [type] resolvable by its simple name via [classFor]. Idempotent. */

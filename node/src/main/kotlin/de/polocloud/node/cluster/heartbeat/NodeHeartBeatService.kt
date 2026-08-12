@@ -30,6 +30,12 @@ class NodeHeartBeatService {
 
     private var schedulerJob: Job? = null
 
+    // Tracked (unlike a bare launch{}) so stopScheduler() can wait for it — otherwise a
+    // still-running cleanUp() keeps issuing one DELETE per stale row against a database
+    // that NodeLifecycle.shutdown() has, by that point, already closed, producing a
+    // cascade of "HikariDataSource has been closed" errors instead of a clean shutdown.
+    private var cleanupJob: Job? = null
+
     /**
      * Starts the heartbeat scheduler.
      *
@@ -42,7 +48,7 @@ class NodeHeartBeatService {
         // gets slower as the node accumulates more uptime — running it in the background
         // instead means "Node is up" no longer waits on however large that table has
         // gotten since the last restart.
-        CoroutineScope(Dispatchers.IO).launch {
+        cleanupJob = CoroutineScope(Dispatchers.IO).launch {
             runCatching { cleanUp() }
                 .onFailure { logger.error("Heartbeat cleanup failed", it) }
         }
@@ -62,11 +68,22 @@ class NodeHeartBeatService {
     }
 
     /**
-     * Stops the heartbeat scheduler if it is running.
+     * Stops the heartbeat scheduler if it is running, and waits for a still-in-flight
+     * [cleanUp] to finish (bounded by [CLEANUP_SHUTDOWN_TIMEOUT]) before returning — see
+     * [cleanupJob]'s doc for why this must happen before the caller closes the database.
      */
     fun stopScheduler() {
         schedulerJob?.cancel()
         schedulerJob = null
+
+        cleanupJob?.let { job ->
+            runBlocking {
+                if (withTimeoutOrNull(CLEANUP_SHUTDOWN_TIMEOUT) { job.join() } == null) {
+                    logger.warn("Heartbeat cleanup did not finish within {} during shutdown — it may still be writing to a closing database.", CLEANUP_SHUTDOWN_TIMEOUT)
+                }
+            }
+        }
+        cleanupJob = null
     }
 
     /**
@@ -138,5 +155,9 @@ class NodeHeartBeatService {
             applicationCpuUsage = applicationCpuUsage,
             applicationMemoryUsage = applicationMemoryUsage,
         )
+    }
+
+    private companion object {
+        val CLEANUP_SHUTDOWN_TIMEOUT = 15.seconds
     }
 }

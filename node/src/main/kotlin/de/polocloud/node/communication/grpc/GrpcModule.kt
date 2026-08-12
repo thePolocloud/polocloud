@@ -12,6 +12,11 @@ import de.polocloud.node.communication.handler.group.DeleteGroupServerHandler
 import de.polocloud.node.communication.handler.group.GetGroupInformationServerHandler
 import de.polocloud.node.communication.handler.group.UpdateGroupServerHandler
 import de.polocloud.node.communication.handler.node.GetNodeInformationServerHandler
+import de.polocloud.node.communication.handler.player.FindPlayerServerHandler
+import de.polocloud.node.communication.handler.player.ListPlayersServerHandler
+import de.polocloud.node.communication.handler.player.RegisterPlayerServerHandler
+import de.polocloud.node.communication.handler.player.UnregisterPlayerServerHandler
+import de.polocloud.node.communication.handler.player.UpdatePlayerServerServerHandler
 import de.polocloud.node.communication.handler.services.CopyTemplateServerHandler
 import de.polocloud.node.communication.handler.services.CountServicesServerHandler
 import de.polocloud.node.communication.handler.services.ExecuteServiceCommandServerHandler
@@ -29,14 +34,19 @@ import de.polocloud.proto.DeleteGroupRequest
 import de.polocloud.proto.ExecuteServiceCommandRequest
 import de.polocloud.proto.GetServiceResourceUsageRequest
 import de.polocloud.proto.GroupListRequest
+import de.polocloud.proto.FindPlayerRequest
 import de.polocloud.proto.ListNodesRequest
+import de.polocloud.proto.ListPlayersRequest
 import de.polocloud.proto.ListServicesRequest
 import de.polocloud.proto.NodeInformationRequest
+import de.polocloud.proto.RegisterPlayerRequest
 import de.polocloud.proto.ServiceCountRequest
 import de.polocloud.proto.ServiceListRequest
 import de.polocloud.proto.StopGroupServicesRequest
 import de.polocloud.proto.StopServiceRequest
+import de.polocloud.proto.UnregisterPlayerRequest
 import de.polocloud.proto.UpdateGroupRequest
+import de.polocloud.proto.UpdatePlayerServerRequest
 
 object GrpcModule {
 
@@ -57,6 +67,11 @@ object GrpcModule {
             register(CreateGroupRequest::class.java, CreateGroupServerHandler(groupService))
             register(UpdateGroupRequest::class.java, UpdateGroupServerHandler(groupService))
             register(DeleteGroupRequest::class.java, DeleteGroupServerHandler(groupService, serviceProvider))
+            register(RegisterPlayerRequest::class.java, RegisterPlayerServerHandler())
+            register(UpdatePlayerServerRequest::class.java, UpdatePlayerServerServerHandler())
+            register(UnregisterPlayerRequest::class.java, UnregisterPlayerServerHandler())
+            register(FindPlayerRequest::class.java, FindPlayerServerHandler())
+            register(ListPlayersRequest::class.java, ListPlayersServerHandler())
         }
 
         return GrpcServerExecutor(

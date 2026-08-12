@@ -9,6 +9,7 @@ import de.polocloud.node.terminal.impl.HelpCommand
 import de.polocloud.node.terminal.impl.InfoCommand
 import de.polocloud.node.terminal.impl.ModuleCommand
 import de.polocloud.node.terminal.impl.PlatformCommand
+import de.polocloud.node.terminal.impl.PlayerCommand
 import de.polocloud.node.terminal.impl.ReloadCommand
 import de.polocloud.node.terminal.impl.ServiceCommand
 import de.polocloud.node.terminal.impl.ShutdownCommand
@@ -41,7 +42,7 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
     /**
      * The currently displayed prompt string (ANSI-translated).
      */
-    var prompt: String? = AnsiColors.translate("&bpolocloud&8@&7${context.localNodeContainer.data.name()} &8» &7")
+    var prompt: String? = AnsiColors.translate(promptTemplate())
     val commandService = CommandService()
 
     private val defaultCompleter = CommandCompleter(this.commandService)
@@ -128,6 +129,7 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
             )
         )
         this.commandService.registerCommand(ModuleCommand(this.context.moduleManager))
+        this.commandService.registerCommand(PlayerCommand(this.context.serviceProvider))
     }
 
     /**
@@ -230,6 +232,16 @@ class CliTerminal(val context: NodeRuntimeContext) : WizardPrompt {
         this.lineReader.setPrompt(this.prompt)
         this.updateLocked()
     }
+
+    /**
+     * Rebuilds and re-displays the prompt from this node's *current*
+     * [de.polocloud.node.cluster.node.LocalNodeContainer.data] name — e.g. after a live
+     * `cluster join` (see [de.polocloud.node.terminal.impl.ClusterCommand.join]) changes
+     * it, since [prompt] is otherwise only ever computed once, at construction.
+     */
+    fun refreshPrompt() = updatePrompt(promptTemplate())
+
+    private fun promptTemplate() = "&bpolocloud&8@&7${context.localNodeContainer.data.name()} &8» &7"
 
     /**
      * Clears the current (possibly blank) input line above the prompt in a way that's

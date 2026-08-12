@@ -141,7 +141,11 @@ class ClusterCommand(
         if (context.holder.value.localNode.database is DatabaseCredentials.H2) {
             logger.info("This node's 'localNode.database' (config.json) is still the default embedded H2 database.")
             logger.info("A real cluster requires every node to share the SAME external database (MariaDB/MySQL/PostgreSQL/MongoDB/Redis) — two nodes on separate H2 files are not a cluster.")
-            logger.info("Point 'localNode.database' at that shared database, restart this node, then run 'cluster join' again.")
+            logger.info("'cluster join' can't switch that live — a node whose own database is empty falls back to becoming its OWN standalone cluster on the next boot, and one that's already shared with other nodes needs a token to boot at all. So:")
+            logger.info("  1. Get a fresh registration token from a node already in the target cluster (its standalone CLI's 'cluster connect' command).")
+            logger.info("  2. Point 'localNode.database' at the shared database in config.json, then restart this node ONCE with the token already supplied:")
+            logger.info("     -Dpolocloud.join.token=<token> -Dpolocloud.join.host=<host> -Dpolocloud.join.port=<port>")
+            logger.info("A plain restart without the token will fail to boot once 'localNode.database' points at a database that already has other nodes registered.")
             return
         }
 
@@ -159,8 +163,14 @@ class ClusterCommand(
                 logger.warn("Cluster join incomplete: ${result.reason}")
             is JoinResult.Unreachable ->
                 logger.warn("Cluster join failed: ${result.reason}")
-            is JoinResult.Success ->
+            is JoinResult.Success -> {
+                // adoptJoinedIdentity already updated context.localNodeContainer.data in
+                // place, but the visible prompt was only ever rendered once, at terminal
+                // construction — refresh it now or the operator keeps seeing the old
+                // pre-join name for the rest of this process's life.
+                context.cli.refreshPrompt()
                 logger.info("Joined the cluster — this node is now '${result.nodeData.name()}'.")
+            }
         }
     }
 }

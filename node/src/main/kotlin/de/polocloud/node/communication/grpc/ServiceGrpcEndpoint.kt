@@ -7,6 +7,7 @@ import de.polocloud.common.communication.GrpcEndpoint
 import de.polocloud.common.communication.tls.MtlsConfig
 import de.polocloud.node.communication.impl.event.EventProviderServiceImpl
 import de.polocloud.node.communication.impl.group.GroupApiServiceImpl
+import de.polocloud.node.communication.impl.player.PlayerApiServiceImpl
 import de.polocloud.node.communication.impl.services.ServiceApiServiceImpl
 import de.polocloud.node.communication.interceptor.ServiceIdentityInterceptor
 import de.polocloud.node.group.GroupService
@@ -37,6 +38,7 @@ class ServiceGrpcEndpoint(
     private val executor = GrpcModule.createExecutor(groupService, serviceProvider)
     private val groupApiService = GroupApiServiceImpl(executor)
     private val serviceApiService = ServiceApiServiceImpl(executor, serviceProvider)
+    private val playerApiService = PlayerApiServiceImpl(executor)
     private val eventProviderService = EventProviderServiceImpl()
 
     private val server = GrpcEndpoint.Builder(address)
@@ -49,6 +51,7 @@ class ServiceGrpcEndpoint(
         )
         .interceptedService(groupApiService, ServiceIdentityInterceptor())
         .interceptedService(serviceApiService, ServiceIdentityInterceptor())
+        .interceptedService(playerApiService, ServiceIdentityInterceptor())
         .interceptedService(eventProviderService, ServiceIdentityInterceptor())
         .build()
 

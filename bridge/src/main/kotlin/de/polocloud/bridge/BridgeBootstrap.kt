@@ -6,9 +6,11 @@ import de.polocloud.api.group.GroupFilterType
 import de.polocloud.shared.event.group.GroupUpdatedEvent
 import de.polocloud.shared.event.server.ServerStoppedEvent
 import de.polocloud.shared.event.server.ServiceOnlineEvent
+import de.polocloud.shared.player.CloudPlayer
 import de.polocloud.shared.property.Properties
 import de.polocloud.shared.service.Service
 import de.polocloud.shared.service.ServiceState
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -115,5 +117,55 @@ class BridgeBootstrap<T>(private val instance: BridgeInstance<T>) {
      */
     fun stop() {
         runCatching { Polocloud.close() }
+    }
+
+    /**
+     * Registers a newly-connected player with the cloud — called on Velocity's
+     * `LoginEvent` (authenticated, before a backend server is chosen), so the player's
+     * current server is unknown yet; see [onPlayerServerChanged] for that. Fire-and-forget
+     * (the `*Async` form): this runs on the platform's connection event thread, which must
+     * not block on a network round trip.
+     */
+    fun onPlayerJoin(
+        playerId: UUID,
+        name: String,
+        skinValue: String,
+        skinSignature: String,
+        properties: Map<String, String>,
+        proxyServiceName: String,
+    ) {
+        val player = CloudPlayer(
+            id = playerId.toString(),
+            name = name,
+            skinValue = skinValue,
+            skinSignature = skinSignature,
+            properties = Properties.of(properties),
+            currentProxy = proxyServiceName,
+            currentServer = null,
+        )
+        Polocloud.playerService.registerAsync(player)
+    }
+
+    /**
+     * Updates a connected player's current backend server — called on Velocity's
+     * `ServerConnectedEvent`, including the player's very first backend connection.
+     */
+    fun onPlayerServerChanged(playerId: UUID, serverName: String) {
+        Polocloud.playerService.updateServerAsync(playerId.toString(), serverName)
+    }
+
+    /**
+     * Removes a player that left the network — called on Velocity's `DisconnectEvent`.
+     *
+     * @param kickReason non-null if this disconnect is the result of a kick (see
+     *   [de.polocloud.bridge.velocity.VelocityBridgePlugin]'s `pendingKicks` tracking),
+     *   `null` for a plain quit.
+     */
+    fun onPlayerDisconnected(playerId: UUID, kickReason: String?) {
+        if (kickReason != null) {
+            Polocloud.playerService.unregisterKickedAsync(playerId.toString(), kickReason)
+        } else {
+            Polocloud.playerService.unregisterAsync(playerId.toString())
+        }
     }
 }

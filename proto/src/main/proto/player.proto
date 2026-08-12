@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package player;
+
+option java_package = "de.polocloud.proto";
+option java_outer_classname = "PlayerProto";
+option java_multiple_files = true;
+
+// API-facing service surface used by the standalone Polocloud API (the Velocity
+// bridge and, in the future, any other plugin/service SDK consumer) — mirrors the
+// ServiceApiService / ServiceData split in services.proto: kept separate from any
+// future CLI-oriented surface so the two can evolve independently.
+service PlayerApiService {
+  rpc RegisterPlayer (RegisterPlayerRequest) returns (RegisterPlayerResponse);
+  rpc UpdatePlayerServer (UpdatePlayerServerRequest) returns (UpdatePlayerServerResponse);
+  // Also used for a plain disconnect (kicked = false) — the node decides whether to
+  // fire PlayerDisconnectEvent or PlayerKickEvent based on that flag.
+  rpc UnregisterPlayer (UnregisterPlayerRequest) returns (UnregisterPlayerResponse);
+  rpc FindPlayer (FindPlayerRequest) returns (FindPlayerResponse);
+  rpc ListPlayers (ListPlayersRequest) returns (ListPlayersResponse);
+}
+
+message PlayerData {
+  string id = 1;
+  string name = 2;
+  string skin_value = 3;
+  string skin_signature = 4;
+  map<string, string> properties = 5;
+  string current_proxy = 6;
+  // Empty when the player hasn't been routed to a backend server yet (e.g. still
+  // mid-login on the proxy).
+  string current_server = 7;
+}
+
+message RegisterPlayerRequest {
+  PlayerData player = 1;
+}
+
+message RegisterPlayerResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UpdatePlayerServerRequest {
+  string player_id = 1;
+  string server = 2;
+}
+
+message UpdatePlayerServerResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UnregisterPlayerRequest {
+  string player_id = 1;
+  bool kicked = 2;
+  // Set when kicked is true.
+  string reason = 3;
+}
+
+message UnregisterPlayerResponse {
+  bool success = 1;
+}
+
+message FindPlayerRequest {
+  // Either one may be set; player_id is checked first.
+  string player_id = 1;
+  string name = 2;
+}
+
+message FindPlayerResponse {
+  bool found = 1;
+  PlayerData player = 2;
+}
+
+message ListPlayersRequest {
+}
+
+message ListPlayersResponse {
+  repeated PlayerData players = 1;
+}
