@@ -24,7 +24,7 @@ data class GeneralConfiguration(
      * services. It is deliberately **not** derived from [hostname]: that often defaults to
      * a public IP which is not locally reachable, which would break same-host routing.
      */
-    var serviceHostname: String = "127.0.0.1",
+    var serviceHostname: String = "0.0.0.0",
     /**
      * Whether the node checks GitHub for a newer PoloCloud release and, if one is
      * found, downloads and applies it before starting up. Runs before services and
