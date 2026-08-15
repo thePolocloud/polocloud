@@ -22,11 +22,11 @@ class LoggingServerMiddleware : GrpcServerMiddleware {
         // node's readable name (e.g. "node-1") the same way ServiceCommand.resolveNodeLabel does.
         val source = context.get<String>("subject")?.let(::resolveSource) ?: context.get<String>("clientIp")
 
-        logger.info("[->] ${request::class.simpleName} from $source")
+        logger.debug("[->] ${request::class.simpleName} from $source")
 
         val result = next()
 
-        logger.info("[<-] ${result::class.simpleName}")
+        logger.debug("[<-] ${result::class.simpleName}")
 
         return result
     }
