@@ -2,6 +2,7 @@ package de.polocloud.node.communication.registration.client
 
 import de.polocloud.common.configuration.ConfigurationHolder
 import de.polocloud.node.core.configuration.NodeConfigurations
+import java.security.MessageDigest
 
 /**
  * Validates incoming CLI registration requests against the cluster configuration.
@@ -24,7 +25,12 @@ class CliRegistrationValidator(
     }
 
     fun validateToken(token: String): Result {
-        if (token != holder.value.cluster.cliAccess.registrationToken) return Result.Denied("cluster.registration.cli.token.invalid")
+        // Constant-time comparison — this token is long-lived (unlike the single-use node
+        // join tokens), so a naive `!=`/`equals` short-circuit would leak a timing side
+        // channel on every failed attempt.
+        val expected = holder.value.cluster.cliAccess.registrationToken
+        val matches = MessageDigest.isEqual(token.toByteArray(), expected.toByteArray())
+        if (!matches) return Result.Denied("cluster.registration.cli.token.invalid")
         return Result.Ok
     }
 }

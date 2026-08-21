@@ -1,6 +1,7 @@
 package de.polocloud.cli.terminal
 
 import de.polocloud.cli.command.CommandService
+import de.polocloud.cli.communication.middleware.GrpcCallException
 import de.polocloud.cli.exitPolocloud
 import de.polocloud.cli.logger
 import org.jline.jansi.Ansi
@@ -51,6 +52,10 @@ class ReadingThread(
                 // pressing Ctrl+C or similar to interrupt reading
                 exitPolocloud(cleanShutdown = false)
                 break
+            } catch (e: GrpcCallException) {
+                // Connection/transport failures are expected (e.g. node unreachable) —
+                // surface a concise message instead of the raw gRPC stack trace.
+                logger.error(e.message)
             } catch (e: Throwable) {
                 logger.error("Command execution exception: ", e)
             }

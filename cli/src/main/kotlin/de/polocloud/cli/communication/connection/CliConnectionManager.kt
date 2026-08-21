@@ -14,15 +14,15 @@ import java.util.concurrent.TimeUnit
  * Orchestrates the full CLI → cluster connection lifecycle.
  *
  * Port responsibilities:
- * - [registrationAddress] (e.g. 4240) — plaintext, one-time registration (token + CSR → signed cert)
- * - [clusterAddress]      (e.g. 4239) — mTLS, all subsequent cluster communication
+ * - [registrationAddress] (e.g. 4239) — plaintext, one-time registration (token + CSR → signed cert)
+ * - [clusterAddress]      (e.g. 4240) — mTLS, all subsequent cluster communication
  *
  * Usage:
  * ```kotlin
  * val connection = CliConnectionManager()
  * connection.connect(
- *     clusterAddress      = Address("localhost", 4239),
- *     registrationAddress = Address("localhost", 4240),
+ *     clusterAddress      = Address("localhost", 4240),
+ *     registrationAddress = Address("localhost", 4239),
  *     token               = "my-token"
  * )
  * val stub = MyServiceGrpcKt.MyServiceCoroutineStub(connection.channel())

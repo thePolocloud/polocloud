@@ -61,9 +61,7 @@ class IpWhitelistInterceptor : ServerInterceptor {
      * - `*`         → `^.*$`
      */
     private fun wildcardToRegex(pattern: String): Regex {
-        val escaped = pattern
-            .replace(".", "\\.")
-            .replace("*", ".*")
+        val escaped = pattern.split("*").joinToString(".*") { Regex.escape(it) }
         return Regex("^$escaped$")
     }
 

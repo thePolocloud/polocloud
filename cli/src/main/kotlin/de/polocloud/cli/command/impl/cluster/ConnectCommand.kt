@@ -91,7 +91,14 @@ class ConnectCommand(
                     registrationAddress = Address(host, registrationPort),
                     token = token
                 )
-            }.onSuccess {
+
+                // gRPC channels connect lazily, so connect() above returns successfully even
+                // if the target is unreachable. Exercise the channel with a cheap RPC now so an
+                // unreachable node is treated as a failed connection, not a successful one.
+                val session = CliSession(connectionManager)
+                val nodeName = session.nodeClient.nodeName()
+                session to nodeName
+            }.onSuccess { (session, nodeName) ->
                 logger.info(
                     TranslationService.tr(
                         "cli",
@@ -108,7 +115,6 @@ class ConnectCommand(
                     )
                 )
 
-                val session = CliSession(connectionManager)
                 Cli.session = session
                 val listener = ShutdownEventListener(connectionManager)
 
@@ -117,8 +123,10 @@ class ConnectCommand(
                     Cli.terminal.disconnectPrompt()
                 }
 
-                Cli.terminal.connectedPrompt(Cli.session.nodeClient.nodeName())
+                Cli.terminal.connectedPrompt(nodeName)
             }.onFailure { ex ->
+                connectionManager.disconnect()
+
                 logger.info(
                     TranslationService.tr(
                         "cli",

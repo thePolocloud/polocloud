@@ -2,6 +2,7 @@ package de.polocloud.cli.communication.middleware
 
 import de.polocloud.common.communication.client.call.GrpcClientCall
 import de.polocloud.common.communication.client.middleware.GrpcClientMiddleware
+import io.grpc.StatusException
 import io.grpc.StatusRuntimeException
 
 class ClientErrorMiddleware : GrpcClientMiddleware {
@@ -12,8 +13,12 @@ class ClientErrorMiddleware : GrpcClientMiddleware {
     ): Response {
         try {
             return next()
+        } catch (exception: StatusException) {
+            // Thrown by grpc-kotlin coroutine stubs (e.g. ClusterServiceCoroutineStub) on failure.
+            throw GrpcCallException(exception.status, exception)
         } catch (exception: StatusRuntimeException) {
-            throw RuntimeException("gRPC error: ${exception.status}", exception)
+            // Thrown by blocking/async stubs on failure.
+            throw GrpcCallException(exception.status, exception)
         }
     }
 }
