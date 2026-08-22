@@ -16,9 +16,9 @@ Here you have different approaches to run PoloCloud:
   - [imageless.compose.yml - stack without Dockerfile](#imagelesscomposeyml---stack-without-dockerfile)
   - [dev.compose.yml - stack for development](#devcomposeyml---stack-for-development)
 - [Host Permissions](#host-permissions)
-- [Customazation](#customazation)
+- [Customization](#customization)
   - [Data \& Cache Mounts](#data--cache-mounts)
-  - [Service Seperation](#service-seperation)
+  - [Service Separation](#service-separation)
   - [Issues?](#issues)
   - [🤝 Community](#-community)
 
@@ -128,19 +128,19 @@ If you are having trouble with host file permissions, give your user a group wit
   sudo usermod -aG docker-access "$USER"
   ```
 
-## Customazation
+## Customization
 
 The compose stacks are designed for customization.
 
 ### Data & Cache Mounts
 
-The current `./data/polocloud/` and `./cache/polocloud/` mounts let you use the `./data/*/` and `./cache/*/` directorys for own extra services like databases for you minecraft plugins.
+The current `./data/polocloud/` and `./cache/polocloud/` mounts let you use the `./data/*/` and `./cache/*/` directories for your own extra services like databases for your Minecraft plugins.
 
-You can could use `./data/perms/` for you permission system and add a database container to the stack that mounts it.
+You can use `./data/perms/` for your permission system and add a database container to the stack that mounts it.
 
-### Service Seperation
+### Service Separation
 
-Using a docker compose import statements you can seperate your extra service containers from the polocloud services.
+Using Docker Compose `include` statements you can separate your extra service containers from the PoloCloud services.
 
 ```
 include:
@@ -155,7 +155,7 @@ include:
 
 ### Issues?
 
-If you have any issues with the docker setup your welcome to create an issue or join the discord server and ask your qustions there.
+If you have any issues with the Docker setup you're welcome to create an issue or join the Discord server and ask your questions there.
 
 ### 🤝 Community
 
