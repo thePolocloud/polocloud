@@ -1,0 +1,95 @@
+# Non-root Docker Compose stack for building and running Polocloud
+#
+# Compose Pipeline: polocloud-init -> polocloud-cloner -> polocloud-builder -> polocloud
+# Persistent Storage: Persists local caches in ./cache and application data in ./data
+# Non-Root Execution: Runs as user ID 1000 to prevent running as root inside the container
+# Init Container: Align mounts file rights for permission startup errors
+# Cache Build: Only build if missing, rebuild by deleting `./cache/polocloud/build
+
+services:
+  polocloud-init:
+    image: "alpine"
+    user: "root"
+    volumes:
+      - "./data:/data"
+      - "./cache:/cache"
+    entrypoint:
+      - "/bin/sh"
+      - "-c"
+      - |
+        mkdir -p /cache/polocloud/build /cache/polocloud/repo /data/polocloud
+        chown -R 1000:1000 /cache /data
+        chmod -R 660 /cache /data
+
+  polocloud-cloner:
+    container_name: "polocloud-cloner"
+    image: "alpine/git"
+    environment:
+      REPO_URL: "https://github.com/thePolocloud/polocloud.git" # optional for forks
+    volumes:
+      - "./cache/polocloud/repo:/repo"
+    working_dir: "/repo"
+    user: "1000:1000"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ -d /repo/.git ]; then
+          git -C /repo pull
+        else
+          git clone "$$REPO_URL" /repo
+        fi
+    depends_on:
+      polocloud-init:
+        condition: "service_completed_successfully"
+
+  polocloud-builder:
+    image: "azul/zulu-openjdk:25"
+    environment:
+      GRADLE_USER_HOME: "/repo/.gradle"
+      RUNNER_SEARCH_PATTERN: "runner-*.local.jar" # replace if outdated
+    volumes:
+      - "./cache/polocloud/repo:/repo"
+      - "./cache/polocloud/build:/build"
+    working_dir: "/repo"
+    user: "1000:1000"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ -f /build/runner.jar ]; then
+          echo 'jar already exists, skip build'
+          exit 0
+        fi
+        ./gradlew clean build \
+          --no-daemon \
+          -Porg.gradle.java.installations.paths=/opt/java/openjdk
+        find . -name "$$RUNNER_SEARCH_PATTERN" -exec cp {} /build/runner.jar \;
+        if [ ! -f /build/runner.jar ]; then
+          echo 'runner.jar not found'
+          exit 1
+        fi
+    depends_on:
+      polocloud-cloner:
+        condition: "service_completed_successfully"
+
+  polocloud:
+    image: "azul/zulu-openjdk:25-jre"
+    working_dir: "/data"
+    user: "1000:1000"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        java -jar /app/runner.jar
+    volumes:
+      - "./cache/polocloud/build:/app"
+      - "./data/polocloud:/data"
+    ports:
+      - 25565:25565
+    stdin_open: true
+    tty: true
+    init: true
+    depends_on:
+      polocloud-builder:
+        condition: "service_completed_successfully"
