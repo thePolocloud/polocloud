@@ -3,6 +3,8 @@
 
 FROM azul/zulu-openjdk:25 AS builder
 
+ARG RUNNER_SEARCH_PATTERN="runner-*.local.jar" # replace if outdated
+
 COPY . /repo
 WORKDIR /repo
 
@@ -10,12 +12,11 @@ RUN ./gradlew build \
       --no-daemon \
       -Porg.gradle.java.installations.paths=/opt/java/openjdk \
  && mkdir -p /build \
- && find . -name "runner-*.local.jar" -exec cp {} /build/runner.jar \; \
+ && find . -name "${RUNNER_SEARCH_PATTERN}" -exec cp {} /build/runner.jar \; \
  && test -f /build/runner.jar
 
 FROM azul/zulu-openjdk:25-jre AS runtime
 
-RUN mkdir -p /data && chown 1000:1000 /data
 COPY --from=builder --chown=1000:1000 /build/runner.jar /app/runner.jar
 
 WORKDIR /data
