@@ -55,7 +55,6 @@ internal fun resolveAllVersions(root: JsonElement, versionPath: String): List<St
         is JsonObject -> element.values.flatMap { family ->
             (family as? JsonArray)?.mapNotNull { it.jsonPrimitive.contentOrNull } ?: emptyList()
         }
-        else -> emptyList()
     }
 }
 

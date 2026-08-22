@@ -58,7 +58,7 @@ class InfoCommand(
         logger.info("  running: ${white(PolocloudVersion.CURRENT.toDisplayString())}")
         logger.info("  registered as: ${white("${node.version} (${node.gitCommitHash})")}")
         logger.info("  channel: ${white(PolocloudVersion.CURRENT.channel.toString())} (debug: ${white(PolocloudVersion.CURRENT.isDebugEnabled.toString())})")
-        logger.info("  build: ${white(PolocloudVersion.CURRENT.build.toString())}, commit: ${white(PolocloudVersion.CURRENT.commitId)}")
+        logger.info("  build: ${white(PolocloudVersion.CURRENT.build)}, commit: ${white(PolocloudVersion.CURRENT.commitId)}")
 
         logger.info("Network:")
         logger.info("  bind address: ${white("${config.general.bindAddress.hostname}:${config.general.bindAddress.port}")}")

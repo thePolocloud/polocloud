@@ -88,8 +88,8 @@ class PlatformCommand(
 
     private fun info(platform: Platform) {
         logger.info("Platform ${platform.name} (${if (platform.custom) "custom" else "built-in"}):")
-        logger.info("  type: ${white(platform.type.toString())}")
-        logger.info("  language: ${white(platform.language.toString())}")
+        logger.info("  type: ${white(platform.type)}")
+        logger.info("  language: ${white(platform.language)}")
         if (platform.versions.isEmpty()) {
             logger.info("  versions: (none)")
         } else {
