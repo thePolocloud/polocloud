@@ -126,7 +126,21 @@ class ServiceQueue(
 
             val cluster = clusterState(group, eligible)
             val queued = synchronized(queue) { queue.count { it.second.name == group.name } }.toLong()
-            val clusterNeeded = (group.minOnline - cluster.running - queued).coerceAtLeast(0)
+            val minOnlineNeeded = (group.minOnline - cluster.running - queued).coerceAtLeast(0)
+            val capacityLeft = (group.maxOnline - cluster.running - queued).coerceAtLeast(0)
+
+            // Load-based scale-up: once every currently-running instance's aggregate
+            // occupancy (players / configured slots, both cluster-wide) reaches
+            // startThreshold, grow by one more — capped at maxOnline via capacityLeft.
+            // Only considered once at least one instance has actually reported real
+            // slots (cluster.maxPlayers > 0); before the first successful ping (or with
+            // no instances running yet) there's nothing to measure load from, and a
+            // startThreshold of 0.0 (the un-configured default — see GroupBuilder) opts
+            // a group out of this entirely rather than scaling it to maxOnline at 0 load.
+            val occupancy = if (cluster.maxPlayers > 0) cluster.onlinePlayers.toDouble() / cluster.maxPlayers else 0.0
+            val loadTriggered = capacityLeft > 0 && group.startThreshold > 0.0 &&
+                cluster.maxPlayers > 0 && occupancy >= group.startThreshold
+            val clusterNeeded = maxOf(minOnlineNeeded, if (loadTriggered) 1L else 0L).coerceAtMost(capacityLeft)
 
             if (clusterNeeded <= 0) continue
 
@@ -136,10 +150,19 @@ class ServiceQueue(
 
             usedMemoryMb[self.name()] = (usedMemoryMb[self.name()] ?: 0) + myShare * group.memory
 
-            logger.info(
-                "Group '{}' needs {} more service(s) cluster-wide (this node: {}) — minOnline: {}, cluster running: {}, queued: {}",
-                group.name, clusterNeeded, myShare, group.minOnline, cluster.running, queued
-            )
+            if (loadTriggered && minOnlineNeeded <= 0) {
+                logger.info(
+                    "Group '{}' is at {}/{} players ({}% >= {}% threshold) — starting {} more service(s) cluster-wide (this node: {}), capped at maxOnline: {}",
+                    group.name, cluster.onlinePlayers, cluster.maxPlayers,
+                    "%.1f".format(occupancy * 100), "%.1f".format(group.startThreshold * 100),
+                    clusterNeeded, myShare, group.maxOnline
+                )
+            } else {
+                logger.info(
+                    "Group '{}' needs {} more service(s) cluster-wide (this node: {}) — minOnline: {}, cluster running: {}, queued: {}",
+                    group.name, clusterNeeded, myShare, group.minOnline, cluster.running, queued
+                )
+            }
             if (assignment.values.sum() < clusterNeeded.toInt()) {
                 logger.warn(
                     "Group '{}' could only place {}/{} needed replica(s) cluster-wide — every eligible node is at its memory capacity",
@@ -192,13 +215,24 @@ class ServiceQueue(
         }
     }
 
-    /** [perNodeRunning] is keyed by [NodeData.name] and only covers eligible nodes. */
-    private data class ClusterState(val running: Long, val usedIndexes: Set<Int>, val perNodeRunning: Map<String, Int>)
+    /**
+     * [perNodeRunning] is keyed by [NodeData.name] and only covers eligible nodes.
+     * [onlinePlayers]/[maxPlayers] are summed across every currently running instance of
+     * the group, cluster-wide, as last reported by each node's Server List Ping —
+     * see [de.polocloud.node.services.LocalService.onlinePlayers].
+     */
+    private data class ClusterState(
+        val running: Long,
+        val usedIndexes: Set<Int>,
+        val perNodeRunning: Map<String, Int>,
+        val onlinePlayers: Int,
+        val maxPlayers: Int,
+    )
 
     /**
-     * Aggregates [group]'s running-service count, used indexes and per-node breakdown
-     * across every node in [eligible] besides this one, via the same peer-query
-     * mechanism the cluster-wide service listing handlers use
+     * Aggregates [group]'s running-service count, used indexes, per-node breakdown and
+     * player occupancy across every node in [eligible] besides this one, via the same
+     * peer-query mechanism the cluster-wide service listing handlers use
      * ([de.polocloud.node.services.cluster.PeerServiceQuery]). A slow or unreachable peer
      * is skipped rather than failing the whole tick, at the cost of briefly
      * under-counting that peer's services.
@@ -207,11 +241,14 @@ class ServiceQueue(
         val self = eligible.firstOrNull { it.id.toString() == serviceProvider.nodeId }
         val localRunning = factory.runningCount(group.name)
         val localIndexes = factory.runningIndexes(group.name)
+        val localGroupServices = serviceProvider.localServices.filter { it.groupName == group.name }
+        val localOnlinePlayers = localGroupServices.sumOf { it.onlinePlayers }
+        val localMaxPlayers = localGroupServices.sumOf { it.maxPlayers }
 
         val others = eligible.filter { it.id.toString() != serviceProvider.nodeId }
         if (others.isEmpty()) {
             val perNodeRunning = self?.let { mapOf(it.name() to localRunning.toInt()) } ?: emptyMap()
-            return ClusterState(localRunning, localIndexes, perNodeRunning)
+            return ClusterState(localRunning, localIndexes, perNodeRunning, localOnlinePlayers, localMaxPlayers)
         }
 
         val remote = runBlocking {
@@ -235,6 +272,8 @@ class ServiceQueue(
             localRunning + remote.sumOf { it.second.size },
             localIndexes + remote.flatMap { it.second }.map { it.index }.toSet(),
             perNodeRunning,
+            localOnlinePlayers + remote.sumOf { (_, services) -> services.sumOf { it.onlinePlayers } },
+            localMaxPlayers + remote.sumOf { (_, services) -> services.sumOf { it.maxPlayers } },
         )
     }
     

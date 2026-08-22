@@ -6,12 +6,15 @@ import de.polocloud.i18n.api.TranslationService
 import de.polocloud.node.cluster.node.NodeData
 import de.polocloud.node.group.Group
 import de.polocloud.node.group.TemplateCodec
+import de.polocloud.node.services.LocalService
+import de.polocloud.node.services.Service
 import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.services.cluster.PeerServiceQuery
 import de.polocloud.node.services.factory.FactoryService
 import de.polocloud.node.services.factory.PlatformService
 import de.polocloud.proto.NodeState
 import de.polocloud.proto.ProtoServiceProcessData
+import de.polocloud.shared.service.ServiceState
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -20,6 +23,22 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import java.util.UUID
 import kotlin.time.Clock
+
+/**
+ * Bare-minimum always-alive [Process] stand-in — [de.polocloud.node.services.factory.FactoryService.pruneDeadProcesses]
+ * treats a [LocalService] with `process == null` (or a non-alive one) as crashed and
+ * evicts it from [ServiceProvider.localServices] before the queue ever sees it, so the
+ * load-based scale-up tests below need their fake running instances to carry one of these.
+ */
+private class AliveProcess : Process() {
+    override fun getOutputStream() = java.io.OutputStream.nullOutputStream()
+    override fun getInputStream() = java.io.InputStream.nullInputStream()
+    override fun getErrorStream() = java.io.InputStream.nullInputStream()
+    override fun waitFor() = 0
+    override fun exitValue() = throw IllegalThreadStateException()
+    override fun destroy() {}
+    override fun isAlive() = true
+}
 
 /**
  * Covers [ServiceQueue]'s node-eligibility and cluster-wide `minOnline` placement math.
@@ -71,8 +90,13 @@ class ServiceQueueEligibilityTest {
             maxMemory = maxMemory,
         )
 
-    private fun group(name: String = "lobby", minOnline: Long = 1, nodes: List<String> = emptyList()) =
-        Group(name, 512, 0.0, minOnline, 10, "PAPER", "1.21").copy(nodesJson = TemplateCodec.encode(nodes))
+    private fun group(
+        name: String = "lobby",
+        minOnline: Long = 1,
+        maxOnline: Long = 10,
+        startThreshold: Double = 0.0,
+        nodes: List<String> = emptyList(),
+    ) = Group(name, 512, startThreshold, minOnline, maxOnline, "PAPER", "1.21").copy(nodesJson = TemplateCodec.encode(nodes))
 
     private fun queue(
         provider: ServiceProvider = ServiceProvider(nodeId = selfId.toString()),
@@ -91,8 +115,21 @@ class ServiceQueueEligibilityTest {
         loadProvider = loadProvider,
     )
 
-    private fun peerService(groupName: String, index: Int) = ProtoServiceProcessData.newBuilder()
-        .setUuid(UUID.randomUUID().toString()).setPlan(groupName).setIndex(index).setState("RUNNING").build()
+    private fun peerService(groupName: String, index: Int, onlinePlayers: Int = 0, maxPlayers: Int = 0) =
+        ProtoServiceProcessData.newBuilder()
+            .setUuid(UUID.randomUUID().toString()).setPlan(groupName).setIndex(index).setState("RUNNING")
+            .setOnlinePlayers(onlinePlayers).setMaxPlayers(maxPlayers).build()
+
+    /** Adds a running local service of [groupName] with the given occupancy to [provider]. */
+    private fun localService(provider: ServiceProvider, groupName: String, index: Int, onlinePlayers: Int, maxPlayers: Int) {
+        val service = LocalService(
+            Service(UUID.randomUUID(), index, groupName, ServiceState.RUNNING, "127.0.0.1", 25565, provider.nodeId)
+        )
+        service.process = AliveProcess()
+        service.onlinePlayers = onlinePlayers
+        service.maxPlayers = maxPlayers
+        provider.localServices.add(service)
+    }
 
     @Test
     fun `unrestricted group with nothing running assigns exactly one replica to the owning node`() {
@@ -284,5 +321,84 @@ class ServiceQueueEligibilityTest {
         q.enqueueRequiredForTest()
 
         assertEquals(listOf(2), q.queuedIndexes("lobby"))
+    }
+
+    @Test
+    fun `occupancy at or above startThreshold starts one more replica beyond minOnline, capped by maxOnline`() {
+        val self = node(selfId, "node-a")
+        val g = group(minOnline = 1, maxOnline = 3, startThreshold = 0.67)
+        val provider = ServiceProvider(nodeId = selfId.toString())
+        localService(provider, "lobby", 1, onlinePlayers = 60, maxPlayers = 60)
+
+        val q = queue(provider = provider, online = listOf(self), groups = listOf(g))
+        q.enqueueRequiredForTest()
+
+        // minOnline(1) is already met by the running instance — the second one is
+        // triggered purely by occupancy (60/60 = 100% >= 67%).
+        assertEquals(listOf(2), q.queuedIndexes("lobby"))
+    }
+
+    @Test
+    fun `occupancy below startThreshold does not scale up beyond minOnline`() {
+        val self = node(selfId, "node-a")
+        val g = group(minOnline = 1, maxOnline = 3, startThreshold = 0.67)
+        val provider = ServiceProvider(nodeId = selfId.toString())
+        localService(provider, "lobby", 1, onlinePlayers = 30, maxPlayers = 60) // 50% < 67%
+
+        val q = queue(provider = provider, online = listOf(self), groups = listOf(g))
+        q.enqueueRequiredForTest()
+
+        assertTrue(q.queuedIndexes("lobby").isEmpty())
+    }
+
+    @Test
+    fun `load-based scale-up never exceeds maxOnline even at full occupancy`() {
+        val self = node(selfId, "node-a")
+        val g = group(minOnline = 1, maxOnline = 2, startThreshold = 0.5)
+        val provider = ServiceProvider(nodeId = selfId.toString())
+        localService(provider, "lobby", 1, onlinePlayers = 60, maxPlayers = 60)
+        localService(provider, "lobby", 2, onlinePlayers = 60, maxPlayers = 60)
+
+        val q = queue(provider = provider, online = listOf(self), groups = listOf(g))
+        q.enqueueRequiredForTest()
+
+        assertTrue(q.queuedIndexes("lobby").isEmpty())
+    }
+
+    @Test
+    fun `an unconfigured startThreshold of 0 opts a group out of load-based scale-up`() {
+        val self = node(selfId, "node-a")
+        val g = group(minOnline = 1, maxOnline = 3, startThreshold = 0.0)
+        val provider = ServiceProvider(nodeId = selfId.toString())
+        localService(provider, "lobby", 1, onlinePlayers = 60, maxPlayers = 60)
+
+        val q = queue(provider = provider, online = listOf(self), groups = listOf(g))
+        q.enqueueRequiredForTest()
+
+        assertTrue(q.queuedIndexes("lobby").isEmpty())
+    }
+
+    @Test
+    fun `load-based scale-up aggregates occupancy across the whole cluster, not just this node`() {
+        val self = node(selfId, "node-a")
+        val peerA = node(peerAId, "node-b")
+        val g = group(minOnline = 2, maxOnline = 4, startThreshold = 0.6)
+        val provider = ServiceProvider(nodeId = selfId.toString())
+        localService(provider, "lobby", 1, onlinePlayers = 60, maxPlayers = 60)
+
+        val q = queue(
+            provider = provider,
+            online = listOf(self, peerA),
+            groups = listOf(g),
+            peerQuery = PeerServiceQuery { peer, _ ->
+                if (peer.id == peerAId) listOf(peerService("lobby", 2, onlinePlayers = 60, maxPlayers = 60)) else emptyList()
+            },
+        )
+        q.enqueueRequiredForTest()
+
+        // minOnline(2) is already met (1 local + 1 remote). Combined cluster occupancy
+        // (120/120 = 100%) crosses the 60% threshold, so a 3rd replica is queued —
+        // driven by remote players this node never pinged itself.
+        assertEquals(listOf(3), q.queuedIndexes("lobby"))
     }
 }
