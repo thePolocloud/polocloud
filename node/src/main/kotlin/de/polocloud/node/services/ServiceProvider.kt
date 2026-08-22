@@ -1,12 +1,16 @@
 package de.polocloud.node.services
 
 import de.polocloud.node.event.ClusterEventService
+import de.polocloud.node.group.GroupRepository
 import de.polocloud.node.services.factory.FactoryService
 import de.polocloud.node.services.factory.PlatformService
 import de.polocloud.node.services.ping.ServicePingFactory
 import de.polocloud.node.services.queue.CrashLoopGuard
 import de.polocloud.node.services.queue.ServiceQueue
 import de.polocloud.shared.event.server.ServerStoppedEvent
+import de.polocloud.shared.service.ServiceState
+import org.slf4j.LoggerFactory
+import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 
 class ServiceProvider(
@@ -22,6 +26,8 @@ class ServiceProvider(
      */
     val platformService: PlatformService = PlatformService(),
 ) {
+
+    private val logger = LoggerFactory.getLogger(ServiceProvider::class.java)
 
     // Concurrent by design: the queue and prune threads mutate this list while API
     // handlers iterate it. A plain ArrayList would risk ConcurrentModificationException
@@ -136,4 +142,41 @@ class ServiceProvider(
             .filter { it.groupName.equals(groupName, ignoreCase = true) }
             .forEach { shutdownLocal(it) }
     }
+
+    /** Runs [command] in every running service of [groupName] on this node. Returns how many it was actually sent to. */
+    fun executeGroupCommand(groupName: String, command: String): Int =
+        localServices
+            .filter { it.groupName.equals(groupName, ignoreCase = true) }
+            .count { it.executeCommand(command) }
+
+    /**
+     * Stops [service]'s process and immediately starts a fresh replica in its place, with
+     * the same group and index. Unlike a plain [shutdownLocal] — which only gets replaced
+     * once the scaling queue's next tick notices the group is under `minOnline` — this
+     * always brings the same instance count straight back, regardless of `minOnline`/
+     * `maxOnline`. No-op (returns `false`) if a concurrent caller already shut this
+     * instance down, or the group no longer exists.
+     */
+    fun restartLocal(service: LocalService): Boolean {
+        val group = GroupRepository.find(service.groupName)
+        if (group == null) {
+            logger.warn("Cannot restart {}: group '{}' no longer exists", service.name(), service.groupName)
+            return false
+        }
+        val index = service.serviceIndex
+        if (!shutdownLocal(service)) return false
+
+        val replacement = LocalService(
+            Service(UUID.randomUUID(), index, group.name, ServiceState.QUEUED, "127.0.0.1", -1, nodeId)
+        )
+        update(replacement)
+        factory.start(replacement, group)
+        return true
+    }
+
+    /** Restarts every running service of [groupName] on this node (see [restartLocal]). Returns how many were restarted. */
+    fun restartGroup(groupName: String): Int =
+        localServices
+            .filter { it.groupName.equals(groupName, ignoreCase = true) }
+            .count { restartLocal(it) }
 }

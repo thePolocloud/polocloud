@@ -19,10 +19,12 @@ import de.polocloud.node.communication.handler.player.UnregisterPlayerServerHand
 import de.polocloud.node.communication.handler.player.UpdatePlayerServerServerHandler
 import de.polocloud.node.communication.handler.services.CopyTemplateServerHandler
 import de.polocloud.node.communication.handler.services.CountServicesServerHandler
+import de.polocloud.node.communication.handler.services.ExecuteGroupServicesCommandServerHandler
 import de.polocloud.node.communication.handler.services.ExecuteServiceCommandServerHandler
 import de.polocloud.node.communication.handler.services.FindServicesServerHandler
 import de.polocloud.node.communication.handler.services.GetServiceResourceUsageServerHandler
 import de.polocloud.node.communication.handler.services.ListServicesServerHandler
+import de.polocloud.node.communication.handler.services.RestartGroupServicesServerHandler
 import de.polocloud.node.communication.handler.services.StopGroupServicesServerHandler
 import de.polocloud.node.communication.handler.services.StopServiceServerHandler
 import de.polocloud.node.group.GroupService
@@ -31,6 +33,7 @@ import de.polocloud.proto.CopyTemplateRequest
 import de.polocloud.proto.CreateGroupRequest
 import de.polocloud.proto.CreateTokenRequest
 import de.polocloud.proto.DeleteGroupRequest
+import de.polocloud.proto.ExecuteGroupServicesCommandRequest
 import de.polocloud.proto.ExecuteServiceCommandRequest
 import de.polocloud.proto.GetServiceResourceUsageRequest
 import de.polocloud.proto.GroupListRequest
@@ -40,6 +43,7 @@ import de.polocloud.proto.ListPlayersRequest
 import de.polocloud.proto.ListServicesRequest
 import de.polocloud.proto.NodeInformationRequest
 import de.polocloud.proto.RegisterPlayerRequest
+import de.polocloud.proto.RestartGroupServicesRequest
 import de.polocloud.proto.ServiceCountRequest
 import de.polocloud.proto.ServiceListRequest
 import de.polocloud.proto.StopGroupServicesRequest
@@ -61,6 +65,8 @@ object GrpcModule {
             register(ServiceCountRequest::class.java, CountServicesServerHandler(serviceProvider))
             register(CopyTemplateRequest::class.java, CopyTemplateServerHandler(serviceProvider))
             register(StopGroupServicesRequest::class.java, StopGroupServicesServerHandler(serviceProvider))
+            register(ExecuteGroupServicesCommandRequest::class.java, ExecuteGroupServicesCommandServerHandler(serviceProvider))
+            register(RestartGroupServicesRequest::class.java, RestartGroupServicesServerHandler(serviceProvider))
             register(GetServiceResourceUsageRequest::class.java, GetServiceResourceUsageServerHandler(serviceProvider))
             register(CreateTokenRequest::class.java, CreateTokenServerHandler())
             register(GroupListRequest::class.java, GetGroupInformationServerHandler(groupService))

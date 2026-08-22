@@ -29,6 +29,14 @@ service ServiceManager {
   // `service <name>` info view works regardless of which node's terminal session
   // issued it — mirrors StopService.
   rpc GetServiceResourceUsage (GetServiceResourceUsageRequest) returns (GetServiceResourceUsageResponse);
+  // Lets a node ask a peer to run a console command in every locally-running service of
+  // a group, so the CLI's `group <name> execute <command>` works cluster-wide — mirrors
+  // StopGroupServices.
+  rpc ExecuteGroupServicesCommand (ExecuteGroupServicesCommandRequest) returns (ExecuteGroupServicesCommandResponse);
+  // Lets a node ask a peer to restart every locally-running service of a group in place
+  // (same group/index, fresh process), so the CLI's `group <name> restart` works
+  // cluster-wide — mirrors StopGroupServices.
+  rpc RestartGroupServices (RestartGroupServicesRequest) returns (RestartGroupServicesResponse);
 }
 
 message StopServiceRequest {
@@ -84,6 +92,26 @@ message GetServiceResourceUsageResponse {
   // Resident memory in MB, as last sampled by the node's resource sampler.
   double used_memory = 4;
   int64 pid = 5;
+}
+
+message ExecuteGroupServicesCommandRequest {
+  string group_name = 1;
+  string command = 2;
+}
+
+message ExecuteGroupServicesCommandResponse {
+  // How many of the receiving node's own local services of the group the command was
+  // actually sent to.
+  int32 executed_count = 1;
+}
+
+message RestartGroupServicesRequest {
+  string group_name = 1;
+}
+
+message RestartGroupServicesResponse {
+  // How many of the receiving node's own local services of the group were restarted.
+  int32 restarted_count = 1;
 }
 
 // API-facing service surface used by the standalone Polocloud API (plugins/services).

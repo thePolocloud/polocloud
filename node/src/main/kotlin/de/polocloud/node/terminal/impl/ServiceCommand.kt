@@ -42,8 +42,9 @@ import java.util.UUID
  * Runs in-process, so it talks to the [ServiceProvider] directly (no gRPC) for a service
  * running here: `list`, `<name>` (info), `<name> shutdown`, `<name> logs` (one-shot log
  * snapshot), `<name> screen` (live, interactive console — see [ScreenSession]),
- * `<name> execute <command>` and `<name> copy <templateName>` (re-apply a template onto
- * the running work directory). `shutdown`, `logs`, `screen` and the CPU/memory usage shown
+ * `<name> execute <command>`, `<name> copy <templateName>` (re-apply a template onto
+ * the running work directory) and `<name> copyToTemplate <templateName>` (save the
+ * running work directory back into a template). `shutdown`, `logs`, `screen` and the CPU/memory usage shown
  * by `<name>` fall back to a [NodeGrpcClient] call to the service's owning node (see
  * [Service.nodeId]) when it isn't running here, so all of them work cluster-wide regardless
  * of which node's terminal the command is typed in.
@@ -103,6 +104,10 @@ class ServiceCommand(
         syntax({ context ->
             copy(context.arg(serviceArgument), context.arg(templateArgument))
         }, "Copy a template into a service's work directory", serviceArgument, KeywordArgument("copy"), templateArgument)
+
+        syntax({ context ->
+            copyToTemplate(context.arg(serviceArgument), context.arg(templateArgument))
+        }, "Copy a service's work directory back into a template", serviceArgument, KeywordArgument("copyToTemplate"), templateArgument)
     }
 
     private fun info(service: Service) {
@@ -266,6 +271,27 @@ class ServiceCommand(
         GroupTemplateService.copyInto(listOf(templateName), workDir.toFile())
         local.templates = local.templates + templateName
         logger.info("Copied template '$templateName' into ${service.name()}.")
+    }
+
+    /**
+     * The reverse of [copy]: saves changes made directly on a running service (configs,
+     * plugins, maps) back to a template's folder, so they don't need a manual file
+     * transfer out of the service's work directory. Only works for a service running on
+     * this node — same restriction as [copy].
+     */
+    private fun copyToTemplate(service: Service, templateName: String) {
+        val local = serviceProvider.findLocal(service.name())
+        if (local == null) {
+            logger.info("Service ${service.name()} is not running on this node.")
+            return
+        }
+        val workDir = local.workDir
+        if (workDir == null) {
+            logger.info("Service ${service.name()} has no work directory yet.")
+            return
+        }
+        GroupTemplateService.copyFrom(workDir.toFile(), templateName)
+        logger.info("Copied ${service.name()} into template '$templateName'.")
     }
 
     /**

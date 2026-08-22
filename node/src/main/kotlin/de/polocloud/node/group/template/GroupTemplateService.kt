@@ -86,4 +86,24 @@ object GroupTemplateService {
                 .onFailure { logger.error("Failed to apply template '{}' to {}: {}", name, targetDir.path, it.message) }
         }
     }
+
+    /**
+     * Copies [sourceDir] — a running service's live work directory — into template
+     * [name]'s folder, overwriting any files already there. The reverse of [copyInto],
+     * used by `service <name> copyToTemplate <name>` to save changes made directly on a
+     * live instance (configs, plugins, maps) back to its template, without a manual file
+     * transfer out of the service's work directory.
+     *
+     * No-op (with a warning) if [sourceDir] doesn't exist. [name]'s folder is created if
+     * it doesn't exist yet, same as [ensure].
+     */
+    fun copyFrom(sourceDir: File, name: String) {
+        if (!sourceDir.isDirectory) {
+            logger.warn("Service work directory {} does not exist — nothing to copy into template '{}'", sourceDir.path, name)
+            return
+        }
+        val target = directoryOf(name)
+        target.mkdirs()
+        sourceDir.copyRecursively(target, overwrite = true)
+    }
 }

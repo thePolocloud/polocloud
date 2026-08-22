@@ -4,12 +4,16 @@ import de.polocloud.common.communication.server.executor.GrpcServerExecutor
 import de.polocloud.node.communication.grpc.GrpcContextFactory
 import de.polocloud.node.services.LocalServiceLogStreaming
 import de.polocloud.node.services.ServiceProvider
+import de.polocloud.proto.ExecuteGroupServicesCommandRequest
+import de.polocloud.proto.ExecuteGroupServicesCommandResponse
 import de.polocloud.proto.ExecuteServiceCommandRequest
 import de.polocloud.proto.ExecuteServiceCommandResponse
 import de.polocloud.proto.GetServiceResourceUsageRequest
 import de.polocloud.proto.GetServiceResourceUsageResponse
 import de.polocloud.proto.ListServicesRequest
 import de.polocloud.proto.ListServicesResponse
+import de.polocloud.proto.RestartGroupServicesRequest
+import de.polocloud.proto.RestartGroupServicesResponse
 import de.polocloud.proto.ServiceLogLine
 import de.polocloud.proto.ServiceManagerGrpcKt
 import de.polocloud.proto.StopGroupServicesRequest
@@ -38,6 +42,14 @@ class ServiceManagerImpl(
     }
 
     override suspend fun stopGroupServices(request: StopGroupServicesRequest): StopGroupServicesResponse {
+        return executor.execute(request, GrpcContextFactory.fromGrpc())
+    }
+
+    override suspend fun executeGroupServicesCommand(request: ExecuteGroupServicesCommandRequest): ExecuteGroupServicesCommandResponse {
+        return executor.execute(request, GrpcContextFactory.fromGrpc())
+    }
+
+    override suspend fun restartGroupServices(request: RestartGroupServicesRequest): RestartGroupServicesResponse {
         return executor.execute(request, GrpcContextFactory.fromGrpc())
     }
 

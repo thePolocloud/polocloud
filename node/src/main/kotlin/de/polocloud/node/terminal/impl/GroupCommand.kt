@@ -15,6 +15,8 @@ import de.polocloud.node.group.TemplateCodec
 import de.polocloud.node.group.template.GroupTemplateService
 import de.polocloud.node.cluster.node.NodeRepository
 import de.polocloud.node.services.ServiceProvider
+import de.polocloud.node.services.cluster.ClusterGroupExecute
+import de.polocloud.node.services.cluster.ClusterGroupRestart
 import de.polocloud.node.services.cluster.ClusterGroupShutdown
 import de.polocloud.node.services.factory.PlatformService
 import de.polocloud.node.services.queue.GroupNodeEligibility
@@ -81,6 +83,31 @@ class GroupCommand(
         syntax({
             info(it.arg(groupArgument))
         }, "Show detailed information about a group", KeywordArgument("info"), groupArgument)
+
+        // --- group-wide actions on running services -------------------------------------
+        val groupCommandArgument = StringArrayArgument("command")
+
+        syntax({
+            val group = it.arg(groupArgument)
+            // Same reasoning as ClusterGroupShutdown's use in `delete`: fan out across
+            // every node, not just the one the command was typed on, so a group whose
+            // replicas are spread over several nodes actually gets fully stopped.
+            runBlocking { ClusterGroupShutdown.shutdownAcrossCluster(group.name, serviceProvider) }
+            logger.info("Stopped every running service of group '${group.name}'.")
+        }, "Stop every running service in a group", groupArgument, KeywordArgument("stop"))
+
+        syntax({
+            val group = it.arg(groupArgument)
+            val restarted = runBlocking { ClusterGroupRestart.restartAcrossCluster(group.name, serviceProvider) }
+            logger.info("Restarted $restarted service(s) of group '${group.name}'.")
+        }, "Restart every running service in a group", groupArgument, KeywordArgument("restart"))
+
+        syntax({
+            val group = it.arg(groupArgument)
+            val command = it.arg(groupCommandArgument)
+            val executed = runBlocking { ClusterGroupExecute.executeAcrossCluster(group.name, command, serviceProvider) }
+            logger.info("Executed '$command' in $executed service(s) of group '${group.name}'.")
+        }, "Execute a command in every running service of a group", groupArgument, KeywordArgument("execute"), groupCommandArgument)
 
         // --- edit: change a single group parameter -----------------------------------
         val propertyKeyArgument = TextArgument("key")
