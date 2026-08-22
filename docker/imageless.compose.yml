@@ -1,10 +1,4 @@
-# Non-root Docker Compose stack for building and running Polocloud
-#
-# Compose Pipeline: polocloud-init -> polocloud-cloner -> polocloud-builder -> polocloud
-# Persistent Storage: Persists local caches in ./cache and application data in ./data
-# Non-Root Execution: Runs as user ID 1000 to prevent running as root inside the container
-# Init Container: Align mounts file rights for permission startup errors
-# Cache Build: Only build if missing, rebuild by deleting `./cache/polocloud/build
+# PoloCloud imageless non-root Docker Compose stack
 
 services:
   polocloud-init:
@@ -19,7 +13,7 @@ services:
       - |
         mkdir -p /cache/polocloud/build /cache/polocloud/repo /data/polocloud
         chown -R 1000:1000 /cache /data
-        chmod -R 660 /cache /data
+        chmod -R 770 /cache /data
 
   polocloud-cloner:
     container_name: "polocloud-cloner"

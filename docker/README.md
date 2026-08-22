@@ -38,6 +38,12 @@ Copy the Dockerfile and use:
 docker build -t polocloud .
 ```
 
+Or from the repository root:
+
+```bash
+docker build -t polocloud -f docker/Dockerfile .
+```
+
 ### dev.Dockerfile - for development images
 
 Less independent image that requires the already cloned repo at current location to build PoloCloud:
@@ -62,17 +68,19 @@ A simple Docker Compose stack using the Dockerfile image:
 - **Non-Root Execution:** See `Dockerfile` above.
 - **Init Container:** Fix ownership of mounted directories to avoid startup permission errors
 
-Copy the stack file and the `Dockerfile` and use:
+Copy the stack file and the `Dockerfile` into one directory and use:
 
 ```bash
 docker compose up -d
 ```
 
-Or directly in this `docker` repo dir:
+Or from this `docker` dir of the repo:
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
+
+Rebuild after image changes with `docker compose up -d --build`. Attach to the console with `docker attach $(docker compose ps -q polocloud)`.
 
 ### imageless.compose.yml - stack without Dockerfile
 
@@ -84,32 +92,36 @@ A Docker Compose stack using a container pipeline (instead of a multi-stage imag
 - **Init Container:** Fix ownership of mounted directories to avoid startup permission errors
 - **Cache Build:** Only build if missing, rebuild by deleting `./cache/polocloud/build`
 
-Copy the stack file and use:
+Copy the stack file, rename it to `compose.yml` if needed, and use:
 
 ```bash
 docker compose up -d
 ```
 
-Or directly in this `docker` repo dir:
+Or from this `docker` dir of the repo (required `-f` because `compose.yml` already exists here):
 
 ```bash
 docker compose -f imageless.compose.yml up -d
 ```
 
+Attach to the console with `docker attach $(docker compose -f imageless.compose.yml ps -q polocloud)`.
+
 ### dev.compose.yml - stack for development
 
 A Docker Compose stack using the `dev.Dockerfile` image as base:
 
-- **Compose Pipeline:** `polocloud-init` -> `polocloud-cloner` -> `polocloud-builder` -> `polocloud`
-- **Persistent Storage:** Persists local caches in `./cache` and PoloCloud data in `./data`
+- **Compose Pipeline:** `polocloud-init` -> `polocloud`
+- **Persistent Storage:** Persists local PoloCloud data in `./data`
 - **Non-Root Execution:** See `dev.Dockerfile` above.
 - **Init Container:** Fix ownership of mounted directories to avoid startup permission errors
 
 Use the following in this `docker` dir of the repo:
 
 ```bash
-docker compose -f dev.compose.yml up -d
+docker compose -f dev.compose.yml up -d --build
 ```
+
+Rebuild after source changes with `--build`. Attach to the console with `docker attach $(docker compose -f dev.compose.yml ps -q polocloud)`.
 
 ## Host Permissions
 
@@ -127,6 +139,10 @@ If you are having trouble with host file permissions, give your user a group wit
   ```bash
   sudo usermod -aG docker-access "$USER"
   ```
+- Re-login so the new group applies, or use:
+  ```bash
+  newgrp docker-access
+  ```
 
 ## Customization
 
@@ -134,13 +150,17 @@ The compose stacks are designed for customization.
 
 ### Data & Cache Mounts
 
-The current `./data/polocloud/` and `./cache/polocloud/` mounts let you use the `./data/*/` and `./cache/*/` directories for your own extra services like databases for your Minecraft plugins.
+All stacks mount PoloCloud data at `./data/polocloud/`. The imageless stack also mounts build caches at `./cache/polocloud/`.
+
+You can use sibling directories under `./data/*/` (and `./cache/*/` for imageless) for your own extra services like databases for your Minecraft plugins.
 
 You can use `./data/perms/` for your permission system and add a database container to the stack that mounts it.
 
 ### Service Separation
 
 Using Docker Compose `include` statements you can separate your extra service containers from the PoloCloud services.
+
+Create a `compose.yml` that then imports the seperated compose parts:
 
 ```
 include:
