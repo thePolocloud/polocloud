@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PoloCloud Status</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <main class="page">
+        <header class="page-header">
+            <h1>PoloCloud Status</h1>
+            <p class="subtitle" id="subtitle">Loading…</p>
+        </header>
+
+        <section id="groups" class="groups" aria-live="polite"></section>
+
+        <template id="group-card-template">
+            <article class="card">
+                <div class="card-top">
+                    <span class="dot"></span>
+                    <h2 class="name"></h2>
+                    <span class="badge"></span>
+                </div>
+                <p class="players"></p>
+                <p class="services"></p>
+            </article>
+        </template>
+
+        <p id="error" class="error" hidden>Could not reach the status API.</p>
+
+        <footer class="page-footer">
+            <span id="updated"></span>
+        </footer>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

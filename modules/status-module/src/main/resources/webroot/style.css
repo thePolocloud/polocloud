@@ -1,0 +1,123 @@
+:root {
+    color-scheme: light dark;
+    --bg: #0b0d12;
+    --surface: #151821;
+    --surface-border: #262b38;
+    --text: #e7e9ee;
+    --muted: #9aa1b1;
+    --online: #35d399;
+    --offline: #6b7280;
+    --maintenance: #f5a524;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 48px 16px;
+}
+
+.page {
+    width: 100%;
+    max-width: 880px;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+}
+
+.subtitle {
+    color: var(--muted);
+    margin: 0;
+}
+
+.groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--offline);
+    flex-shrink: 0;
+}
+
+.card.online .dot { background: var(--online); }
+.card.maintenance .dot { background: var(--maintenance); }
+
+.name {
+    margin: 0;
+    font-size: 1.05rem;
+    flex-grow: 1;
+}
+
+.badge {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.card.online .badge { color: var(--online); }
+.card.maintenance .badge { color: var(--maintenance); }
+
+.players,
+.services {
+    margin: 4px 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.error {
+    text-align: center;
+    color: var(--maintenance);
+    margin-top: 24px;
+}
+
+.page-footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 40px;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg: #f4f5f7;
+        --surface: #ffffff;
+        --surface-border: #e3e5ea;
+        --text: #16181d;
+        --muted: #666d7d;
+    }
+}

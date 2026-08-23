@@ -1,0 +1,7 @@
+name: status
+version: 1.0.0
+main: de.polocloud.modules.status.StatusModule
+description: Serves a cluster status REST API, with an optional bundled status website, on this node
+authors: [polocloud]
+scope: EVERY_NODE
+api-version: 3.0.0

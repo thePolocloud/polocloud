@@ -2,8 +2,7 @@ package de.polocloud.node.core.configuration
 
 import de.polocloud.common.Address
 import de.polocloud.common.GLOBAL_ADDRESS
-import de.polocloud.common.utils.localIpAddress
-import de.polocloud.common.utils.publicIpAddress
+import de.polocloud.common.utils.resolveHostname
 import de.polocloud.node.core.configuration.serializer.LocaleSerializer
 import kotlinx.serialization.Serializable
 import java.util.*
@@ -13,7 +12,7 @@ data class GeneralConfiguration(
     @Serializable(with = LocaleSerializer::class) var locale: Locale = Locale.US,
     var bindAddress: Address = GLOBAL_ADDRESS.withPort(4240),
     var apiAddress: Address = GLOBAL_ADDRESS.withPort(4241),
-    var hostname: String = publicIpAddress() ?: localIpAddress(),
+    var hostname: String = resolveHostname(),
     /**
      * Host under which this node's services are advertised to consumers (the proxy
      * bridge / API), i.e. the address a proxy connects a player to.
