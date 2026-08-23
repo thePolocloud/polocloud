@@ -163,7 +163,7 @@ You can use `./data/perms/` for your permission system and add a database contai
 
 Using Docker Compose `include` statements you can separate your extra service containers from the PoloCloud services.
 
-Create a `compose.yml` that then imports the seperated compose parts:
+Create a `compose.yml` that then imports the separated compose parts:
 
 ```
 include:
