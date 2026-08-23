@@ -2,25 +2,16 @@
 
 # ☁️+🐋 PoloCloud in Docker
 
-You can now securely deploy PoloCloud using Docker! This directory contains examples for your deployment.
+You can deploy PoloCloud using Docker!  
+This directory contains examples for your deployment.
 
 </div>
 
-Here you have different approaches to run PoloCloud:
+> ⚠️ WARNING!  
+> Docker is not fully supported yet. [Known Issues](./KNOWN_ISSUES.md)
 
-- [Dockerfile Images](#dockerfile-images)
-  - [Dockerfile - for deployment images](#dockerfile---for-deployment-images)
-  - [dev.Dockerfile - for development images](#devdockerfile---for-development-images)
-- [Compose Stacks](#compose-stacks)
-  - [compose.yml - stack for deployment](#composeyml---stack-for-deployment)
-  - [imageless.compose.yml - stack without Dockerfile](#imagelesscomposeyml---stack-without-dockerfile)
-  - [dev.compose.yml - stack for development](#devcomposeyml---stack-for-development)
-- [Host Permissions](#host-permissions)
-- [Customization](#customization)
-  - [Data \& Cache Mounts](#data--cache-mounts)
-  - [Service Separation](#service-separation)
-  - [Issues?](#issues)
-  - [🤝 Community](#-community)
+<details>
+<summary><strong>Dockerfile Images</strong></summary>
 
 ## Dockerfile Images
 
@@ -59,6 +50,11 @@ Execute the following from the repository root directory:
 docker build -t polocloud-dev -f docker/dev.Dockerfile .
 docker run -it --rm -v ./docker/data/polocloud:/data polocloud-dev
 ```
+
+</details>
+
+<details>
+<summary><strong>Compose Stacks</strong></summary>
 
 ## Compose Stacks
 
@@ -126,6 +122,11 @@ docker compose -f docker/dev.compose.yml up -d
 
 Rebuild after source changes with `--build`. Attach to the console with `docker attach $(docker compose -f dev.compose.yml ps -q polocloud)`.
 
+</details>
+
+<details>
+<summary><strong>Host Permissions</strong></summary>
+
 ## Host Permissions
 
 If you are having trouble with host file permissions, give your user a group with ID `1000` so that you can access and edit the files:
@@ -146,6 +147,11 @@ If you are having trouble with host file permissions, give your user a group wit
   ```bash
   newgrp docker-access
   ```
+
+</details>
+
+<details>
+<summary><strong>Customization</strong></summary>
 
 ## Customization
 
@@ -171,6 +177,8 @@ include:
   - plugin-builder.compose.yml
   - polocloud.compose.yml
 ```
+
+</details>
 
 <div align="center">
 
