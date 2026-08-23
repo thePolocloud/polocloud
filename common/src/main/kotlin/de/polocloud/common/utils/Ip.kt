@@ -59,3 +59,15 @@ fun publicIpAddress(timeoutMs: Int = 5000): String? {
     logger.warn("Could not resolve a public IP address — all {} fallback services failed", services.size)
     return null
 }
+
+/**
+ * Resolves the hostname this node advertises to peers, the CLI, and proxies.
+ *
+ * Checks the `POLOCLOUD_HOSTNAME` environment variable first. Auto-detection (public IP,
+ * then the first non-loopback local IPv4 address) picks the wrong address in a container:
+ * the local interface is the container's internal bridge IP, unreachable from outside. Set
+ * `POLOCLOUD_HOSTNAME` to the host's actual address to skip both lookups.
+ */
+fun resolveHostname(): String =
+    System.getenv("POLOCLOUD_HOSTNAME")?.takeIf { it.isNotBlank() }
+        ?: (publicIpAddress() ?: localIpAddress())

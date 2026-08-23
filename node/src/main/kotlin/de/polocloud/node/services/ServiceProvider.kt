@@ -9,9 +9,20 @@ import de.polocloud.node.services.queue.CrashLoopGuard
 import de.polocloud.node.services.queue.ServiceQueue
 import de.polocloud.shared.event.server.ServerStoppedEvent
 import de.polocloud.shared.service.ServiceState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
+
+// Each LocalService.shutdown() can block for up to ~7s (graceful wait + force-kill wait).
+// Run them in parallel so total shutdown time stays close to that ceiling instead of
+// growing with the number of running services - otherwise a container's SIGTERM-to-SIGKILL
+// grace period (commonly 10s) can expire mid-shutdown, killing the node before it finishes.
+private val SERVICE_SHUTDOWN_DISPATCHER = Dispatchers.IO.limitedParallelism(16)
 
 class ServiceProvider(
     nodePort: Int = 4241,
@@ -82,9 +93,13 @@ class ServiceProvider(
         runCatching { queue.close() }
 
         // Isolate each service: one that hangs or throws must not stop the rest
-        // from being terminated.
-        this.localServices.forEach { service ->
-            runCatching { service.shutdown() }
+        // from being terminated. Run them concurrently - see SERVICE_SHUTDOWN_DISPATCHER.
+        runBlocking {
+            coroutineScope {
+                localServices.map { service ->
+                    async(SERVICE_SHUTDOWN_DISPATCHER) { runCatching { service.shutdown() } }
+                }.awaitAll()
+            }
         }
         this.localServices.clear()
     }
