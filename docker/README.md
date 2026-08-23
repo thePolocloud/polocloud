@@ -36,12 +36,14 @@ Copy the Dockerfile and use:
 
 ```bash
 docker build -t polocloud .
+docker run -it --rm -v ./data/polocloud:/data polocloud
 ```
 
 Or from the repository root:
 
 ```bash
 docker build -t polocloud -f docker/Dockerfile .
+docker run -it --rm -v ./docker/data/polocloud:/data polocloud
 ```
 
 ### dev.Dockerfile - for development images
@@ -55,6 +57,7 @@ Execute the following from the repository root directory:
 
 ```bash
 docker build -t polocloud-dev -f docker/dev.Dockerfile .
+docker run -it --rm -v ./docker/data/polocloud:/data polocloud-dev
 ```
 
 ## Compose Stacks
@@ -74,10 +77,10 @@ Copy the stack file and the `Dockerfile` into one directory and use:
 docker compose up -d
 ```
 
-Or from this `docker` dir of the repo:
+Or from the repository root:
 
 ```bash
-docker compose up -d --build
+docker compose -f docker/compose.yml up -d
 ```
 
 Rebuild after image changes with `docker compose up -d --build`. Attach to the console with `docker attach $(docker compose ps -q polocloud)`.
@@ -98,10 +101,10 @@ Copy the stack file, rename it to `compose.yml` if needed, and use:
 docker compose up -d
 ```
 
-Or from this `docker` dir of the repo (required `-f` because `compose.yml` already exists here):
+Or from the repository root:
 
 ```bash
-docker compose -f imageless.compose.yml up -d
+docker compose -f docker/imageless.compose.yml up -d
 ```
 
 Attach to the console with `docker attach $(docker compose -f imageless.compose.yml ps -q polocloud)`.
@@ -115,10 +118,10 @@ A Docker Compose stack using the `dev.Dockerfile` image as base:
 - **Non-Root Execution:** See `dev.Dockerfile` above.
 - **Init Container:** Fix ownership of mounted directories to avoid startup permission errors
 
-Use the following in this `docker` dir of the repo:
+Use the following in the repository root:
 
 ```bash
-docker compose -f dev.compose.yml up -d --build
+docker compose -f docker/dev.compose.yml up -d
 ```
 
 Rebuild after source changes with `--build`. Attach to the console with `docker attach $(docker compose -f dev.compose.yml ps -q polocloud)`.
