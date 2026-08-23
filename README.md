@@ -115,6 +115,17 @@ Then restart the node and run `cluster join` again. See the [cluster architectur
 </details>
 
 <details>
+<summary><strong>Docker</strong></summary>
+
+## Docker
+
+The [Docker guide](docker/README.md) will help you get started with deploying your **PoloCloud in Docker**.
+
+</details>
+
+<div align="center">
+
+<details>
 <summary><strong>Versioning</strong></summary>
 
 ## Versioning
@@ -155,8 +166,6 @@ Nodes communicate over [gRPC with protobuf contracts](proto/src/main/proto), and
 - [SECURITY POLICY](.github/SECURITY.md)
 
 </details>
-
-<div align="center">
 
 #
 
