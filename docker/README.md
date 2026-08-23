@@ -8,14 +8,14 @@ This directory contains examples for your deployment.
 </div>
 
 > ⚠️ WARNING!  
-> Docker is not fully supported yet. [Known Issues](./KNOWN_ISSUES.md)
-
-<details>
-<summary><strong>Dockerfile Images</strong></summary>
+> Docker is not fully supported yet: [Known Issues](./KNOWN_ISSUES.md)
 
 ## Dockerfile Images
 
-### Dockerfile - for deployment images
+<details>
+<summary><strong>`Dockerfile`</strong></summary>
+
+### `Dockerfile` - for deployment images
 
 Independent image that clones the repo itself from source to build PoloCloud:
 
@@ -37,7 +37,12 @@ docker build -t polocloud -f docker/Dockerfile .
 docker run -it --rm -v ./docker/data/polocloud:/data polocloud
 ```
 
-### dev.Dockerfile - for development images
+</details>
+
+<details>
+<summary><strong>`dev.Dockerfile`</strong></summary>
+
+### `dev.Dockerfile` - for development images
 
 Less independent image that requires the already cloned repo at current location to build PoloCloud:
 
@@ -53,12 +58,12 @@ docker run -it --rm -v ./docker/data/polocloud:/data polocloud-dev
 
 </details>
 
-<details>
-<summary><strong>Compose Stacks</strong></summary>
-
 ## Compose Stacks
 
-### compose.yml - stack for deployment
+<details>
+<summary><strong>`compose.yml`</strong></summary>
+
+### `compose.yml` - stack for deployment
 
 A simple Docker Compose stack using the Dockerfile image:
 
@@ -81,7 +86,12 @@ docker compose -f docker/compose.yml up -d
 
 Rebuild after image changes with `docker compose up -d --build`. Attach to the console with `docker attach $(docker compose ps -q polocloud)`.
 
-### imageless.compose.yml - stack without Dockerfile
+</details>
+
+<details>
+<summary><strong>`imageless.compose.yml`</strong></summary>
+
+### `imageless.compose.yml` - stack without Dockerfile
 
 A Docker Compose stack using a container pipeline (instead of a multi-stage image) and cache to disk mount points:
 
@@ -105,7 +115,12 @@ docker compose -f docker/imageless.compose.yml up -d
 
 Attach to the console with `docker attach $(docker compose -f imageless.compose.yml ps -q polocloud)`.
 
-### dev.compose.yml - stack for development
+</details>
+
+<details>
+<summary><strong>`dev.compose.yml`</strong></summary>
+
+### `dev.compose.yml` - stack for development
 
 A Docker Compose stack using the `dev.Dockerfile` image as base:
 
@@ -124,31 +139,7 @@ Rebuild after source changes with `--build`. Attach to the console with `docker 
 
 </details>
 
-<details>
-<summary><strong>Host Permissions</strong></summary>
-
-## Host Permissions
-
-If you are having trouble with host file permissions, give your user a group with ID `1000` so that you can access and edit the files:
-
-- Check if group already exists:
-  ```bash
-  getent group 1000
-  ```
-- Create group if missing:
-  ```bash
-  sudo groupadd -g 1000 docker-access
-  ```
-- Add group to current user:
-  ```bash
-  sudo usermod -aG docker-access "$USER"
-  ```
-- Re-login so the new group applies, or use:
-  ```bash
-  newgrp docker-access
-  ```
-
-</details>
+## Related
 
 <details>
 <summary><strong>Configuration</strong></summary>
@@ -202,13 +193,40 @@ include:
 
 </details>
 
+<details>
+<summary><strong>Host Permissions</strong></summary>
+
+## Host Permissions
+
+If you are having trouble with host file permissions, give your user a group with ID `1000` so that you can access and edit the files:
+
+- Check if group already exists:
+  ```bash
+  getent group 1000
+  ```
+- Create group if missing:
+  ```bash
+  sudo groupadd -g 1000 docker-access
+  ```
+- Add group to current user:
+  ```bash
+  sudo usermod -aG docker-access "$USER"
+  ```
+- Re-login so the new group applies, or use:
+  ```bash
+  newgrp docker-access
+  ```
+
+</details>
+
 <div align="center">
 
 #
 
 ### Issues?
 
-If you have any issues with the Docker setup you're welcome to create an issue or join the Discord server and ask your questions there.
+Read [Known Issues](./KNOWN_ISSUES.md) first. If you encounter any new issues with your Docker setup,  
+you are welcome to create an [github issue](https://github.com/thePolocloud/polocloud/issues) or report the issue on the Discord server.
 
 ### 🤝 Community
 
