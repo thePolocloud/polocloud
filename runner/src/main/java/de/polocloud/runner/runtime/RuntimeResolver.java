@@ -10,6 +10,7 @@ public class RuntimeResolver {
         for (String arg : args) {
             if (arg.equalsIgnoreCase("--cli")) return RuntimeMode.CLI;
             if (arg.equalsIgnoreCase("--node")) return RuntimeMode.NODE;
+            if (arg.equalsIgnoreCase("--prime-cache")) return RuntimeMode.PRIME_CACHE;
         }
 
         String mode = System.getProperty(PROPERTY);

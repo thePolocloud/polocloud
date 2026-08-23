@@ -5,6 +5,7 @@ import de.polocloud.runner.runtime.RuntimeProcess;
 import de.polocloud.runner.runtime.RuntimeResolver;
 import de.polocloud.runner.runtime.impl.CliRuntimeProcess;
 import de.polocloud.runner.runtime.impl.NodeRuntimeProcess;
+import de.polocloud.runner.runtime.impl.PrimeCacheRuntimeProcess;
 import de.polocloud.runner.update.UpdateStaging;
 import de.polocloud.runner.utils.Manifests;
 
@@ -46,6 +47,7 @@ final class PolocloudRuntimeLauncher {
         switch (mode) {
             case CLI: return new CliRuntimeProcess();
             case NODE: return new NodeRuntimeProcess();
+            case PRIME_CACHE: return new PrimeCacheRuntimeProcess();
             default: throw new IllegalStateException("Unsupported mode: " + mode);
         }
     }
