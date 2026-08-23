@@ -60,7 +60,3 @@ bin/
 
 docker/cache
 docker/data
-
-### Git
-
-.git
