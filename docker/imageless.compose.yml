@@ -19,6 +19,7 @@ services:
     container_name: "polocloud-cloner"
     image: "alpine/git"
     environment:
+      TARGET_VERSION: "master" # pin via version: v3.0.2-alpha.2
       REPO_URL: "https://github.com/thePolocloud/polocloud.git" # optional for forks
     volumes:
       - "./cache/polocloud/repo:/repo"
@@ -28,11 +29,11 @@ services:
       - /bin/sh
       - -c
       - |
-        if [ -d /repo/.git ]; then
-          git -C /repo pull
-        else
+        if [ ! -d /repo/.git ]; then
           git clone "$$REPO_URL" /repo
         fi
+        git checkout "$$TARGET_VERSION"
+        git -C /repo pull
     depends_on:
       polocloud-init:
         condition: "service_completed_successfully"

@@ -3,8 +3,10 @@
 
 FROM alpine/git AS cloner
 
-ARG REPO_URL=https://github.com/thePolocloud/polocloud.git # optional for forks
-RUN git clone "${REPO_URL}" /repo
+ARG TARGET_VERSION="master" # pin version via: "v3.0.2-alpha.2"
+ARG REPO_URL="https://github.com/thePolocloud/polocloud.git" # optional for forks
+RUN git clone "${REPO_URL}" /repo \
+    && git checkout "${TARGET_VERSION}"
 
 FROM azul/zulu-openjdk:25 AS builder
 
@@ -14,11 +16,11 @@ COPY --from=cloner /repo /repo
 WORKDIR /repo
 
 RUN ./gradlew clean --no-daemon -Porg.gradle.java.installations.paths=/opt/java/openjdk \
- && ./gradlew :node:test :cli:test --no-daemon -Porg.gradle.java.installations.paths=/opt/java/openjdk \
- && ./gradlew :runner:jar --no-configure-on-demand --no-daemon -Porg.gradle.java.installations.paths=/opt/java/openjdk \
- && mkdir -p /build \
- && find . -name "${RUNNER_SEARCH_PATTERN}" -exec cp {} /build/runner.jar \; \
- && test -f /build/runner.jar
+    && ./gradlew :node:test :cli:test --no-daemon -Porg.gradle.java.installations.paths=/opt/java/openjdk \
+    && ./gradlew :runner:jar --no-configure-on-demand --no-daemon -Porg.gradle.java.installations.paths=/opt/java/openjdk \
+    && mkdir -p /build \
+    && find . -name "${RUNNER_SEARCH_PATTERN}" -exec cp {} /build/runner.jar \; \
+    && test -f /build/runner.jar
 
 FROM azul/zulu-openjdk:25-jre AS runtime
 
