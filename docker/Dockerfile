@@ -6,7 +6,7 @@ FROM alpine/git AS cloner
 ARG TARGET_VERSION="master" # pin version via: "v3.0.2-alpha.2"
 ARG REPO_URL="https://github.com/thePolocloud/polocloud.git" # optional for forks
 RUN git clone "${REPO_URL}" /repo \
-    && git checkout "${TARGET_VERSION}"
+    && git -C /repo checkout "${TARGET_VERSION}"
 
 FROM azul/zulu-openjdk:25 AS builder
 

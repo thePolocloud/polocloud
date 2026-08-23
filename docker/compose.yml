@@ -18,6 +18,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # args:
+      #     TARGET_VERSION: "master"
+      #     REPO_URL: "...fork url..."
+      #     RUNNER_SEARCH_PATTERN: "...runner search pattern..."
     working_dir: "/data"
     user: "1000:1000"
     volumes:

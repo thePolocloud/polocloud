@@ -151,6 +151,28 @@ If you are having trouble with host file permissions, give your user a group wit
 </details>
 
 <details>
+<summary><strong>Configuration</strong></summary>
+
+## Configuration
+
+The `Dockerfile` and `imageless.compose.yml` support these options:
+
+- **`TARGET_VERSION`:** Defaults to `master`, but you can set any git tag, branch or commit hash to pin the used version.
+- **`REPO_URL`:** Defaults to the official PoloCloud repository but can be replaced to use a mirror or test a fork.
+- **`RUNNER_SEARCH_PATTERN`:** Runner jar glob used to find the right runner.jar for the runtime container and defaults to `runner-*.local.jar`.
+
+For the `Dockerfile` you can define build args:
+
+```bash
+docker build ...options... --build-arg TARGET_VERSION="...some tag..."
+```
+
+The `compose.yml` has example build args as comments.
+For the `imageless.compose.yml` stack you can replace its environment variables that match the build args.
+
+</details>
+
+<details>
 <summary><strong>Customization</strong></summary>
 
 ## Customization
