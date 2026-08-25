@@ -1,5 +1,6 @@
 package de.polocloud.node.core.lifecycle
 
+import de.polocloud.api.connection.ServiceCertificateStorage
 import de.polocloud.common.ShutdownMode
 import de.polocloud.common.configuration.ConfigurationHolder
 import de.polocloud.common.version.PolocloudVersion
@@ -13,6 +14,7 @@ import de.polocloud.node.core.configuration.NodeConfigurations
 import de.polocloud.node.core.context.NodeRuntimeContext
 import de.polocloud.node.event.ClusterEventRelay
 import de.polocloud.node.module.ClusterModuleRegistry
+import de.polocloud.node.security.ServiceIdentityProvisioner
 import de.polocloud.updater.UpdateChecker
 import de.polocloud.updater.Updater
 import org.apache.logging.log4j.LogManager
@@ -85,6 +87,8 @@ class NodeLifecycle(
         context.groupService.run()
         context.serviceProvider.run()
 
+        provisionModuleIdentity()
+
         ClusterModuleRegistry.start()
         context.moduleManager.loadAll()
 
@@ -106,6 +110,31 @@ class NodeLifecycle(
         }
 
         context.cli.readingThread.start()
+    }
+
+    /**
+     * Provisions an mTLS identity for the node's own process into the SDK's default
+     * identity directory (see [ServiceCertificateStorage.defaultIdentityDir]), so
+     * in-process modules calling [de.polocloud.api.Polocloud] (e.g. the status
+     * module's REST API) can open a loopback connection back to this node the same
+     * way a launched service does via [ServiceIdentityProvisioner] — without this,
+     * every such call fails with "No provisioned service identity found", since that
+     * provisioner was previously only ever invoked for spawned service processes,
+     * never for the node's own JVM.
+     *
+     * Also pins the loopback host/port explicitly rather than relying on
+     * [de.polocloud.api.connection.PolocloudConnection]'s defaults happening to match,
+     * so this keeps working if `general.apiAddress` is ever configured to a non-default
+     * port.
+     */
+    private fun provisionModuleIdentity() {
+        ServiceIdentityProvisioner.provision(
+            ServiceCertificateStorage.defaultIdentityDir(),
+            serviceId = "node-${context.localNodeContainer.data.id}",
+            planName = "node",
+        )
+        System.setProperty("polocloud.node.host", "127.0.0.1")
+        System.setProperty("polocloud.node.port", holder.value.general.apiAddress.port.toString())
     }
 
     fun shutdown(mode: ShutdownMode) {

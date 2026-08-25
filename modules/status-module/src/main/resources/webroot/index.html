@@ -7,13 +7,37 @@
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <div class="bg-glow" aria-hidden="true"></div>
+
     <main class="page">
         <header class="page-header">
-            <h1>PoloCloud Status</h1>
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span class="brand-name">PoloCloud</span>
+            </div>
+            <h1>Network Status</h1>
             <p class="subtitle" id="subtitle">Loading…</p>
         </header>
 
+        <section class="summary" id="summary" aria-live="polite">
+            <div class="stat">
+                <span class="stat-value" id="stat-groups">–</span>
+                <span class="stat-label">Groups online</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="stat-players">–</span>
+                <span class="stat-label">Players online</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="stat-services">–</span>
+                <span class="stat-label">Services running</span>
+            </div>
+        </section>
+
         <section id="groups" class="groups" aria-live="polite"></section>
+
+        <p id="empty" class="empty" hidden>No groups are published yet.</p>
+        <p id="error" class="error" hidden>Could not reach the status API.</p>
 
         <template id="group-card-template">
             <article class="card">
@@ -22,15 +46,19 @@
                     <h2 class="name"></h2>
                     <span class="badge"></span>
                 </div>
-                <p class="players"></p>
-                <p class="services"></p>
+                <div class="meter" role="presentation">
+                    <div class="meter-fill"></div>
+                </div>
+                <div class="card-stats">
+                    <span class="players"></span>
+                    <span class="services"></span>
+                </div>
             </article>
         </template>
 
-        <p id="error" class="error" hidden>Could not reach the status API.</p>
-
         <footer class="page-footer">
-            <span id="updated"></span>
+            <span class="live-dot" aria-hidden="true"></span>
+            <span id="updated">Connecting…</span>
         </footer>
     </main>
 
