@@ -41,7 +41,8 @@ services:
   polocloud-builder:
     image: "azul/zulu-openjdk:25"
     environment:
-      GRADLE_USER_HOME: "/repo/.gradle"
+      GRADLE_USER_HOME: "/repo/.gradle" # fix lock file issue
+      ENV GRADLE_OPTS: "-Dorg.gradle.daemon=false"
       RUNNER_SEARCH_PATTERN: "runner-*.local.jar" # replace if outdated
     volumes:
       - "./cache/polocloud/repo:/repo"
@@ -56,9 +57,9 @@ services:
           echo 'jar already exists, skip build'
           exit 0
         fi
-        ./gradlew clean --no-daemon -Porg.gradle.java.installations.paths=/opt/java/openjdk
-        ./gradlew :node:test :cli:test --no-daemon -Porg.gradle.java.installations.paths=/opt/java/openjdk
-        ./gradlew :runner:jar --no-configure-on-demand --no-daemon -Porg.gradle.java.installations.paths=/opt/java/openjdk
+        ./gradlew clean
+        ./gradlew :node:test :cli:test
+        ./gradlew :runner:jar --no-configure-on-demand
         find . -name "$$RUNNER_SEARCH_PATTERN" -exec cp {} /build/runner.jar \;
         if [ ! -f /build/runner.jar ]; then
           echo 'runner.jar not found'
@@ -80,6 +81,8 @@ services:
     volumes:
       - "./cache/polocloud/build:/app"
       - "./data/polocloud:/data"
+    environment:
+      TERM: "dumb"
     ports:
       - 25565:25565
     stdin_open: true

@@ -22,8 +22,8 @@ services:
       #     TARGET_VERSION: "master"
       #     REPO_URL: "...fork url..."
       #     RUNNER_SEARCH_PATTERN: "...runner search pattern..."
-    working_dir: "/data"
-    user: "1000:1000"
+    environment:
+      TERM: "dumb"
     volumes:
       - "./data/polocloud:/data"
     ports:
@@ -31,6 +31,8 @@ services:
     stdin_open: true
     tty: true
     init: true
+    working_dir: "/data"
+    user: "1000:1000"
     depends_on:
       polocloud-init:
         condition: "service_completed_successfully"

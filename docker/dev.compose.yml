@@ -17,9 +17,9 @@ services:
   polocloud:
     build:
       context: ..
-      dockerfile: dev.Dockerfile
-    working_dir: "/data"
-    user: "1000:1000"
+      dockerfile: docker/dev.Dockerfile
+    environment:
+      TERM: "dumb"
     volumes:
       - "./data/polocloud:/data"
     ports:
@@ -27,6 +27,8 @@ services:
     stdin_open: true
     tty: true
     init: true
+    working_dir: "/data"
+    user: "1000:1000"
     depends_on:
       polocloud-init:
         condition: "service_completed_successfully"
