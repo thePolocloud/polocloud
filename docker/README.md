@@ -7,9 +7,6 @@ This directory contains examples for your deployment.
 
 </div>
 
-> ⚠️ WARNING!  
-> Docker is not fully supported yet: [Known Issues](./KNOWN_ISSUES.md)
-
 ## Dockerfile Images
 
 <details>
@@ -33,6 +30,8 @@ docker run -it --rm -v ./data/polocloud:/data polocloud
 Or from the repository root:
 
 ```bash
+mkdir -p ./docker/data/polocloud
+sudo chown -R 1000:1000 ./docker/data/polocloud
 docker build -t polocloud -f docker/Dockerfile .
 docker run -it --rm -v ./docker/data/polocloud:/data polocloud
 ```
@@ -52,6 +51,8 @@ Less independent image that requires the already cloned repo at current location
 Execute the following from the repository root directory:
 
 ```bash
+mkdir -p ./docker/data/polocloud
+sudo chown -R 1000:1000 ./docker/data/polocloud
 docker build -t polocloud-dev -f docker/dev.Dockerfile .
 docker run -it --rm -v ./docker/data/polocloud:/data polocloud-dev
 ```
@@ -89,9 +90,9 @@ Rebuild after image changes with `docker compose up -d --build`. Attach to the c
 </details>
 
 <details>
-<summary><strong>`imageless.compose.yml`</strong></summary>
+<summary><strong>`buildless.compose.yml`</strong></summary>
 
-### `imageless.compose.yml` - stack without Dockerfile
+### `buildless.compose.yml` - stack without Dockerfile
 
 A Docker Compose stack using a container pipeline (instead of a multi-stage image) and cache to disk mount points:
 
@@ -110,10 +111,10 @@ docker compose up -d
 Or from the repository root:
 
 ```bash
-docker compose -f docker/imageless.compose.yml up -d
+docker compose -f docker/buildless.compose.yml up -d
 ```
 
-Attach to the console with `docker attach $(docker compose -f imageless.compose.yml ps -q polocloud)`.
+Attach to the console with `docker attach $(docker compose -f buildless.compose.yml ps -q polocloud)`.
 
 </details>
 
@@ -146,7 +147,7 @@ Rebuild after source changes with `--build`. Attach to the console with `docker 
 
 ## Configuration
 
-The `Dockerfile` and `imageless.compose.yml` support these options:
+The `Dockerfile` and `buildless.compose.yml` support these options:
 
 - **`TARGET_VERSION`:** Defaults to `master`, but you can set any git tag, branch or commit hash to pin the used version.
 - **`REPO_URL`:** Defaults to the official PoloCloud repository but can be replaced to use a mirror or test a fork.
@@ -159,7 +160,7 @@ docker build ...options... --build-arg TARGET_VERSION="...some tag..."
 ```
 
 The `compose.yml` has example build args as comments.
-For the `imageless.compose.yml` stack you can replace its environment variables that match the build args.
+For the `buildless.compose.yml` stack you can replace its environment variables that match the build args.
 
 </details>
 
@@ -172,9 +173,9 @@ The compose stacks are designed for customization.
 
 ### Data & Cache Mounts
 
-All stacks mount PoloCloud data at `./data/polocloud/`. The imageless stack also mounts build caches at `./cache/polocloud/`.
+All stacks mount PoloCloud data at `./data/polocloud/`. The buildless stack also mounts build caches at `./cache/polocloud/`.
 
-You can use sibling directories under `./data/*/` (and `./cache/*/` for imageless) for your own extra services like databases for your Minecraft plugins.
+You can use sibling directories under `./data/*/` (and `./cache/*/` for buildless) for your own extra services like databases for your Minecraft plugins.
 
 You can use `./data/perms/` for your permission system and add a database container to the stack that mounts it.
 
@@ -225,8 +226,7 @@ If you are having trouble with host file permissions, give your user a group wit
 
 ### Issues?
 
-Read [Known Issues](./KNOWN_ISSUES.md) first. If you encounter any new issues with your Docker setup,  
-you are welcome to create an [github issue](https://github.com/thePolocloud/polocloud/issues) or report the issue on the Discord server.
+Your welcome to create an [github issue](https://github.com/thePolocloud/polocloud/issues) or report issues on the Discord server.
 
 ### 🤝 Community
 
