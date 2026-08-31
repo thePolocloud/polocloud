@@ -73,71 +73,76 @@ class FactoryService(
          service.hostname = nodeHost
          service.static = group.static
 
-        // Templates are laid down first — tasks below then patch specific keys in
-        // whatever files the templates (or the platform itself, on first launch) left
-        // behind, so template content must already be in place before tasks run.
-        service.templates = group.templates
-        GroupTemplateService.copyInto(group.templates, workDir)
+         try {
+            // Templates are laid down first — tasks below then patch specific keys in
+            // whatever files the templates (or the platform itself, on first launch) left
+            // behind, so template content must already be in place before tasks run.
+            service.templates = group.templates
+            GroupTemplateService.copyInto(group.templates, workDir)
 
-        installBridgePlugin(platform, workDir)
-        applyTasks(platform, version, service, group, workDir)
+            installBridgePlugin(platform, workDir)
+            applyTasks(platform, version, service, group, workDir)
 
-        val identityDir = File(workDir, "identity/service")
-        ServiceIdentityProvisioner.provision(identityDir, service.id.toString(), group.name)
+            val identityDir = File(workDir, "identity/service")
+            ServiceIdentityProvisioner.provision(identityDir, service.id.toString(), group.name)
 
-        val proc = process.start(
-            jar,
-            environment = mapOf(
-                "POLOCLOUD_IDENTITY_DIR" to identityDir.absolutePath,
-                // Loopback: the service reaches its own node locally, regardless of the
-                // host it is advertised under.
-                "POLOCLOUD_NODE_HOST" to NODE_BACK_CONNECT_HOST,
-                "POLOCLOUD_NODE_PORT" to nodePort.toString(),
-                // Lets the api/bridge running inside this process identify itself, e.g. so
-                // a bridge plugin can tell which TabCompleteRequestEvent is addressed to it.
-                "POLOCLOUD_SERVICE_NAME" to service.name(),
-            ),
-        )
+            val proc = process.start(
+                jar,
+                environment = mapOf(
+                    "POLOCLOUD_IDENTITY_DIR" to identityDir.absolutePath,
+                    // Loopback: the service reaches its own node locally, regardless of the
+                    // host it is advertised under.
+                    "POLOCLOUD_NODE_HOST" to NODE_BACK_CONNECT_HOST,
+                    "POLOCLOUD_NODE_PORT" to nodePort.toString(),
+                    // Lets the api/bridge running inside this process identify itself, e.g. so
+                    // a bridge plugin can tell which TabCompleteRequestEvent is addressed to it.
+                    "POLOCLOUD_SERVICE_NAME" to service.name(),
+                ),
+            )
 
-        service.process = proc
-        service.workDir = workDir.toPath()
-        service.startedAt = System.currentTimeMillis()
-        // Start pumping the process console into the service log buffer so `service <name> logs`
-        // can tail it.
-        service.startLogCapture()
-        // The process is alive but the server is still loading — it only counts as online
-        // once ServicePingFactory can reach it, which then flips the state to RUNNING and
-        // fires ServiceOnlineEvent.
-        service.state = ServiceState.STARTING
-        serviceProvider.localServices.add(service)
-        // Persist the now-assigned port/host/state so the database reflects the live
-        // service instead of the placeholder row written while it was still queued.
-        serviceProvider.persist(service)
-        // The process can end on its own at any time — a crash, or `/stop` typed in the
-        // service's own console — without the node ever commanding it. Without this hook
-        // that was only noticed incidentally, up to 2s later, when the scaling queue
-        // happened to touch this group. React immediately instead: shutdownLocal() is safe
-        // to call from here even if it races an operator-driven shutdown of the same
-        // service — LocalService.shutdown()'s own CAS guard is the dedup point, not this
-        // hook, so whichever side notices first does the cleanup and the other is a no-op.
-        proc.onExit().thenRun {
-            // Only log/react if this callback is actually the one performing cleanup —
-            // an operator-issued `service <name> shutdown` claims LocalService.shutdown()'s
-            // CAS guard first, in which case this is a harmless no-op and logging here
-            // would misleadingly call a commanded stop "unexpected".
-            if (serviceProvider.shutdownLocal(service)) {
-                val ranForMillis = System.currentTimeMillis() - service.startedAt
-                logger.info(
-                    "Service {} process exited unexpectedly after {}ms (crash, or `/stop` in its console) — cleaned up",
-                    service.name(), ranForMillis
-                )
-                // Feeds the crash-loop backoff: repeatedly dying moments after start (bad
-                // platform args, a plugin erroring on load, a port collision) must not be
-                // restarted as fast as start+detect-exit allows — see CrashLoopGuard.
-                serviceProvider.crashLoopGuard.recordExit(group.name, ranForMillis)
+            service.process = proc
+            service.workDir = workDir.toPath()
+            service.startedAt = System.currentTimeMillis()
+            // Start pumping the process console into the service log buffer so `service <name> logs`
+            // can tail it.
+            service.startLogCapture()
+            // The process is alive but the server is still loading — it only counts as online
+            // once ServicePingFactory can reach it, which then flips the state to RUNNING and
+            // fires ServiceOnlineEvent.
+            service.state = ServiceState.STARTING
+            serviceProvider.localServices.add(service)
+            // Persist the now-assigned port/host/state so the database reflects the live
+            // service instead of the placeholder row written while it was still queued.
+            serviceProvider.persist(service)
+
+            // The process can end on its own at any time — a crash, or `/stop` typed in the
+            // service's own console — without the node ever commanding it. Without this hook
+            // that was only noticed incidentally, up to 2s later, when the scaling queue
+            // happened to touch this group. React immediately instead: shutdownLocal() is safe
+            // to call from here even if it races an operator-driven shutdown of the same
+            // service — LocalService.shutdown()'s own CAS guard is the dedup point, not this
+            // hook, so whichever side notices first does the cleanup and the other is a no-op.
+            proc.onExit().thenRun {
+                // Only log/react if this callback is actually the one performing cleanup —
+                // an operator-issued `service <name> shutdown` claims LocalService.shutdown()'s
+                // CAS guard first, in which case this is a harmless no-op and logging here
+                // would misleadingly call a commanded stop "unexpected".
+                if (serviceProvider.shutdownLocal(service)) {
+                    val ranForMillis = System.currentTimeMillis() - service.startedAt
+                    logger.info(
+                        "Service {} process exited unexpectedly after {}ms (crash, or `/stop` in its console) — cleaned up",
+                        service.name(), ranForMillis
+                    )
+                    // Feeds the crash-loop backoff: repeatedly dying moments after start (bad
+                    // platform args, a plugin erroring on load, a port collision) must not be
+                    // restarted as fast as start+detect-exit allows — see CrashLoopGuard.
+                    serviceProvider.crashLoopGuard.recordExit(group.name, ranForMillis)
+                }
             }
+            logger.info("Service {}-{} started (pid: {})", group.name, service.serviceIndex, proc.pid())
+        } finally {
+            PortDetector.release(service.nodeId, service.port)
         }
-        logger.info("Service {}-{} started (pid: {})", group.name, service.serviceIndex, proc.pid())
     }
 
     /**
