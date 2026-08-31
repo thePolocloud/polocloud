@@ -1,0 +1,38 @@
+# PoloCloud non-root Docker Compose stack
+
+services:
+  polocloud-init:
+    image: "alpine"
+    user: "root"
+    volumes:
+      - "./data:/data"
+    entrypoint:
+      - "/bin/sh"
+      - "-c"
+      - |
+        mkdir -p /data/polocloud
+        chown -R 1000:1000 /data
+        chmod -R 770 /data
+
+  polocloud:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # args:
+      #     TARGET_VERSION: "master"
+      #     REPO_URL: "...fork url..."
+      #     RUNNER_SEARCH_PATTERN: "...runner search pattern..."
+    environment:
+      TERM: "dumb"
+    volumes:
+      - "./data/polocloud:/data"
+    ports:
+      - "25565:25565"
+    stdin_open: true
+    tty: true
+    init: true
+    working_dir: "/data"
+    user: "1000:1000"
+    depends_on:
+      polocloud-init:
+        condition: "service_completed_successfully"

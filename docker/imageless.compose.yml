@@ -1,0 +1,93 @@
+# PoloCloud imageless non-root Docker Compose stack
+
+services:
+  polocloud-init:
+    image: "alpine"
+    user: "root"
+    volumes:
+      - "./data:/data"
+      - "./cache:/cache"
+    entrypoint:
+      - "/bin/sh"
+      - "-c"
+      - |
+        mkdir -p /cache/polocloud/build /cache/polocloud/repo /data/polocloud
+        chown -R 1000:1000 /cache /data
+        chmod -R 770 /cache /data
+
+  polocloud-cloner:
+    container_name: "polocloud-cloner"
+    image: "alpine/git"
+    environment:
+      TARGET_VERSION: "master" # pin via version: v3.0.2-alpha.2
+      REPO_URL: "https://github.com/thePolocloud/polocloud.git" # optional for forks
+    volumes:
+      - "./cache/polocloud/repo:/repo"
+    working_dir: "/repo"
+    user: "1000:1000"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ ! -d /repo/.git ]; then
+          git clone "$$REPO_URL" /repo
+        fi
+        git checkout "$$TARGET_VERSION"
+        git -C /repo pull
+    depends_on:
+      polocloud-init:
+        condition: "service_completed_successfully"
+
+  polocloud-builder:
+    image: "azul/zulu-openjdk:25"
+    environment:
+      GRADLE_USER_HOME: "/repo/.gradle" # fix lock file issue
+      ENV GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+      RUNNER_SEARCH_PATTERN: "runner-*.local.jar" # replace if outdated
+    volumes:
+      - "./cache/polocloud/repo:/repo"
+      - "./cache/polocloud/build:/build"
+    working_dir: "/repo"
+    user: "1000:1000"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ -f /build/runner.jar ]; then
+          echo 'jar already exists, skip build'
+          exit 0
+        fi
+        ./gradlew clean
+        ./gradlew :node:test :cli:test
+        ./gradlew :runner:jar --no-configure-on-demand
+        find . -name "$$RUNNER_SEARCH_PATTERN" -exec cp {} /build/runner.jar \;
+        if [ ! -f /build/runner.jar ]; then
+          echo 'runner.jar not found'
+          exit 1
+        fi
+    depends_on:
+      polocloud-cloner:
+        condition: "service_completed_successfully"
+
+  polocloud:
+    image: "azul/zulu-openjdk:25-jre"
+    working_dir: "/data"
+    user: "1000:1000"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        java -jar /app/runner.jar
+    volumes:
+      - "./cache/polocloud/build:/app"
+      - "./data/polocloud:/data"
+    environment:
+      TERM: "dumb"
+    ports:
+      - 25565:25565
+    stdin_open: true
+    tty: true
+    init: true
+    depends_on:
+      polocloud-builder:
+        condition: "service_completed_successfully"
