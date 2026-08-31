@@ -56,10 +56,14 @@ class FactoryService(
 
         val platform = platformService.find(group.platform)
             ?: throw IllegalArgumentException("Platform '${group.platform}' is not loaded")
-        val version = platform.versions.find { it.version == group.version }
+        val resolvedVersion = platform.versions.find { it.version == group.version }
             ?: throw IllegalArgumentException(
                 "Version '${group.version}' not available for platform '${group.platform}'"
             )
+        // Falls back to this group's last known-good build if the newly-resolved one is
+        // the exact build that just crash-looped this group — see PlatformVersionPinning.
+        val version = PlatformVersionPinning.resolve(group, resolvedVersion)
+        service.platformBuild = version.build
 
         val workDir = File("servers/${group.name}-${service.serviceIndex}")
         val process = PlatformProcess(platform, version)
@@ -137,6 +141,14 @@ class FactoryService(
                     // platform args, a plugin erroring on load, a port collision) must not be
                     // restarted as fast as start+detect-exit allows — see CrashLoopGuard.
                     serviceProvider.crashLoopGuard.recordExit(group.name, ranForMillis)
+                    // Once that repeated-fast-failure threshold actually trips backoff,
+                    // quarantine the build that was running so the next replacement (which
+                    // otherwise re-resolves to this exact same "latest" build) falls back to
+                    // whatever previously came online instead of retrying the same bad jar
+                    // forever — see PlatformVersionPinning.
+                    if (serviceProvider.crashLoopGuard.isBackingOff(group.name)) {
+                        PlatformVersionPinning.recordFailure(group, version.build)
+                    }
                 }
             }
             logger.info("Service {}-{} started (pid: {})", group.name, service.serviceIndex, proc.pid())

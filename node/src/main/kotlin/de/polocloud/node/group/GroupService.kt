@@ -100,5 +100,6 @@ open class GroupService(private val platformService: PlatformService = PlatformS
      */
     open fun delete(group: Group) {
         GroupRepository.delete(group)
+        GroupVersionPinRepository.delete(group.name)
     }
 }

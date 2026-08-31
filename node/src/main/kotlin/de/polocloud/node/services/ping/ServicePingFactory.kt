@@ -1,10 +1,12 @@
 package de.polocloud.node.services.ping
 
 import de.polocloud.node.event.ClusterEventService
+import de.polocloud.node.group.GroupRepository
 import de.polocloud.node.services.LocalService
 import de.polocloud.node.services.ServiceEventMapper
 import de.polocloud.node.services.ServiceProvider
 import de.polocloud.node.services.ServiceResourceSampler
+import de.polocloud.node.services.factory.PlatformVersionPinning
 import de.polocloud.shared.service.ServiceState
 import de.polocloud.shared.event.server.PlayerCountChangedEvent
 import de.polocloud.shared.event.server.ServiceOnlineEvent
@@ -120,6 +122,13 @@ class ServicePingFactory(private val serviceProvider: ServiceProvider) {
         // Persist the RUNNING transition so the database no longer shows the service as
         // STARTING once it is actually online.
         serviceProvider.persist(service)
+
+        if (service.platformBuild >= 0) {
+            GroupRepository.find(service.groupName)?.let { group ->
+                PlatformVersionPinning.recordSuccess(group, service.platformBuild)
+            }
+        }
+
         logger.info(
             "Service {} is ONLINE — {} (protocol {}), {}/{} players, {}ms",
             service.name(), result.versionName, result.protocol,

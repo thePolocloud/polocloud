@@ -34,6 +34,20 @@ class LocalService(private val service: Service) : Service(
     var startedAt: Long = 0
 
     /**
+     * Build number of the [de.polocloud.node.services.factory.platform.PlatformVersion]
+     * this instance was actually started with — not necessarily the build
+     * [de.polocloud.node.services.factory.platform.PlatformService] currently resolves as
+     * "latest" for [de.polocloud.node.group.Group.version], since
+     * [de.polocloud.node.services.factory.PlatformVersionPinning] can fall back to an
+     * older one. `-1` until the service has actually been started. Not a persisted
+     * [Service] column, only meaningful for the lifetime of this in-memory instance; read
+     * by [de.polocloud.node.services.ping.ServicePingFactory] (to record a build that came
+     * online) and [de.polocloud.node.services.factory.FactoryService]'s `onExit` hook (to
+     * record one that crash-looped).
+     */
+    var platformBuild: Int = -1
+
+    /**
      * Most recently sampled snapshot of this process's descendant OS processes, refreshed
      * by [de.polocloud.node.services.ping.ServicePingFactory] while [process] is alive.
      *

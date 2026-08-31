@@ -68,17 +68,17 @@ class PlatformProcess(
         }
 
         if (version.source == PlatformVersionSource.LOCAL_FILE) {
-            // Custom local-file versions are copied into this cache the moment they're
-            // attached (see CustomPlatformService.addVersion), specifically so a live jar
-            // never depends on the operator's original file surviving until a service is
-            // actually started. Reaching this branch means that cache entry was lost after
-            // the fact (e.g. someone cleared .cache/platforms/versions by hand) — there is
-            // no original download URL to fall back to, so fail clearly instead of the
-            // confusing URISyntaxException an empty downloadUrl would otherwise produce.
             error(
                 "Cached jar for custom platform '${platform.name}' version '${version.version}' " +
                     "is missing and was sourced from a local file, so it cannot be re-downloaded " +
                     "automatically. Re-attach the version via 'platform version add'."
+            )
+        }
+
+        if (version.downloadUrl.isBlank()) {
+            error(
+                "Cached jar for '${platform.name}' version '${version.version}' build ${version.build} " +
+                    "is missing and there is no download URL to re-fetch it from."
             )
         }
 
