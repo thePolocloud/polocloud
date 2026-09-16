@@ -43,7 +43,8 @@ message DeleteGroupResponse {
 
 message GroupData {
   string name = 1;
-  int32 memory = 2;
+  // Minimum heap (-Xms, MB) passed to each service process of this group.
+  int32 minMemory = 2;
   double startThreshold = 3;
   int64 minOnline = 4;
   int64 maxOnline = 5;
@@ -57,4 +58,6 @@ message GroupData {
   // Names of the nodes this group may start services on. Empty means unrestricted —
   // any online node is eligible.
   repeated string nodes = 10;
+  // Maximum heap (-Xmx, MB) passed to each service process of this group.
+  int32 maxMemory = 11;
 }

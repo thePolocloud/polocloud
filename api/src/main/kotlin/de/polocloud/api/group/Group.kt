@@ -5,7 +5,10 @@ import de.polocloud.shared.property.PropertyHolder
 
 data class Group (
     val name: String,
-    val memory: Int,
+    /** Minimum heap (-Xms, MB) passed to each service process of this group. */
+    val minMemory: Int,
+    /** Maximum heap (-Xmx, MB) passed to each service process of this group. */
+    val maxMemory: Int,
     val startThreshold: Double,
     val minOnline: Long,
     val maxOnline: Long,

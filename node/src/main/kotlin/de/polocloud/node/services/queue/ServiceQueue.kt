@@ -107,7 +107,7 @@ class ServiceQueue(
         if (allGroups.isEmpty()) return
 
         val online = onlineNodes()
-        val groupMemoryMb = allGroups.associate { it.name to it.memory }
+        val groupMemoryMb = allGroups.associate { it.name to it.maxMemory }
         val usedMemoryMb = nodeMemoryUsage(online, groupMemoryMb).toMutableMap()
 
         for (group in allGroups) {
@@ -144,11 +144,11 @@ class ServiceQueue(
 
             if (clusterNeeded <= 0) continue
 
-            val assignment = assignReplicas(eligible, cluster.perNodeRunning, usedMemoryMb, group.memory, clusterNeeded.toInt())
+            val assignment = assignReplicas(eligible, cluster.perNodeRunning, usedMemoryMb, group.maxMemory, clusterNeeded.toInt())
             val myShare = assignment[self.name()] ?: 0
             if (myShare <= 0) continue
 
-            usedMemoryMb[self.name()] = (usedMemoryMb[self.name()] ?: 0) + myShare * group.memory
+            usedMemoryMb[self.name()] = (usedMemoryMb[self.name()] ?: 0) + myShare * group.maxMemory
 
             if (loadTriggered && minOnlineNeeded <= 0) {
                 logger.info(
@@ -177,8 +177,8 @@ class ServiceQueue(
 
                 serviceProvider.update(service)
                 synchronized(queue) { queue.offer(Pair(service, group)) }
-                logger.info("Queued {}-{} [memory: {}MB, platform: {}/{}]",
-                    group.name, index, group.memory, group.platform, group.version
+                logger.info("Queued {}-{} [memory: {}-{}MB, platform: {}/{}]",
+                    group.name, index, group.minMemory, group.maxMemory, group.platform, group.version
                 )
             }
         }
@@ -319,7 +319,7 @@ class ServiceQueue(
     }
 
     private fun startOne(service: LocalService, group: Group) {
-        logger.info("Starting {}-{} [memory: {}MB, platform: {}/{}]", group.name, service.serviceIndex, group.memory, group.platform, group.version)
+        logger.info("Starting {}-{} [memory: {}-{}MB, platform: {}/{}]", group.name, service.serviceIndex, group.minMemory, group.maxMemory, group.platform, group.version)
         try {
             factory.start(service, group)
         } catch (e: Exception) {

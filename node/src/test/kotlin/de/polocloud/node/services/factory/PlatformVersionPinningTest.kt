@@ -43,7 +43,7 @@ class PlatformVersionPinningTest {
     }
 
     private fun group(name: String, version: String = "1.21.4") =
-        Group(name, 512, 0.8, 1, 1, "paper", version)
+        Group(name, 512, 512, 0.8, 1, 1, "paper", version)
 
     private fun version(build: Int, mcVersion: String = "1.21.4") =
         PlatformVersion(version = mcVersion, build = build, downloadUrl = "https://example.invalid/$build.jar")

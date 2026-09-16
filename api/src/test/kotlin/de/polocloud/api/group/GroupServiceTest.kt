@@ -34,7 +34,8 @@ class GroupServiceTest {
 
     private fun data(name: String, platform: String) = GroupData.newBuilder()
         .setName(name)
-        .setMemory(512)
+        .setMinMemory(512)
+        .setMaxMemory(512)
         .setStartThreshold(0.5)
         .setMinOnline(1)
         .setMaxOnline(2)
@@ -89,13 +90,15 @@ class GroupServiceTest {
         val service = GroupService(client)
 
         val created = service.create("Lobby")
-            .memory(1024)
+            .minMemory(768)
+            .maxMemory(1024)
             .platform("velocity")
             .version("3.5.0")
             .submit()
 
         assertEquals("Lobby", created.name)
-        assertEquals(1024, created.memory)
+        assertEquals(768, created.minMemory)
+        assertEquals(1024, created.maxMemory)
         assertTrue(client.storage.containsKey("Lobby"))
     }
 
@@ -105,11 +108,11 @@ class GroupServiceTest {
         val service = GroupService(client)
 
         service.edit("Lobby") { builder ->
-            builder.platform("paper").memory(2048)
+            builder.platform("paper").maxMemory(2048)
         }
 
         assertEquals("paper", client.storage["Lobby"]!!.platform)
-        assertEquals(2048, client.storage["Lobby"]!!.memory)
+        assertEquals(2048, client.storage["Lobby"]!!.maxMemory)
     }
 
     @Test
@@ -117,10 +120,10 @@ class GroupServiceTest {
         val client = FakeGroupApiClient(listOf(data("Lobby", "velocity")))
         val service = GroupService(client)
 
-        service.edit("Lobby") { builder -> builder.memory(2048) }
+        service.edit("Lobby") { builder -> builder.maxMemory(2048) }
 
         val updated = client.storage["Lobby"]!!
-        assertEquals(2048, updated.memory)
+        assertEquals(2048, updated.maxMemory)
         assertEquals(0.5, updated.startThreshold)
         assertEquals(1, updated.minOnline)
         assertEquals(2, updated.maxOnline)

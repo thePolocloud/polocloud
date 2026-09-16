@@ -30,7 +30,8 @@ class GroupPropertiesTest {
     fun `properties round-trip through the proto mapper`() {
         val data = GroupData.newBuilder()
             .setName("lobby")
-            .setMemory(512)
+            .setMinMemory(512)
+            .setMaxMemory(512)
             .setPlatform("velocity")
             .setVersion("3.5.0")
             .putProperties("fallback", "true")

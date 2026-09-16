@@ -106,13 +106,16 @@ class PlatformProcess(
      *
      * @param jarFile The JAR file to execute.
      * @param environment Extra environment variables to expose to the process.
+     * @param extraJvmArgs Additional JVM flags placed before [Platform.jvmArgs] (e.g. the
+     *                      group's `-Xms`/`-Xmx` heap bounds) — earlier in the command line
+     *                      so an explicit flag in [Platform.jvmArgs] can still override them.
      * @return The running [Process].
      * @throws IllegalStateException if no runtime is registered for the platform language.
      */
-    fun start(jarFile: File, environment: Map<String, String> = emptyMap()): Process {
+    fun start(jarFile: File, environment: Map<String, String> = emptyMap(), extraJvmArgs: List<String> = emptyList()): Process {
         val executable = resolveExecutable()
         val runtime = PlatformRuntime.forLanguage(platform.language)
-        val command = runtime.buildCommand(executable, jarFile, platform.jvmArgs, platform.globalArgs)
+        val command = runtime.buildCommand(executable, jarFile, extraJvmArgs + platform.jvmArgs, platform.globalArgs)
         logger.info("Starting ${platform.name} ${version.version} (build ${version.build})")
         return ProcessBuilder(command)
             .directory(jarFile.parentFile)

@@ -70,7 +70,7 @@ class GroupCommandTest {
 
     @BeforeEach
     fun setUp() {
-        groups = InMemoryGroupService(listOf(Group("lobby", 512, 0.5, 1, 3, "velocity", "3.5.0")))
+        groups = InMemoryGroupService(listOf(Group("lobby", 512, 512, 0.5, 1, 3, "velocity", "3.5.0")))
         commands = CommandService()
         commands.registerCommand(GroupCommand(groups, PlatformService(), ServiceProvider(), FakeWizardPrompt(emptyList())))
     }
@@ -101,9 +101,15 @@ class GroupCommandTest {
     }
 
     @Test
-    fun `edit memory updates the group`() {
-        assertNotNull(exec("edit", "lobby", "memory", "2048"))
-        assertEquals(2048, lobby().memory)
+    fun `edit minMemory updates the group`() {
+        assertNotNull(exec("edit", "lobby", "minMemory", "256"))
+        assertEquals(256, lobby().minMemory)
+    }
+
+    @Test
+    fun `edit maxMemory updates the group`() {
+        assertNotNull(exec("edit", "lobby", "maxMemory", "2048"))
+        assertEquals(2048, lobby().maxMemory)
     }
 
     @Test
@@ -169,7 +175,7 @@ class GroupCommandTest {
 
     @Test
     fun `editing an unknown group does not match`() {
-        assertNull(exec("edit", "does-not-exist", "memory", "2048"))
+        assertNull(exec("edit", "does-not-exist", "maxMemory", "2048"))
     }
 
     @Test

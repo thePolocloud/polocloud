@@ -6,21 +6,13 @@ import de.polocloud.database.RepositoryName
 @RepositoryName("groups")
 data class Group (
     @EntryIdentifier val name: String,
-    val memory: Int,
+    val minMemory: Int,
+    val maxMemory: Int,
     val startThreshold: Double,
     val minOnline: Long,
     val maxOnline: Long,
     val platform: String,
     val version: String,
-    // No default values on this constructor, even ergonomic ones (e.g. `static: Boolean =
-    // false`) — SqlExecutor.resolveMeta() in polocloud-database picks
-    // `declaredConstructors.first()` to reflectively rebuild rows, and a Kotlin default
-    // parameter value makes the compiler emit a second, synthetic constructor
-    // (real-arg-count + 2 for the bitmask/marker). `declaredConstructors` order is
-    // unspecified, so `.first()` can pick either one — when it picks the synthetic one,
-    // SqlExecutor.mapRow()'s N-arg call throws and every find()/findAll() on this table
-    // silently returns empty (the exception is swallowed and logged). Callers that want
-    // defaulting behavior should use named-arg construction at the call site instead.
     var static: Boolean,
     /**
      * Free-form key/value properties (e.g. `fallback=true`), persisted as JSON.
@@ -77,13 +69,14 @@ data class Group (
  * static field as a bogus extra column. Its value (`Group$Companion`) isn't `Serializable`,
  * so every insert fails with `NotSerializableException` even though the group still ends up
  * created in memory. `NodeData`/`Service` avoid a companion object for the same reason; this
- * keeps `Group` consistent with them while still being callable as `Group(name, memory, ...)`.
+ * keeps `Group` consistent with them while still being callable as `Group(name, minMemory, maxMemory, ...)`.
  * A constructor default would reintroduce a different reflection hazard instead — see
  * [Group.static]'s doc.
  */
 fun Group(
     name: String,
-    memory: Int,
+    minMemory: Int,
+    maxMemory: Int,
     startThreshold: Double,
     minOnline: Long,
     maxOnline: Long,
@@ -91,7 +84,8 @@ fun Group(
     version: String,
 ) = Group(
     name = name,
-    memory = memory,
+    minMemory = minMemory,
+    maxMemory = maxMemory,
     startThreshold = startThreshold,
     minOnline = minOnline,
     maxOnline = maxOnline,

@@ -29,7 +29,8 @@ class GroupSetupWizard(
     private val nameArgument = TextArgument("name")
     private val platformArgument = PlatformArgument("platform", platformService)
     private val versionArgument = PlatformVersionArgument("version", platformService, platformArgument)
-    private val memoryArgument = IntArgument("memory", minValue = 1)
+    private val minMemoryArgument = IntArgument("minMemory", minValue = 1)
+    private val maxMemoryArgument = IntArgument("maxMemory", minValue = 1)
     private val startThresholdArgument = DoubleArgument("startThreshold", minValue = 0.0, maxValue = 1.0)
     private val minOnlineArgument = LongArgument("minOnline", minValue = 0L)
     private val maxOnlineArgument = LongArgument("maxOnline", minValue = 0L)
@@ -61,11 +62,21 @@ class GroupSetupWizard(
             format = { it.version },
         ),
         WizardStep(
-            question = { "How much memory (in MB) should each service of this group get?" },
-            description = { "This is the maximum heap size passed to each service process." },
-            argument = memoryArgument,
-            label = "Memory",
+            question = { "How much minimum memory (in MB, -Xms) should each service of this group get?" },
+            description = { "This is the starting heap size passed to each service process." },
+            argument = minMemoryArgument,
+            label = "Min memory",
             format = { "$it MB" },
+        ),
+        WizardStep(
+            question = { "How much maximum memory (in MB, -Xmx) should each service of this group get?" },
+            description = { "This is the maximum heap size passed to each service process." },
+            argument = maxMemoryArgument,
+            label = "Max memory",
+            format = { "$it MB" },
+            extraValidation = { maxMemory, context ->
+                if (maxMemory < context.arg(minMemoryArgument)) "This must be at least the minimum memory." else null
+            },
         ),
         WizardStep(
             question = { "At what load ratio should a new service be started?" },
@@ -109,7 +120,8 @@ class GroupSetupWizard(
     override fun build(context: InputContext): Group {
         val group = groupService.create(
             context.arg(nameArgument),
-            context.arg(memoryArgument),
+            context.arg(minMemoryArgument),
+            context.arg(maxMemoryArgument),
             context.arg(startThresholdArgument),
             context.arg(minOnlineArgument),
             context.arg(maxOnlineArgument),

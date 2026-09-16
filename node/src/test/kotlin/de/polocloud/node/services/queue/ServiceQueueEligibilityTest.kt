@@ -96,7 +96,7 @@ class ServiceQueueEligibilityTest {
         maxOnline: Long = 10,
         startThreshold: Double = 0.0,
         nodes: List<String> = emptyList(),
-    ) = Group(name, 512, startThreshold, minOnline, maxOnline, "PAPER", "1.21").copy(nodesJson = TemplateCodec.encode(nodes))
+    ) = Group(name, 512, 512, startThreshold, minOnline, maxOnline, "PAPER", "1.21").copy(nodesJson = TemplateCodec.encode(nodes))
 
     private fun queue(
         provider: ServiceProvider = ServiceProvider(nodeId = selfId.toString()),

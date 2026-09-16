@@ -104,6 +104,7 @@ class FactoryService(
                     // a bridge plugin can tell which TabCompleteRequestEvent is addressed to it.
                     "POLOCLOUD_SERVICE_NAME" to service.name(),
                 ),
+                extraJvmArgs = memoryJvmArgs(platform, group),
             )
 
             service.process = proc
@@ -214,6 +215,15 @@ class FactoryService(
     private fun resolveServiceHost(platform: Platform): String {
         if (platform.type.equals("PROXY", ignoreCase = true)) return nodeHost
         return if (NodeRepository.count() <= 1) NODE_BACK_CONNECT_HOST else nodeHost
+    }
+
+    /**
+     * `-Xms`/`-Xmx` derived from [group]'s configured heap bounds. Only meaningful for a
+     * JVM-based platform — a Go binary has no such flags, so it gets none.
+     */
+    private fun memoryJvmArgs(platform: Platform, group: Group): List<String> {
+        if (!platform.language.equals("JAVA", ignoreCase = true)) return emptyList()
+        return listOf("-Xms${group.minMemory}M", "-Xmx${group.maxMemory}M")
     }
 
     /**

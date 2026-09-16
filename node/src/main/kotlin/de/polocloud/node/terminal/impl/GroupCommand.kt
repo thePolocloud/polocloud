@@ -41,7 +41,8 @@ class GroupCommand(
 
     init {
         val groupArgument = GroupArgument("name", groupService)
-        val memoryArgument = IntArgument("memory")
+        val minMemoryArgument = IntArgument("minMemory")
+        val maxMemoryArgument = IntArgument("maxMemory")
         val startThresholdArgument = DoubleArgument("startThreshold")
         val maxOnlineArgument = LongArgument("maxOnline")
         val minOnlineArgument = LongArgument("minOnline")
@@ -75,7 +76,7 @@ class GroupCommand(
                 val fallback = if (group.properties.containsKey("fallback")) " &8|&r fallback: ${white(group.properties["fallback"]!!)}" else ""
                 logger.info(
                     "  ${group.name} &8|&r platform: ${group.platform}/${group.version} " +
-                        "&8|&r memory: ${group.memory}MB &8|&r online: ${group.minOnline}-${group.maxOnline}$fallback"
+                        "&8|&r memory: ${group.minMemory}-${group.maxMemory}MB &8|&r online: ${group.minOnline}-${group.maxOnline}$fallback"
                 )
             }
         }, "List all groups", KeywordArgument("list"))
@@ -115,8 +116,13 @@ class GroupCommand(
 
         syntax({
             val group = it.arg(groupArgument)
-            update(group.copy(memory = it.arg(memoryArgument)), "memory", it.arg(memoryArgument))
-        }, "Edit a group's memory", KeywordArgument("edit"), groupArgument, KeywordArgument("memory"), memoryArgument)
+            update(group.copy(minMemory = it.arg(minMemoryArgument)), "minMemory", it.arg(minMemoryArgument))
+        }, "Edit a group's minimum memory (-Xms)", KeywordArgument("edit"), groupArgument, KeywordArgument("minMemory"), minMemoryArgument)
+
+        syntax({
+            val group = it.arg(groupArgument)
+            update(group.copy(maxMemory = it.arg(maxMemoryArgument)), "maxMemory", it.arg(maxMemoryArgument))
+        }, "Edit a group's maximum memory (-Xmx)", KeywordArgument("edit"), groupArgument, KeywordArgument("maxMemory"), maxMemoryArgument)
 
         syntax({
             val group = it.arg(groupArgument)
@@ -213,7 +219,7 @@ class GroupCommand(
         val running = serviceProvider.localServices.count { it.groupName.equals(group.name, ignoreCase = true) }
         logger.info("Group ${group.name}:")
         logger.info("  platform: ${white("${group.platform}/${group.version}")}")
-        logger.info("  memory: ${white("${group.memory}MB")}")
+        logger.info("  memory: ${white("${group.minMemory}-${group.maxMemory}MB")}")
         logger.info("  online: ${white("${group.minOnline}-${group.maxOnline}")} (start threshold: ${white(group.startThreshold.toString())})")
         logger.info("  static: ${white(group.static.toString())}")
         logger.info("  services: ${white("$running running")}")

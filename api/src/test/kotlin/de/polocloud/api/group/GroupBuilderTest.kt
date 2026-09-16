@@ -16,7 +16,8 @@ class GroupBuilderTest {
     fun `submit forwards the configured group`() {
         val result = builder()
             .name("Lobby")
-            .memory(1024)
+            .minMemory(768)
+            .maxMemory(1024)
             .startThreshold(0.7)
             .minOnline(1)
             .maxOnline(3)
@@ -25,7 +26,8 @@ class GroupBuilderTest {
             .submit()
 
         assertEquals("Lobby", result.name)
-        assertEquals(1024, result.memory)
+        assertEquals(768, result.minMemory)
+        assertEquals(1024, result.maxMemory)
         assertEquals(0.7, result.startThreshold)
         assertEquals(1, result.minOnline)
         assertEquals(3, result.maxOnline)
@@ -37,7 +39,8 @@ class GroupBuilderTest {
     @Test
     fun `defaults are applied when not overridden`() {
         val group = builder().name("Lobby").submit()
-        assertEquals(512, group.memory)
+        assertEquals(512, group.minMemory)
+        assertEquals(512, group.maxMemory)
         assertEquals(0.0, group.startThreshold)
         assertEquals(0, group.minOnline)
         assertEquals(1, group.maxOnline)
@@ -47,7 +50,7 @@ class GroupBuilderTest {
     @Test
     fun `a blank name is rejected`() {
         assertThrows(IllegalArgumentException::class.java) {
-            builder().memory(256).submit()
+            builder().minMemory(256).maxMemory(256).submit()
         }
     }
 

@@ -9,7 +9,8 @@ object GroupProtoMapper {
 
     fun toProto(group: Group): GroupData = GroupData.newBuilder()
         .setName(group.name)
-        .setMemory(group.memory)
+        .setMinMemory(group.minMemory)
+        .setMaxMemory(group.maxMemory)
         .setStartThreshold(group.startThreshold)
         .setMinOnline(group.minOnline)
         .setMaxOnline(group.maxOnline)
@@ -22,7 +23,8 @@ object GroupProtoMapper {
 
     fun toDomain(data: GroupData): Group = Group(
         name = data.name,
-        memory = data.memory,
+        minMemory = data.minMemory,
+        maxMemory = data.maxMemory,
         startThreshold = data.startThreshold,
         minOnline = data.minOnline,
         maxOnline = data.maxOnline,

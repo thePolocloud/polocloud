@@ -24,13 +24,13 @@ class GroupTemplatesTest {
 
     @Test
     fun `templates default to empty`() {
-        val group = Group("lobby", 512, 0.5, 1, 3, "velocity", "3.5.0")
+        val group = Group("lobby", 512, 512, 0.5, 1, 3, "velocity", "3.5.0")
         assertTrue(group.templates.isEmpty())
     }
 
     @Test
     fun `templates preserve insertion order`() {
-        val group = Group("lobby", 512, 0.5, 1, 3, "velocity", "3.5.0")
+        val group = Group("lobby", 512, 512, 0.5, 1, 3, "velocity", "3.5.0")
             .copy(templatesJson = TemplateCodec.encode(listOf("GLOBAL", "GLOBAL_PROXY", "lobby")))
         assertEquals(listOf("GLOBAL", "GLOBAL_PROXY", "lobby"), group.templates)
     }
@@ -39,7 +39,8 @@ class GroupTemplatesTest {
     fun `templates round-trip through the proto mapper`() {
         val data = GroupData.newBuilder()
             .setName("lobby")
-            .setMemory(512)
+            .setMinMemory(512)
+            .setMaxMemory(512)
             .setPlatform("velocity")
             .setVersion("3.5.0")
             .addAllTemplates(listOf("GLOBAL", "GLOBAL_PROXY", "lobby"))

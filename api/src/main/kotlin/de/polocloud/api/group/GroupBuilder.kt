@@ -17,7 +17,8 @@ class GroupBuilder internal constructor(
 ) {
 
     private var name: String = initial?.name ?: ""
-    private var memory: Int = initial?.memory ?: 512
+    private var minMemory: Int = initial?.minMemory ?: 512
+    private var maxMemory: Int = initial?.maxMemory ?: 512
     private var startThreshold: Double = initial?.startThreshold ?: 0.0
     private var minOnline: Long = initial?.minOnline ?: 0
     private var maxOnline: Long = initial?.maxOnline ?: 1
@@ -30,7 +31,8 @@ class GroupBuilder internal constructor(
     private val nodes: MutableList<String> = initial?.nodes?.toMutableList() ?: mutableListOf()
 
     fun name(name: String): GroupBuilder = apply { this.name = name }
-    fun memory(memory: Int): GroupBuilder = apply { this.memory = memory }
+    fun minMemory(minMemory: Int): GroupBuilder = apply { this.minMemory = minMemory }
+    fun maxMemory(maxMemory: Int): GroupBuilder = apply { this.maxMemory = maxMemory }
     fun startThreshold(startThreshold: Double): GroupBuilder = apply { this.startThreshold = startThreshold }
     fun minOnline(minOnline: Long): GroupBuilder = apply { this.minOnline = minOnline }
     fun maxOnline(maxOnline: Long): GroupBuilder = apply { this.maxOnline = maxOnline }
@@ -84,7 +86,7 @@ class GroupBuilder internal constructor(
     internal fun toGroup(): Group {
         require(name.isNotBlank()) { "Group name must be set" }
         return Group(
-            name, memory, startThreshold, minOnline, maxOnline, platform, version,
+            name, minMemory, maxMemory, startThreshold, minOnline, maxOnline, platform, version,
             properties, templates.toList(), nodes.toList(),
         )
     }
