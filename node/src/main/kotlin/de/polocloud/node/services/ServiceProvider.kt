@@ -26,8 +26,10 @@ private val SERVICE_SHUTDOWN_DISPATCHER = Dispatchers.IO.limitedParallelism(16)
 
 class ServiceProvider(
     nodePort: Int = 4241,
-    // Host services advertise to the API (the node's reachable hostname).
-    nodeHost: String = "127.0.0.1",
+    // Host services advertise to the API (the node's reachable hostname). Only ever
+    // used as-is for a proxy - see FactoryService.resolveServiceHost - so this mirrors
+    // GeneralConfiguration.serviceHostname's own default rather than loopback.
+    nodeHost: String = "0.0.0.0",
     /** Id of the node this provider runs on; attached to services in the API view. */
     val nodeId: String = "",
     /**

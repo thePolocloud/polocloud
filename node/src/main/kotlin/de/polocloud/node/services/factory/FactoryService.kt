@@ -13,6 +13,7 @@ import de.polocloud.node.services.factory.platform.Platform
 import de.polocloud.node.services.factory.platform.PlatformVersion
 import de.polocloud.node.services.factory.process.PlatformProcess
 import de.polocloud.node.services.factory.task.TaskExecutor
+import de.polocloud.node.cluster.node.NodeRepository
 import de.polocloud.node.security.ServiceIdentityProvisioner
 import de.polocloud.node.utils.PortDetector
 import de.polocloud.shared.event.server.ServerStartEvent
@@ -24,10 +25,11 @@ class FactoryService(
     private val platformService: PlatformService,
     private val serviceProvider: ServiceProvider,
     private val nodePort: Int = 4241,
-    // Host services are reachable on / advertise to the API. Derived from the node's
-    // configured hostname (see GeneralConfiguration.hostname) so a remote proxy can
-    // reach services that are not co-located, instead of a hard-coded 127.0.0.1.
-    private val nodeHost: String = "127.0.0.1",
+    // Host proxies are reachable on / advertise to the API (see resolveServiceHost;
+    // backend servers only fall back to this once the cluster has more than one node).
+    // Mirrors GeneralConfiguration.serviceHostname's own default of "0.0.0.0" rather
+    // than loopback, since players/peers must reach a proxy from outside this node.
+    private val nodeHost: String = "0.0.0.0",
 ) {
 
     private val logger = LoggerFactory.getLogger(FactoryService::class.java)
@@ -74,7 +76,7 @@ class FactoryService(
         group.properties.forEach { (key, value) -> service.properties.putIfAbsent(key, value) }
 
          service.port = assignPort(service, platform)
-         service.hostname = nodeHost
+         service.hostname = resolveServiceHost(platform)
          service.static = group.static
 
          try {
@@ -195,6 +197,23 @@ class FactoryService(
      */
     private fun assignPort(service: LocalService, platform: Platform): Int {
         return PortDetector.nextPort(service, platform);
+    }
+
+    /**
+     * The host a started service is advertised under.
+     *
+     * Backend servers are only ever dialed by a proxy - on a single-node setup that is
+     * this node's own, co-located proxy, so loopback is both correct and preferable to a
+     * public-facing address. Once a second node has joined the cluster that stops holding:
+     * a proxy placed on another node needs [nodeHost], the address reachable from outside
+     * this machine - 127.0.0.1 there would resolve to that other node itself, not here.
+     *
+     * Proxies are excluded from this: they must always advertise [nodeHost], since players
+     * and peer nodes reach them from outside this node's loopback regardless of cluster size.
+     */
+    private fun resolveServiceHost(platform: Platform): String {
+        if (platform.type.equals("PROXY", ignoreCase = true)) return nodeHost
+        return if (NodeRepository.count() <= 1) NODE_BACK_CONNECT_HOST else nodeHost
     }
 
     /**
