@@ -76,7 +76,7 @@ class FactoryService(
         group.properties.forEach { (key, value) -> service.properties.putIfAbsent(key, value) }
 
          service.port = assignPort(service, platform)
-         service.hostname = resolveServiceHost(platform)
+         service.hostname = resolveServiceHost(platform, group)
          service.static = group.static
 
          try {
@@ -201,7 +201,8 @@ class FactoryService(
     }
 
     /**
-     * The host a started service is advertised under.
+     * The host a started service is advertised under, and — for a proxy — the address it
+     * actually binds to (see `server_hostname` in [applyTasks]).
      *
      * Backend servers are only ever dialed by a proxy - on a single-node setup that is
      * this node's own, co-located proxy, so loopback is both correct and preferable to a
@@ -209,10 +210,16 @@ class FactoryService(
      * a proxy placed on another node needs [nodeHost], the address reachable from outside
      * this machine - 127.0.0.1 there would resolve to that other node itself, not here.
      *
-     * Proxies are excluded from this: they must always advertise [nodeHost], since players
-     * and peer nodes reach them from outside this node's loopback regardless of cluster size.
+     * Proxies are excluded from this: they must always advertise [nodeHost] (which defaults
+     * to `0.0.0.0`, i.e. every interface), since players and peer nodes reach them from
+     * outside this node's loopback regardless of cluster size.
+     *
+     * A group's `hostname` property (`group <name> edit property hostname <value>`)
+     * overrides both of the above unconditionally — e.g. to bind a proxy to one specific
+     * interface instead of every one, or to pin a backend server to a non-default address.
      */
-    private fun resolveServiceHost(platform: Platform): String {
+    private fun resolveServiceHost(platform: Platform, group: Group): String {
+        group.properties["hostname"]?.takeIf { it.isNotBlank() }?.let { return it }
         if (platform.type.equals("PROXY", ignoreCase = true)) return nodeHost
         return if (NodeRepository.count() <= 1) NODE_BACK_CONNECT_HOST else nodeHost
     }
