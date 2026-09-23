@@ -69,6 +69,7 @@ class NodeIdentityService(
             // set general.serviceHostname to the node's reachable address for a cluster.
             nodeHost = holder.value.general.serviceHostname,
             nodeId = localId.toString(),
+            serviceStopDelaySeconds = holder.value.general.serviceStopDelaySeconds,
         )
         // Shares serviceProvider's PlatformService so a group's default templates are
         // resolved (proxy vs. server) against the same loaded platform set services start

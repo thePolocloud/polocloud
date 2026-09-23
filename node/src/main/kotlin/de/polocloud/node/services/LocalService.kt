@@ -197,9 +197,13 @@ class LocalService(private val service: Service) : Service(
      * Terminates the process (if any), persists the resulting state and cleans up the
      * work directory. Returns `false` without doing anything if a concurrent caller is
      * already running (or has finished) this same cleanup — see [cleanedUp].
+     *
+     * @param stopDelaySeconds How long to wait, after asking the service to stop itself
+     *                         (see below), before falling back to killing it outright.
+     *                         Configured via `GeneralConfiguration.serviceStopDelaySeconds`.
      */
     @OptIn(ExperimentalPathApi::class)
-    fun shutdown(): Boolean {
+    fun shutdown(stopDelaySeconds: Long = 5): Boolean {
         if (!cleanedUp.compareAndSet(false, true)) return false
         logListeners.clear()
         process?.let { process ->
@@ -213,9 +217,25 @@ class LocalService(private val service: Service) : Service(
             // does not cascade termination — leftover children would be orphaned otherwise.
             val tree = (lastKnownDescendants + handle.descendants().toList() + handle).distinct()
 
+            // Ask the service to stop itself through its own console first, and give it
+            // stopDelaySeconds to actually do so, instead of killing the process outright.
+            // A platform like Paper only flushes/saves the world on this graceful path —
+            // Process.destroy() below is not a substitute: on Windows it's a hard
+            // TerminateProcess with no signal for the JVM to catch at all, so a service
+            // killed straight away can lose unsaved world data. "stop" covers vanilla/
+            // Bukkit/Paper/Forge/Fabric, "end" covers BungeeCord/Waterfall, "shutdown"
+            // covers Velocity — harmless "unknown command" no-ops on whichever platform
+            // wasn't actually running.
+            if (process.isAlive) {
+                listOf("stop", "end", "shutdown").forEach { executeCommand(it) }
+                runCatching { process.waitFor(stopDelaySeconds, TimeUnit.SECONDS) }
+            }
+
             // Ask the whole tree to terminate gracefully, then give it a moment.
-            tree.forEach { runCatching { it.destroy() } }
-            runCatching { process.waitFor(5, TimeUnit.SECONDS) }
+            if (tree.any { it.isAlive }) {
+                tree.forEach { runCatching { it.destroy() } }
+                runCatching { process.waitFor(5, TimeUnit.SECONDS) }
+            }
 
             // Force-kill anything that ignored the graceful request.
             tree.filter { it.isAlive }.forEach { runCatching { it.destroyForcibly() } }

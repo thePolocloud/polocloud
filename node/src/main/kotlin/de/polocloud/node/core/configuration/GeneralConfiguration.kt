@@ -31,4 +31,15 @@ data class GeneralConfiguration(
      * the update is only ever applied on demand via the `update` command.
      */
     var autoUpdate: Boolean = false,
+    /**
+     * Seconds a service is given to stop itself after being sent its own graceful stop
+     * command (see [de.polocloud.node.services.LocalService.shutdown]) before the node
+     * falls back to killing the process tree outright.
+     *
+     * Skipping this and killing immediately is unsafe for platforms like Paper, which only
+     * flush/save world state on their own graceful shutdown path — an outright kill (and on
+     * Windows, [Process.destroy] *is* an outright kill: there is no signal to catch there)
+     * can lose unsaved world data.
+     */
+    var serviceStopDelaySeconds: Long = 5,
 )

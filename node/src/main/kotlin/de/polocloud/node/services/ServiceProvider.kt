@@ -18,10 +18,11 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 
-// Each LocalService.shutdown() can block for up to ~7s (graceful wait + force-kill wait).
-// Run them in parallel so total shutdown time stays close to that ceiling instead of
-// growing with the number of running services - otherwise a container's SIGTERM-to-SIGKILL
-// grace period (commonly 10s) can expire mid-shutdown, killing the node before it finishes.
+// Each LocalService.shutdown() can block for up to ~(serviceStopDelaySeconds + 7)s
+// (in-console stop wait + graceful destroy() wait + force-kill wait). Run them in parallel
+// so total shutdown time stays close to that ceiling instead of growing with the number of
+// running services - otherwise a container's SIGTERM-to-SIGKILL grace period (commonly 10s)
+// can expire mid-shutdown, killing the node before it finishes.
 private val SERVICE_SHUTDOWN_DISPATCHER = Dispatchers.IO.limitedParallelism(16)
 
 class ServiceProvider(
@@ -38,6 +39,12 @@ class ServiceProvider(
      * default templates) instead of each loading its own copy.
      */
     val platformService: PlatformService = PlatformService(),
+    /**
+     * Seconds a service is given to stop itself (via [LocalService.shutdown]'s graceful
+     * console command) before it is killed outright. Mirrors
+     * `GeneralConfiguration.serviceStopDelaySeconds`.
+     */
+    private val serviceStopDelaySeconds: Long = 5,
 ) {
 
     private val logger = LoggerFactory.getLogger(ServiceProvider::class.java)
@@ -99,7 +106,7 @@ class ServiceProvider(
         runBlocking {
             coroutineScope {
                 localServices.map { service ->
-                    async(SERVICE_SHUTDOWN_DISPATCHER) { runCatching { service.shutdown() } }
+                    async(SERVICE_SHUTDOWN_DISPATCHER) { runCatching { service.shutdown(serviceStopDelaySeconds) } }
                 }.awaitAll()
             }
         }
@@ -142,7 +149,7 @@ class ServiceProvider(
     fun shutdownLocal(service: LocalService): Boolean {
         // A thrown exception is not the same as "a concurrent caller already handled this" —
         // only a clean `false` (the CAS guard in LocalService.shutdown) means skip.
-        val alreadyHandledElsewhere = !runCatching { service.shutdown() }.getOrDefault(true)
+        val alreadyHandledElsewhere = !runCatching { service.shutdown(serviceStopDelaySeconds) }.getOrDefault(true)
         if (alreadyHandledElsewhere) return false
         localServices.remove(service)
         ClusterEventService.call(ServerStoppedEvent(ServiceEventMapper.toShared(service)))
