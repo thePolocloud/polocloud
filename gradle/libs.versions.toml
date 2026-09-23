@@ -1,11 +1,11 @@
 [versions]
 
 # ── Kotlin ────────────────────────────────────────────────────────────────────
-kotlin-jvm                 = "2.4.10"
-kotlinSerializationPlugin = "2.4.10"
+kotlin-jvm                 = "2.4.20"
+kotlinSerializationPlugin = "2.4.20"
 kotlinxSerialization    = "1.11.0"
 kotlinxCoroutines       = "1.11.0"
-kotlin-reflect          = "2.4.10"
+kotlin-reflect          = "2.4.20"
 
 # ── gRPC / Protobuf ───────────────────────────────────────────────────────────
 grpc                    = "1.84.0"
@@ -17,7 +17,7 @@ javax-annotation-api    = "1.3.2"
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 log4j                   = "2.26.1"
-slf4j                   = "2.0.18"
+slf4j                   = "2.0.19"
 
 # ── CLI / System ──────────────────────────────────────────────────────────────
 jline                   = "4.4.3"
@@ -32,9 +32,9 @@ shadow                  = "9.6.1"
 spigot-api              = "26.1.2-R0.1-SNAPSHOT"
 
 # ── Security ──────────────────────────────────────────────────────────────────
-bcprov                  = "1.85"
+bcprov                  = "1.86"
 argon2                  = "2.12"
-bctls                   = "1.85"
+bctls                   = "1.86"
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 gson                    = "2.14.0"
