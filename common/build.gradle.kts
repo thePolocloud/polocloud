@@ -46,11 +46,12 @@ tasks.processResources {
     dependsOn(tasks.generateGitProperties)
 }
 
-// api's build.gradle.kts pins its toolchain to 25 to match bridge's expectation; this
-// module is one of api's own dependencies, so it must be pinned the same way — otherwise
-// it compiles at whatever JDK invokes Gradle, and api's dependency resolution fails on
-// any machine/CI whose default JDK isn't exactly 25 (a >25 default here still breaks the
-// build even though api itself is pinned correctly).
+tasks.withType<Jar>().configureEach {
+    if (name == "sourcesJar") {
+        dependsOn(tasks.generateGitProperties)
+    }
+}
+
 kotlin {
     jvmToolchain(25)
 }
