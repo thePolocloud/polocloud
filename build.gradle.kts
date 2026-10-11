@@ -2,22 +2,15 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.kapt) apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.maven.publish) apply false
 }
 
 allprojects {
     apply(from = rootProject.file("gradle/version.gradle.kts"))
 
     group = "de.polocloud"
-    // version is now set by gradle/version.gradle.kts — do NOT set it here
 
     repositories {
-        // NOTE: intentionally not using mavenCentral()/trailing-slash URLs here.
-        // The polocloud-gradle-plugin's MavenResolver builds artifact URLs as
-        // "$repo/$groupPath/...", so a trailing slash on the repo URL produces a
-        // double slash that 404s against Maven Central's CDN, silently marking
-        // every polocloudRuntime dependency as unresolvable ("unknown") in
-        // dependencies.index — which is skipped at runtime, causing
-        // NoClassDefFoundError for anything not in the hardcoded bootstrap set.
         maven {
             url = uri("https://repo.maven.apache.org/maven2")
         }
@@ -28,21 +21,52 @@ allprojects {
         }
     }
 
-    // The polocloud-gradle-plugin's GenerateDependencyIndexTask resolves each
-    // polocloudRuntime dependency's transitive tree independently and appends every
-    // result to dependencies.index without deduplicating — so a library pulled in
-    // transitively by two different polocloudRuntime entries (e.g. grpc-api via both
-    // the grpc and tls bundles) ends up listed twice, sometimes at two different
-    // resolved versions (e.g. kotlin-stdlib, log4j-core, guava). DependencyRegistry's
-    // download step only dedupes by the full group:artifact:version key, so two
-    // different versions of the same library both get downloaded and registered onto
-    // the runtime classpath. Post-process the generated index here, keeping only the
-    // highest version per group:artifact — same "newest wins" resolution Gradle
-    // itself would apply to a normal dependency graph.
     plugins.withId("de.polocloud.gradle.plugin") {
         tasks.named("generateDependencyIndex").configure {
             doLast {
                 dedupeDependencyIndex(outputs.files.singleFile)
+            }
+        }
+    }
+}
+
+val publishedModules = setOf("api", "proto", "common", "shared")
+
+configure(subprojects.filter { it.name in publishedModules }) {
+    apply(plugin = "com.vanniktech.maven.publish")
+
+    extensions.configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
+        publishToMavenCentral()
+        if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+            signAllPublications()
+        }
+
+        coordinates("de.polocloud", "polocloud-${project.name}", project.version.toString())
+
+        pom {
+            name.set("PoloCloud ${project.name}")
+            description.set("PoloCloud ${project.name} module")
+            url.set("https://github.com/thePolocloud/polocloud")
+            inceptionYear.set("2024")
+
+            licenses {
+                license {
+                    name.set("The Apache License, Version 2.0")
+                    url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    distribution.set("repo")
+                }
+            }
+            developers {
+                developer {
+                    id.set("httpmarco")
+                    name.set("Mirco Lindenau")
+                    url.set("https://github.com/httpmarco")
+                }
+            }
+            scm {
+                url.set("https://github.com/thePolocloud/polocloud")
+                connection.set("scm:git:git://github.com/thePolocloud/polocloud.git")
+                developerConnection.set("scm:git:ssh://git@github.com/thePolocloud/polocloud.git")
             }
         }
     }
@@ -89,13 +113,7 @@ fun compareVersions(a: String, b: String): Int {
     return 0
 }
 
-/**
- * Project-wide test suite: runs the `test` task of every module in one go.
- *
- * Usage: `./gradlew allTests`. This is the cross-module entry point — JUnit's own
- * `@Suite` only aggregates tests within a single module's classpath, so Gradle is
- * the right layer to run everything at once.
- */
+
 tasks.register("allTests") {
     group = "verification"
     description = "Runs the test task of every module (project-wide test suite)."

@@ -1,0 +1,124 @@
+name: Release
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # full history so we can read tags and build the changelog
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          prop() { grep -E "^polocloud\.version\.$1=" gradle.properties | cut -d= -f2 | tr -d '[:space:]'; }
+          VERSION="$(prop major).$(prop minor).$(prop patch)"
+          TAG="v$VERSION"
+
+          if git rev-parse -q --verify "refs/tags/$TAG" > /dev/null; then
+            echo "Tag $TAG already exists - nothing to release."
+            echo "release=false" >> $GITHUB_OUTPUT
+          else
+            echo "Releasing $VERSION"
+            echo "release=true" >> $GITHUB_OUTPUT
+          fi
+
+          LAST_TAG=$(git tag -l 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)
+          echo "version=$VERSION"   >> $GITHUB_OUTPUT
+          echo "tag=$TAG"           >> $GITHUB_OUTPUT
+          echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Set up JDK 25
+        if: steps.version.outputs.release == 'true'
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        if: steps.version.outputs.release == 'true'
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Build
+        if: steps.version.outputs.release == 'true'
+        # Tests run here too so a release is never cut from a failing build.
+        run: ./gradlew build
+
+      - name: Generate changelog
+        if: steps.version.outputs.release == 'true'
+        run: |
+          RANGE_START="${{ steps.version.outputs.last_tag }}"
+
+          if [ -z "$RANGE_START" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="$RANGE_START..HEAD"
+          fi
+
+          {
+            echo "## What's Changed"
+            echo ""
+            git log "$RANGE" \
+              --no-merges \
+              --pretty=format:"- %s (%h) by @%an"
+            echo ""
+            echo ""
+            if [ -n "$RANGE_START" ]; then
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${RANGE_START}...${{ steps.version.outputs.tag }}"
+            fi
+          } > CHANGELOG.md
+
+      - name: Stage release assets
+        if: steps.version.outputs.release == 'true'
+        run: |
+          # GitHub release assets are a flat list, so every asset's file name is
+          # normalized to start with "polocloud-" here.
+          mkdir -p release-assets
+          for f in \
+            runner/build/libs/*.jar \
+            addons/sign-system/build/libs/*-all.jar \
+            addons/hub-addon/build/libs/*-all.jar \
+            addons/notify-addon/build/libs/*-all.jar \
+            addons/proxy-addon/build/libs/*-all.jar \
+            addons/server-mobs-addon/build/libs/*-all.jar \
+            modules/cloudflare-module/build/libs/*.jar \
+          ; do
+            cp "$f" "release-assets/polocloud-$(basename "$f")"
+          done
+          ls -la release-assets
+
+      - name: Create GitHub Release
+        if: steps.version.outputs.release == 'true'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: PoloCloud ${{ steps.version.outputs.version }}
+          body_path: CHANGELOG.md
+          prerelease: false
+          draft: false
+          files: release-assets/*
+
+      # Runs after the GitHub release so a Central failure never blocks the assets.
+      - name: Publish API to Maven Central
+        if: steps.version.outputs.release == 'true'
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache

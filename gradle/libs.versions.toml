@@ -2,6 +2,7 @@
 
 # ── Kotlin ────────────────────────────────────────────────────────────────────
 kotlin-jvm                 = "2.4.20"
+mavenPublish               = "0.34.0"
 kotlinSerializationPlugin = "2.4.20"
 kotlinxSerialization    = "1.11.0"
 kotlinxCoroutines       = "1.11.0"
@@ -115,6 +116,7 @@ gradle-git-properties   = { id = "com.gorylenko.gradle-git-properties",       ve
 protobuf-plugin         = { id = "com.google.protobuf",                       version.ref = "protobuf-plugin" }
 polocloud-gradle-plugin = { id = "de.polocloud.gradle.plugin", version.ref = "polocloud-gradle-plugin" }
 shadow                  = { id = "com.gradleup.shadow",                       version.ref = "shadow" }
+maven-publish           = { id = "com.vanniktech.maven.publish",              version.ref = "mavenPublish" }
 
 [bundles]
 
