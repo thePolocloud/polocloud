@@ -12,6 +12,7 @@ import java.util.*
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -41,16 +42,13 @@ class NodeHeartBeatService {
      *
      * @param interval The interval between heartbeats (default: 1 second).
      */
-    fun startScheduler(interval: Duration = 1.seconds) {
-        // Off the startup critical path: cleanUp() scans this node's entire heartbeat
-        // history, which only grows the longer the node stays up between restarts, and
-        // deletes stale rows one at a time. Blocking startup on it means every restart
-        // gets slower as the node accumulates more uptime — running it in the background
-        // instead means "Node is up" no longer waits on however large that table has
-        // gotten since the last restart.
+    fun startScheduler(interval: Duration = 1.seconds, cleanupInterval: Duration = CLEANUP_INTERVAL) {
         cleanupJob = CoroutineScope(Dispatchers.IO).launch {
-            runCatching { cleanUp() }
-                .onFailure { logger.error("Heartbeat cleanup failed", it) }
+            while (isActive) {
+                runCatching { cleanUp { isActive } }
+                    .onFailure { logger.error("Heartbeat cleanup failed", it) }
+                delay(cleanupInterval)
+            }
         }
 
         val nodeId = NodeEnvironment.runtime.nodeId.get()
@@ -77,6 +75,7 @@ class NodeHeartBeatService {
         schedulerJob = null
 
         cleanupJob?.let { job ->
+            job.cancel()
             runBlocking {
                 if (withTimeoutOrNull(CLEANUP_SHUTDOWN_TIMEOUT) { job.join() } == null) {
                     logger.warn("Heartbeat cleanup did not finish within {} during shutdown — it may still be writing to a closing database.", CLEANUP_SHUTDOWN_TIMEOUT)
@@ -89,41 +88,44 @@ class NodeHeartBeatService {
     /**
      * Cleans up old heartbeats in the database.
      *
-     * Heartbeats younger than 24 hours are kept, as well as at least one heartbeat per 10 minutes
-     * in older data.
+     * Heartbeats younger than [RETENTION_FULL] are kept untouched. Older data is thinned
+     * to the earliest heartbeat per [RETENTION_BUCKET] window. Idempotent, so it's safe to
+     * run repeatedly: already-thinned buckets contain a single row and produce no deletes.
+     *
+     * @param shouldContinue polled between deletes; returning `false` aborts the pass early.
      */
-    fun cleanUp() {
-        val beats = NodeHeartBeatRepository.find(NodeEnvironment.runtime.nodeId.get()).sortedBy { it.heartBeatAt }
-        if (beats.isEmpty()) return
+    fun cleanUp(shouldContinue: () -> Boolean = { true }) {
+        val cutoff = Clock.System.now() - RETENTION_FULL
+        val bucketMillis = RETENTION_BUCKET.inWholeMilliseconds
 
-        val now = Clock.System.now()
-        val cutoff = now - 24.hours
-        val toKeep = mutableSetOf<NodeHeartBeat>()
+        // Only rows past the cutoff are candidates; recent ones are never even grouped.
+        val all = NodeHeartBeatRepository.find(NodeEnvironment.runtime.nodeId.get())
+        val toDelete = all
+            .filter { it.heartBeatAt < cutoff }
+            .groupBy { it.heartBeatAt.toEpochMilliseconds() / bucketMillis }
+            .values
+            .flatMap { bucket -> bucket.sortedBy { it.heartBeatAt }.drop(1) }
 
-        // Keep at least one heartbeat per 10 minutes for older data
-        beats.filter { it.heartBeatAt < cutoff }
-            .groupBy { it.heartBeatAt.toEpochMilliseconds() / (10 * 60 * 1000) }
-            .forEach { (_, group) ->
-                group.minByOrNull { it.heartBeatAt }?.let { toKeep.add(it) }
-            }
-
-        // Keep all recent heartbeats
-        beats.filter { it.heartBeatAt >= cutoff }.forEach { toKeep.add(it) }
-
-        val toDelete = beats.filter { it !in toKeep }
+        if (toDelete.isEmpty()) return
 
         logger.info(TranslationService.tr("cluster", "cluster.heartbeat.cleanup"))
 
-        toDelete.forEach { beat ->
-            NodeHeartBeatRepository.delete(beat)
+        var deleted = 0
+        for (beat in toDelete) {
+            // Bail out promptly on shutdown instead of deleting against a closing database.
+            if (!shouldContinue()) return
+            // One failed row must not abort the rest of the pass; it's retried next run.
+            runCatching { NodeHeartBeatRepository.delete(beat) }
+                .onSuccess { deleted++ }
+                .onFailure { logger.debug("Could not delete heartbeat {}", beat.id, it) }
         }
 
         logger.info(
             TranslationService.tr(
                 "cluster",
                 "cluster.heartbeat.cleanup.complete",
-                "deleted" to toDelete.size,
-                "kept" to toKeep.size
+                "deleted" to deleted,
+                "kept" to all.size - deleted
             )
         )
     }
@@ -159,5 +161,8 @@ class NodeHeartBeatService {
 
     private companion object {
         val CLEANUP_SHUTDOWN_TIMEOUT = 15.seconds
+        val CLEANUP_INTERVAL = 10.minutes
+        val RETENTION_FULL = 24.hours
+        val RETENTION_BUCKET = 10.minutes
     }
 }
