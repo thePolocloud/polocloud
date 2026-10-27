@@ -4,7 +4,7 @@
 kotlin-jvm                 = "2.4.20"
 mavenPublish               = "0.34.0"
 kotlinSerializationPlugin = "2.4.20"
-kotlinxSerialization    = "1.11.0"
+kotlinxSerialization    = "1.12.0"
 kotlinxCoroutines       = "1.11.0"
 kotlin-reflect          = "2.4.20"
 
