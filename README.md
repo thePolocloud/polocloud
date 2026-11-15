@@ -5,6 +5,7 @@
 [![License](https://img.shields.io/github/license/thePolocloud/polocloud?style=for-the-badge&color=b2204c)](LICENSE)
 [![Modrinth](https://img.shields.io/badge/Modrinth-polocloud-1bd96a?logo=modrinth&style=for-the-badge)](https://modrinth.com/organization/polocloud)
 [![Downloads](https://img.shields.io/github/downloads/thePolocloud/polocloud/total?style=for-the-badge&logo=github&color=2ea043)](https://github.com/thePolocloud/polocloud/releases)
+[![Maven Central](https://img.shields.io/maven-central/v/de.polocloud/polocloud-api?style=for-the-badge&logo=apachemaven&color=c71a36)](https://central.sonatype.com/artifact/de.polocloud/polocloud-api)
 
 </div>
 
@@ -120,6 +121,41 @@ Then restart the node and run `cluster join` again. See the [cluster architectur
 ## Docker
 
 The [Docker guide](docker/README.md) will help you get started with deploying your **PoloCloud in Docker**.
+
+</details>
+
+<details>
+<summary><strong>API</strong></summary>
+
+## API
+
+The PoloCloud API is published on [Maven Central](https://central.sonatype.com/artifact/de.polocloud/polocloud-api) - no extra repository needed.
+
+**Gradle (Kotlin DSL)**
+
+```kotlin
+dependencies {
+    implementation("de.polocloud:polocloud-api:3.1.0")
+}
+```
+
+**Gradle (Groovy)**
+
+```groovy
+dependencies {
+    implementation 'de.polocloud:polocloud-api:3.1.0'
+}
+```
+
+**Maven**
+
+```xml
+<dependency>
+    <groupId>de.polocloud</groupId>
+    <artifactId>polocloud-api</artifactId>
+    <version>3.1.0</version>
+</dependency>
+```
 
 </details>
 
