@@ -2,7 +2,7 @@
 
 # ── Kotlin ────────────────────────────────────────────────────────────────────
 kotlin-jvm                 = "2.4.21"
-mavenPublish               = "0.34.0"
+mavenPublish               = "0.37.0"
 kotlinSerializationPlugin = "2.4.21"
 kotlinxSerialization    = "1.13.0"
 kotlinxCoroutines       = "1.11.0"
